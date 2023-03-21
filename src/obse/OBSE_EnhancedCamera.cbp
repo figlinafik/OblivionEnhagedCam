@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="OBSE_EnhancedCamera" />
+		<Option pch_mode="2" />
+		<Option compiler="msvc10" />
+		<Build>
+			<Target title="Debug Win32">
+				<Option output="OBSE_EnhancedCamera" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Debug Win32" />
+				<Option type="3" />
+				<Option compiler="msvc10" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="/DWIN32" />
+					<Add option="/D_DEBUG" />
+					<Add option="/D_WINDOWS" />
+					<Add option="/D_USRDLL" />
+					<Add option="/DOBLIVION_VERSION=0x010201A0" />
+					<Add option="/DOBLIVION" />
+					<Add option="/W3" />
+					<Add option="/ZI" />
+					<Add option="/Od" />
+					<Add option="/MTd" />
+					<Add option="/FI obse_common\obse_prefix.h" />
+					<Add directory="$(SolutionDir)" />
+					<Add directory="$(SolutionDir)/.." />
+					<Add directory="$(SolutionDir)/../obse/obse" />
+					<Add directory="$(SolutionDir)/../obse/" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="$(SolutionDir)" />
+					<Add directory="$(SolutionDir)/.." />
+					<Add directory="$(SolutionDir)/../obse/obse" />
+					<Add directory="$(SolutionDir)/../obse/" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option='/DEF:&quot;exports.def&quot;' />
+				</Linker>
+				<ExtraCommands>
+					<Add after="copy  $(OblivionPath)\data\obse\plugins\" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Release Win32">
+				<Option output="OBSE_EnhancedCamera" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Release Win32" />
+				<Option type="3" />
+				<Option compiler="msvc10" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="/DWIN32" />
+					<Add option="/DNDEBUG" />
+					<Add option="/D_WINDOWS" />
+					<Add option="/D_USRDLL" />
+					<Add option="/DOBLIVION_VERSION=0x010201A0" />
+					<Add option="/DOBLIVION" />
+					<Add option="/W3" />
+					<Add option="/Zi" />
+					<Add option="/MT" />
+					<Add option="/FI obse_common\obse_prefix.h" />
+					<Add directory="$(SolutionDir)" />
+					<Add directory="$(SolutionDir)/.." />
+					<Add directory="$(SolutionDir)/../obse/obse" />
+					<Add directory="$(SolutionDir)/../obse/" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="$(SolutionDir)" />
+					<Add directory="$(SolutionDir)/.." />
+					<Add directory="$(SolutionDir)/../obse/obse" />
+					<Add directory="$(SolutionDir)/../obse/" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="/INCREMENTAL:NO" />
+					<Add option='/DEF:&quot;exports.def&quot;' />
+				</Linker>
+				<ExtraCommands>
+					<Add after="copy  $(OblivionPath)\data\obse\plugins\" />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<Unit filename="dllmain.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="exports.def" />
+		<Unit filename="main.cpp" />
+		<Unit filename="matrix.cpp" />
+		<Unit filename="matrix.h" />
+		<Unit filename="obse/GameAPI.cpp" />
+		<Unit filename="obse/GameAPI.h" />
+		<Unit filename="obse/GameActorValues.cpp" />
+		<Unit filename="obse/GameActorValues.h" />
+		<Unit filename="obse/GameBSExtraData.cpp" />
+		<Unit filename="obse/GameBSExtraData.h" />
+		<Unit filename="obse/GameData.cpp" />
+		<Unit filename="obse/GameData.h" />
+		<Unit filename="obse/GameExtraData.cpp" />
+		<Unit filename="obse/GameExtraData.h" />
+		<Unit filename="obse/GameForms.cpp" />
+		<Unit filename="obse/GameForms.h" />
+		<Unit filename="obse/GameObjects.cpp" />
+		<Unit filename="obse/GameObjects.h" />
+		<Unit filename="obse/GameProcess.cpp" />
+		<Unit filename="obse/GameProcess.h" />
+		<Unit filename="obse/GameRTTI_1_1.inl" />
+		<Unit filename="obse/GameRTTI_1_2.inl" />
+		<Unit filename="obse/GameRTTI_1_2_416.inl" />
+		<Unit filename="obse/GameTasks.cpp" />
+		<Unit filename="obse/GameTasks.h" />
+		<Unit filename="obse/GameTypes.cpp" />
+		<Unit filename="obse/GameTypes.h" />
+		<Unit filename="obse/HavokCharacters.cpp" />
+		<Unit filename="obse/HavokCharacters.h" />
+		<Unit filename="obse/NiAPI.cpp" />
+		<Unit filename="obse/NiAPI.h" />
+		<Unit filename="obse/NiControllers.cpp" />
+		<Unit filename="obse/NiControllers.h" />
+		<Unit filename="obse/NiHavokCharacters.cpp" />
+		<Unit filename="obse/NiHavokCharacters.h" />
+		<Unit filename="obse/NiNodes.cpp" />
+		<Unit filename="obse/NiNodes.h" />
+		<Unit filename="obse/NiRTTI.cpp" />
+		<Unit filename="obse/NiRTTI.h" />
+		<Unit filename="obse/ParamInfos.h" />
+		<Unit filename="obse/PluginAPI.h" />
+		<Unit filename="obse/Script.cpp" />
+		<Unit filename="obse/Script.h" />
+		<Unit filename="obse/Utilities.cpp" />
+		<Unit filename="obse/Utilities.h" />
+		<Unit filename="obse_common/SafeWrite.cpp" />
+		<Unit filename="obse_common/SafeWrite.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

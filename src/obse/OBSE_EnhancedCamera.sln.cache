@@ -1,0 +1,213 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="3.5" InitialTargets="ValidateSolutionConfiguration;ValidateToolsVersions" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_SolutionProjectConfiguration>Debug|Win32</_SolutionProjectConfiguration>
+    <_SolutionProjectToolsVersion>3.5</_SolutionProjectToolsVersion>
+    <_SolutionProjectCacheVersion>4.0</_SolutionProjectCacheVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <_SolutionProjectProjects Include="..\common\common.vcproj" />
+    <_SolutionProjectProjects Include="OBSE_EnhancedCamera.vcproj" />
+  </ItemGroup>
+  <UsingTask TaskName="Microsoft.Build.Tasks.CreateTemporaryVCProject" AssemblyName="Microsoft.Build.Tasks.v3.5, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <UsingTask TaskName="Microsoft.Build.Tasks.ResolveVCProjectOutput" AssemblyName="Microsoft.Build.Tasks.v3.5, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <PropertyGroup Condition=" '$(Configuration)' == '' ">
+    <Configuration>Debug</Configuration>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == '' ">
+    <Platform>Win32</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition=" ('$(AspNetConfiguration)' == '') ">
+    <AspNetConfiguration>$(Configuration)</AspNetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SolutionDir>C:\Users\dfkll_000\Downloads\obse_0021\src\obse\</SolutionDir>
+    <SolutionExt>.sln</SolutionExt>
+    <SolutionFileName>OBSE_EnhancedCamera.sln</SolutionFileName>
+    <SolutionName>OBSE_EnhancedCamera</SolutionName>
+    <SolutionPath>C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln</SolutionPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' and '$(MSBuildToolsVersion)' == '2.0'">v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' and ('$(MSBuildToolsVersion)' == '3.5' or '$(MSBuildToolsVersion)' == '3.0')">v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' and '$(MSBuildToolsVersion)' == '4.0'">v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') ">
+    <CurrentSolutionConfigurationContents>
+      <SolutionConfiguration xmlns="">
+        <ProjectConfiguration Project="{D4DDA734-7E93-4581-8F82-32BB738F69FE}">Debug|Win32</ProjectConfiguration>
+        <ProjectConfiguration Project="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">Debug|Win32</ProjectConfiguration>
+      </SolutionConfiguration>
+    </CurrentSolutionConfigurationContents>
+  </PropertyGroup>
+  <PropertyGroup Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') ">
+    <CurrentSolutionConfigurationContents>
+      <SolutionConfiguration xmlns="">
+        <ProjectConfiguration Project="{D4DDA734-7E93-4581-8F82-32BB738F69FE}">Release|Win32</ProjectConfiguration>
+        <ProjectConfiguration Project="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">Release|Win32</ProjectConfiguration>
+      </SolutionConfiguration>
+    </CurrentSolutionConfigurationContents>
+  </PropertyGroup>
+  <Target Name="ValidateSolutionConfiguration">
+    <Error Text="указанная конфигурация решения &quot;$(Configuration)|$(Platform)&quot; недопустима. Укажите допустимую конфигурацию решения с помощью свойств Configuration и Platform (например, MSBuild.exe Solution.sln /p:Configuration=Debug /p:Platform=&quot;Any CPU&quot;) или оставьте эти свойства пустыми, чтобы использовать конфигурацию решения по умолчанию." Code="MSB4126" HelpKeyword="MSBuild.SolutionInvalidSolutionConfiguration" Condition="('$(CurrentSolutionConfigurationContents)' == '') and ('$(SkipInvalidConfigurations)' != 'true')" />
+    <Warning Text="указанная конфигурация решения &quot;$(Configuration)|$(Platform)&quot; недопустима. Укажите допустимую конфигурацию решения с помощью свойств Configuration и Platform (например, MSBuild.exe Solution.sln /p:Configuration=Debug /p:Platform=&quot;Any CPU&quot;) или оставьте эти свойства пустыми, чтобы использовать конфигурацию решения по умолчанию." Code="MSB4126" HelpKeyword="MSBuild.SolutionInvalidSolutionConfiguration" Condition="('$(CurrentSolutionConfigurationContents)' == '') and ('$(SkipInvalidConfigurations)' == 'true')" />
+    <Message Text="Создание конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="'$(CurrentSolutionConfigurationContents)' != ''" />
+  </Target>
+  <Target Name="ValidateToolsVersions">
+    <Error Text="версия инструментов &quot;$(MSBuildToolsVersion)&quot; решения не поддерживает проекты сборки с другой версией инструментов." Code="MSB4149" HelpKeyword="MSBuild.SolutionToolsVersionDoesNotSupportProjectToolsVersion" Condition="'$(MSBuildToolsVersion)' == '2.0' and ('$(ProjectToolsVersion)' != '2.0' and '$(ProjectToolsVersion)' != '')" />
+  </Target>
+  <Target Name="OBSE_EnhancedCamera" DependsOnTargets="common" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Debug|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Release|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="OBSE_EnhancedCamera:Clean" DependsOnTargets="common:Clean" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Clean" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Debug|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Clean)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Clean="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Clean" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Release|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Clean)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Clean)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Clean="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="OBSE_EnhancedCamera:Rebuild" DependsOnTargets="common:Rebuild" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Rebuild" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Debug|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Rebuild)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Rebuild="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Rebuild" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Release|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_Rebuild)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries_Rebuild)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Rebuild="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="OBSE_EnhancedCamera:Publish" DependsOnTargets="common:Publish" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <Warning Text="VC-проекты не поддерживают цель &quot;Publish&quot;." Code="MSB4076" HelpKeyword="MSBuild.SolutionVCProjectNoPublish" />
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Debug|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Debug_Win32.vcproj" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <ResolveVCProjectOutput ProjectReferences="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') ">
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0" />
+      <Output TaskParameter="ResolvedImportLibraryPaths" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries" />
+    </ResolveVCProjectOutput>
+    <CreateItem Include="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References_0)" AdditionalMetadata="Guid={20C6411C-596F-4B85-BE4E-8BC91F59D8A6}">
+      <Output TaskParameter="Include" ItemName="Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References" />
+    </CreateItem>
+    <CreateTemporaryVCProject ProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.vcproj" Configuration="Release|Win32" OutputProjectFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ReferenceGuids="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}" ReferenceAssemblies="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_References)" ReferenceImportLibraries="@(Project_D4DDA734-7E93-4581-8F82-32BB738F69FE_ImportLibraries)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+    <Delete Files="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.tmp_Release_Win32.vcproj" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="common" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="common:Clean" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Clean="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Clean="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="common:Rebuild" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Rebuild="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Rebuild="true" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="common:Publish" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <Warning Text="VC-проекты не поддерживают цель &quot;Publish&quot;." Code="MSB4076" HelpKeyword="MSBuild.SolutionVCProjectNoPublish" />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Debug|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Debug') and ('$(Platform)' == 'Win32') " />
+    <VCBuild Projects="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\..\common\common.vcproj" ToolPath="$(VCBuildToolPath)" Configuration="Release|Win32" SolutionFile="C:\Users\dfkll_000\Downloads\obse_0021\src\obse\OBSE_EnhancedCamera.sln" Override="$(VCBuildOverride)" AdditionalLibPaths="$(VCBuildAdditionalLibPaths)" AdditionalLinkLibraryPaths="$(VCBuildAdditionalLinkLibraryPaths)" UseEnvironment="$(VCBuildUseEnvironment)" UserEnvironment="$(VCBuildUserEnvironment)" AdditionalOptions="$(VCBuildAdditionalOptions)" Condition=" ('$(Configuration)' == 'Release') and ('$(Platform)' == 'Win32') " />
+  </Target>
+  <Target Name="Build" Condition="'$(CurrentSolutionConfigurationContents)' != ''" Outputs="@(CollectedBuildOutput)">
+    <MSBuild Condition="@(BuildLevel0) != ''" Projects="@(BuildLevel0)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+    <Message Text="Проект&quot;%(SkipLevel0.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel0) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel0.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel0) != ''" />
+    <CallTarget Targets="common" RunEachTargetSeparately="true" />
+    <MSBuild Condition="@(BuildLevel1) != ''" Projects="@(BuildLevel1)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+    <Message Text="Проект&quot;%(SkipLevel1.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel1) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel1.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel1) != ''" />
+    <CallTarget Targets="OBSE_EnhancedCamera" RunEachTargetSeparately="true" />
+  </Target>
+  <Target Name="Clean" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <MSBuild Condition="@(BuildLevel0) != ''" Projects="@(BuildLevel0)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Clean" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)" />
+    <Message Text="Проект&quot;%(SkipLevel0.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel0) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel0.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel0) != ''" />
+    <CallTarget Targets="common:Clean" RunEachTargetSeparately="true" />
+    <MSBuild Condition="@(BuildLevel1) != ''" Projects="@(BuildLevel1)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Clean" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)" />
+    <Message Text="Проект&quot;%(SkipLevel1.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel1) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel1.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel1) != ''" />
+    <CallTarget Targets="OBSE_EnhancedCamera:Clean" RunEachTargetSeparately="true" />
+    <Delete Files="OBSE_EnhancedCamera.sln.cache" />
+  </Target>
+  <Target Name="Rebuild" Condition="'$(CurrentSolutionConfigurationContents)' != ''" Outputs="@(CollectedBuildOutput)">
+    <MSBuild Condition="@(BuildLevel0) != ''" Projects="@(BuildLevel0)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Rebuild" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+    <Message Text="Проект&quot;%(SkipLevel0.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel0) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel0.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel0) != ''" />
+    <CallTarget Targets="common:Rebuild" RunEachTargetSeparately="true" />
+    <MSBuild Condition="@(BuildLevel1) != ''" Projects="@(BuildLevel1)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Rebuild" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+    <Message Text="Проект&quot;%(SkipLevel1.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel1) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel1.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel1) != ''" />
+    <CallTarget Targets="OBSE_EnhancedCamera:Rebuild" RunEachTargetSeparately="true" />
+  </Target>
+  <Target Name="Publish" Condition="'$(CurrentSolutionConfigurationContents)' != ''">
+    <MSBuild Condition="@(BuildLevel0) != ''" Projects="@(BuildLevel0)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Publish" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)" />
+    <Message Text="Проект&quot;%(SkipLevel0.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel0) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel0.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel0) != ''" />
+    <CallTarget Targets="common:Publish" RunEachTargetSeparately="true" />
+    <MSBuild Condition="@(BuildLevel1) != ''" Projects="@(BuildLevel1)" Properties="Configuration=%(Configuration); Platform=%(Platform); BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" Targets="Publish" ToolsVersion="$(ProjectToolsVersion)" BuildInParallel="true" UnloadProjectsOnCompletion="$(UnloadProjectsOnCompletion)" UseResultsCache="$(UseResultsCache)" />
+    <Message Text="Проект&quot;%(SkipLevel1.Identity)&quot; не выбран для построения в конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Condition="@(SkipLevel1) != ''" />
+    <Warning Text="конфигурация проекта для проекта &quot;%(MissingConfigLevel1.Identity)&quot; не была указана в файле решения для конфигурации решения &quot;$(Configuration)|$(Platform)&quot;." Code="MSB4121" HelpKeyword="MSBuild.SolutionProjectConfigurationMissing" Condition="@(MissingConfigLevel1) != ''" />
+    <CallTarget Targets="OBSE_EnhancedCamera:Publish" RunEachTargetSeparately="true" />
+  </Target>
+</Project>
