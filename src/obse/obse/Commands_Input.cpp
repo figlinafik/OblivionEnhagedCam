@@ -19,12 +19,19 @@
 
 #include "GameAPI.h"
 #include "Hooks_DirectInput8Create.h"
+#include <shlobj.h>
 #include "GameOSDepend.h"
 #include "StringVar.h"
 #include "GameMenus.h"
 #include "GameTiles.h"
 #include "GameObjects.h"
+#include <string>
+
 #include "GameForms.h"
+
+#include <set>
+#include <map>
+#include <ctime>
 
 #define CONTROLSMAPPED 29
 static bool IsKeycodeValid(UInt32 id)		{ return id < kMaxMacros - 2; }
@@ -205,7 +212,7 @@ static bool Cmd_MenuTapKey_Execute(COMMAND_ARGS)
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &keycode))
 		return true;
 
-    if(keycode<256)
+    if(keycode<256) 
 		DInput_FakeBufferedKeyTap(keycode);
 
 	return true;
@@ -327,7 +334,7 @@ static bool Cmd_IsKeyDisabled_Execute(COMMAND_ARGS)
 
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &keycode))
 	{
-		if(keycode%256==255&&keycode<2048)
+		if(keycode%256==255&&keycode<2048) 
 			keycode=255+(keycode+1)/256;
 
 		if(IsKeycodeValid(keycode) && DI_data.DisallowStates[keycode] == 0x00)
@@ -396,6 +403,7 @@ static bool Cmd_MoveMouseY_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_SetMouseSpeedX_Execute(COMMAND_ARGS)
 {
 	*result = 0;
@@ -442,7 +450,7 @@ static bool Cmd_EnableMouse_Execute(COMMAND_ARGS)
 #define DX2VK(keyConstant) case DIK_ ## keyConstant: vkCode = VK_ ## keyConstant; break;
 
 static UInt8 _dx2vk(UINT dx){
-	if (dx >= VK_TABLE_SIZE)
+	if (dx >= VK_TABLE_SIZE) 
 		return NOKEY;
 
 	UInt8 vkCode = NOKEY;
@@ -502,10 +510,10 @@ static bool _isControlPressed(UINT ctrl)
 {
 	if (ctrl >= CONTROLSMAPPED)	return false;
 	if (!InputControls)		GetControlMap();
-
-	if (_isKeyPressed(InputControls[ctrl]))
+	
+	if (_isKeyPressed(InputControls[ctrl]))	
 		return true;
-	if (AltInputControls[ctrl] != NOKEY && _isKeyPressed(AltInputControls[ctrl] + 256))
+	if (AltInputControls[ctrl] != NOKEY && _isKeyPressed(AltInputControls[ctrl] + 256))	
 		return true;
 
 	return false;
@@ -544,7 +552,7 @@ static bool Cmd_DisableControl_Execute(COMMAND_ARGS)
 
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &ctrl))
 		return true;
-
+	
 	if (!InputControls)
 		GetControlMap();
 
@@ -595,7 +603,7 @@ static bool Cmd_EnableControl_Execute(COMMAND_ARGS)
 	}
 
 	dxCode = AltInputControls[ctrl] + 256;
-	if (dxCode != NOKEY && IsKeycodeValid(dxCode))
+	if (dxCode != NOKEY && IsKeycodeValid(dxCode))	
 	{
 		DI_data.DisallowStates[dxCode] = 0x80;
 		disabledControls[ctrl] = 0;

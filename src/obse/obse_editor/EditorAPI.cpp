@@ -20,7 +20,7 @@
 #error unsupported CS version
 #endif
 
-bool BSStringT::Set(const char * src)
+bool String::Set(const char * src)
 {
 	if (!src) {
 		FormHeap_Free(m_data);
@@ -29,7 +29,7 @@ bool BSStringT::Set(const char * src)
 		m_dataLen = 0;
 		return true;
 	}
-
+	
 	UInt32	srcLen = strlen(src);
 
 	// realloc if needed
@@ -53,8 +53,9 @@ bool BSStringT::Set(const char * src)
 	return m_data != NULL;
 }
 
-BSStringT::~BSStringT()
+String::~String()
 {
+
 }
 
 RenderWindowSelection* RenderWindowSelection::GetSingleton()
@@ -66,4 +67,9 @@ RenderWindowSelection* RenderWindowSelection::GetSingleton()
 #error unsupported CS version
 #endif
 }
+
+
+
+
+
 

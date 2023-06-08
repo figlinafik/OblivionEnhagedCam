@@ -81,9 +81,7 @@ enum {
 	kActorVal_ResistWaterDamage,
 	///
 	kActorVal_OblivionMax,
-	kActorVal_NoActorValue = 256,					// ### incorrect definition, actually 255
-	kActorVal_NoActorValue_Proper = 0xFF,			// changing the above value will break existing mods that use it
-													// so special-case it for (MGEF, more?)commands that expect the correct value
+	kActorVal_NoActorValue = 256,
 };
 
 enum {
@@ -98,9 +96,9 @@ enum {
 
 enum eAVModifier
 {
-	kAVModifier_Max         = 0x0,		// e.g. Fortify, Drain, Feather effects
-	kAVModifier_Offset      = 0x1,		// script modifier e.g. script cmds Mod/ForceAV
-	kAVModifier_Damage      = 0x2,		// console cmds Mod/ForceAV, damage health, etc
+    kAVModifier_Max         = 0x0,		// e.g. Fortify, Drain, Feather effects
+    kAVModifier_Offset      = 0x1,		// script modifier e.g. script cmds Mod/ForceAV
+    kAVModifier_Damage      = 0x2,		// console cmds Mod/ForceAV, damage health, etc
 
 	kAVModifier_Invalid		= 0xFF
 };
@@ -135,6 +133,3 @@ public:
 };
 
 STATIC_ASSERT(sizeof(ActorValues) == 0x14);
-
-float GetLuckModifiedSkill(SInt32 skill, SInt32 luck, bool capped = true);
-UInt32 GetSkillMasteryLevel(UInt32 level);

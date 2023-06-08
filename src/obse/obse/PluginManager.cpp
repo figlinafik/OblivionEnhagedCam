@@ -4,7 +4,6 @@
 #include "Commands_Console.h"
 #include "ParamInfos.h"
 #include "Utilities.h"
-#include "obse_common/SafeWrite.h"
 
 #ifdef OBLIVION
 #include "GameAPI.h"
@@ -68,8 +67,7 @@ static OBSEScriptInterface g_OBSEScriptInterface =
 	PluginAPI::CallFunctionScript,
 	UserFunctionManager::GetFunctionParamTypes,
 	ExtractArgsEx,
-	ExtractFormatStringArgs,
-	PluginAPI::IsUserFunction
+	ExtractFormatStringArgs
 };
 
 #endif
@@ -111,8 +109,6 @@ static const OBSEInterface g_OBSEInterface =
 	PluginManager::GetPluginHandle,
 	PluginManager::RegisterTypedCommand,
 	PluginManager::GetOblivionDir,
-	PluginManager::GetPluginLoaded,
-	PluginManager::GetPluginVersion,
 };
 
 PluginManager::PluginManager()
@@ -288,7 +284,7 @@ void PluginManager::SetOpcodeBase(UInt32 opcode)
 {
 	_MESSAGE("SetOpcodeBase %08X", opcode);
 
-	ASSERT(opcode < 0x8000);	// arbitrary maximum for sanity check
+	ASSERT(opcode < 0x8000);	// arbitrary maximum for samity check
 	ASSERT(opcode >= 0x2000);	// beginning of plugin opcode space
 	ASSERT_STR(s_currentLoadingPlugin, "PluginManager::SetOpcodeBase: called outside of plugin load");
 
@@ -416,31 +412,26 @@ void PluginManager::InstallPlugins(void)
 			{
 				const char	* loadStatus = NULL;
 
-				loadStatus = EarlyCheckPluginCompatibility(&plugin, iter.Get()->cFileName);
+				loadStatus = SafeCallQueryPlugin(&plugin, &g_OBSEInterface);
 
 				if(!loadStatus)
 				{
-					loadStatus = SafeCallQueryPlugin(&plugin, &g_OBSEInterface);
+					loadStatus = CheckPluginCompatibility(&plugin);
 
 					if(!loadStatus)
 					{
-						loadStatus = CheckPluginCompatibility(&plugin);
+						loadStatus = SafeCallLoadPlugin(&plugin, &g_OBSEInterface);
 
 						if(!loadStatus)
 						{
-							loadStatus = SafeCallLoadPlugin(&plugin, &g_OBSEInterface);
-
-							if(!loadStatus)
-							{
-								loadStatus = "loaded correctly";
-								success = true;
-							}
+							loadStatus = "loaded correctly";
+							success = true;
 						}
 					}
-					else
-					{
-						loadStatus = "reported as incompatible during query";
-					}
+				}
+				else
+				{
+					loadStatus = "reported as incompatible during query";
 				}
 
 				ASSERT(loadStatus);
@@ -569,57 +560,6 @@ const char * PluginManager::CheckPluginCompatibility(LoadedPlugin * plugin)
 	return NULL;
 }
 
-// see if we have a plugin that we know causes problems AND is broken enough that we can't even call OBSEPlugin_Query
-const char * PluginManager::EarlyCheckPluginCompatibility(LoadedPlugin * plugin, const char * fileName)
-{
-	const char	* result = NULL;
-	UInt32		imageBase = (UInt32)plugin->handle;
-
-#ifndef OBLIVION
-	// HUD version of Pluggy (v132, possibly others) installs the same directx hook without checking whether or not it is being loaded in the runtime
-	// this overwrites random code in the editor
-	// there is also no versioning information on the dll, so time for a crappy heuristic
-	// linker timestamp is fixed at 0x2A425E19 for all delphi projects so can't use that, checksum is 0x00000000
-	// basically a giant load of stupid
-	if(!_stricmp(fileName, "OBSE_Elys_Pluggy_HUD.dll"))
-	{
-		_MESSAGE("checking for pluggy HUD bug");
-
-		// check if OBSEPlugin_Query is at the right address
-		UInt32	expectedQueryPtr = 0x003E1EDC - 0x003B0000 + imageBase;
-
-		if(expectedQueryPtr == (UInt32)plugin->query)
-		{
-			_MESSAGE("OBSEPlugin_Query matches");
-
-			// ok, probably v132
-
-			// check some code in the function we're going to patch
-			// won't be relocated or changed and should be very unique
-			UInt32		codeCheckPtr = 0x003C96F7 - 0x003B0000 + imageBase;
-			const UInt8	kCodeToCheck[] =
-			{
-				0x81, 0xEA, 0x56, 0x1E, 0x76, 0x00,	// sub edx, 0x00761E56
-				0xB8, 0x52, 0x1E, 0x76, 0x00		// mov eax, 0x00761E52
-			};
-
-			if(!memcmp((void *)codeCheckPtr, kCodeToCheck, sizeof(kCodeToCheck)))
-			{
-				_MESSAGE("InitializationDXHook matches");
-
-				// ok, pretty sure at this point. patch the function hooking the code
-
-				_MESSAGE("patching the bug");
-
-				SafeWrite8(0x003C96F2 - 0x003B0000 + imageBase, 0xC3);	// early return to skip all the writes
-			}
-		}
-	}
-#endif
-
-	return result;
-}
-
 // Plugin communication interface
 struct PluginListener {
 	PluginHandle	listener;
@@ -715,11 +655,8 @@ bool PluginManager::Dispatch_Message(PluginHandle sender, UInt32 messageType, vo
 	if (!senderName)
 		return false;
 
-	// s_pluginListeners can be resized during this call, iterate via index
-	for(UInt32 i = 0; i < s_pluginListeners[sender].size(); i++)
+	for (std::vector<PluginListener>::iterator iter = s_pluginListeners[sender].begin(); iter != s_pluginListeners[sender].end(); ++iter)
 	{
-		PluginListener	* listener = &s_pluginListeners[sender][i];
-
 		OBSEMessagingInterface::Message msg;
 		msg.data = data;
 		msg.type = messageType;
@@ -728,17 +665,15 @@ bool PluginManager::Dispatch_Message(PluginHandle sender, UInt32 messageType, vo
 
 		if (target != kPluginHandle_Invalid)	// sending message to specific plugin
 		{
-			if (listener->listener == target)
+			if (iter->listener == target)
 			{
-				listener->handleMessage(&msg);
-				listener = NULL;	// now potentially invalid
+				iter->handleMessage(&msg);
 				return true;
 			}
 		}
 		else
 		{
-			listener->handleMessage(&msg);
-			listener = NULL;	// now potentially invalid
+			iter->handleMessage(&msg);
 			numRespondents++;
 		}
 	}
@@ -769,30 +704,6 @@ const char* PluginManager::GetOblivionDir()
 {
 	static std::string obDir(GetOblivionDirectory());
 	return obDir.c_str();
-}
-
-bool PluginManager::GetPluginLoaded( const char* pluginName )
-{
-	if (pluginName == NULL)
-		return false;
-
-	PluginInfo* plugin = g_pluginManager.GetInfoByName(pluginName);
-	if (plugin)
-		return true;
-	else
-		return false;
-}
-
-UInt32 PluginManager::GetPluginVersion( const char* pluginName )
-{
-	if (pluginName == NULL)
-		return 0;
-
-	PluginInfo* plugin = g_pluginManager.GetInfoByName(pluginName);
-	if (plugin)
-		return plugin->version;
-	else
-		return 0;
 }
 
 #ifdef OBLIVION

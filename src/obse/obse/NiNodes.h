@@ -5,22 +5,22 @@
 #include "Utilities.h"
 
 /*** class hierarchy
- *
+ *	
  *	yet again taken from rtti information
  *	ni doesn't seem to use multiple inheritance
- *
+ *	
  *	thanks to the NifTools team for their work on the on-disk format
  *	thanks to netimmerse for NiObject::DumpAttributes
- *
+ *	
  *	all offsets here are assuming patch 1.2 as they changed dramatically
  *	0xE8 bytes were removed from NiObjectNET, and basically everything derives from that
- *
+ *	
  *	NiObject derives from NiRefObject
- *
+ *	
  *	BSFaceGenMorphData - derived from NiRefObject
  *		BSFaceGenMorphDataHead
  *		BSFaceGenMorphDataHair
- *
+ *	
  *	BSTempEffect - derived from NiObject
  *		BSTempEffectDecal
  *		BSTempEffectGeometryDecal
@@ -28,7 +28,7 @@
  *		MagicHitEffect
  *			MagicModelHitEffect
  *			MagicShaderHitEffect
- *
+ *	
  *	NiDX92DBufferData - derived from NiRefObject and something else
  *		NiDX9DepthStencilBufferData
  *			NiDX9SwapChainDepthStencilBufferData
@@ -38,7 +38,7 @@
  *		NiDX9OnscreenBufferData
  *			NiDX9SwapChainBufferData
  *			NiDX9ImplicitBufferData
- *
+ *	
  *	NiObject
  *		NiObjectNET
  *			NiProperty
@@ -401,7 +401,7 @@
  *		NiPSysCollider
  *			NiPSysSphericalCollider
  *			NiPSysPlanarCollider
- *
+ *	
  *	NiShader
  *		NiD3DShaderInterface
  *			NiD3DShader
@@ -424,11 +424,11 @@
  *					GeometryDecalShader
  *					SpeedTreeFrondShader
  *					DistantLODShader
- *
+ *	
  *	NiD3DShaderConstantMap
  *		NiD3DSCM_Vertex
  *		NiD3DSCM_Pixel
- *
+ *	
  ****/
 
 class NiAVObject;
@@ -521,7 +521,7 @@ public:
 
 	void SetName(const char* newName);
 
-#if OBLIVION && OBLIVION_VERSION <= OBLIVION_VERSION_1_1
+#if OBLIVION_VERSION <= OBLIVION_VERSION_1_1
 
 	// this padding is probably in NiObjectNET but might actually be in NiAVObject
 	// it went away in runtime 1.2 (and probably in cs 1.2 as well)
@@ -536,7 +536,6 @@ public:
 
 #endif
 };
-STATIC_ASSERT(sizeof(NiObjectNET) == 0x18);
 
 // 030
 class NiTexture : public NiObjectNET
@@ -917,6 +916,17 @@ public:
 	TESAnimGroup		* animGroup;	//068
 };
 
+
+
+
+
+
+
+
+
+
+
+
 class NiNode;
 
 // 02C+
@@ -933,7 +943,7 @@ public:
 		kAnimGroup_Idle 		=	0,
 		kAnimGroup_DynamicIdle,
 		kAnimGroup_SpecialIdle,
-		kAnimGroup_Forward,
+		kAnimGroup_Forward,	
 		kAnimGroup_Backward,
 		kAnimGroup_Left,
 		kAnimGroup_Right,
@@ -952,7 +962,7 @@ public:
 		kAnimGroup_AttackBow,
 		kAnimGroup_AttackLeft,
 		kAnimGroup_AttackRight,
-		kAnimGroup_AttackPower,
+		kAnimGroup_AttackPower, 
 		kAnimGroup_AttackForwardPower,
 		kAnimGroup_AttackBackPower,
 		kAnimGroup_AttackLeftPower,
@@ -1113,6 +1123,8 @@ public:
 	UInt8			pad05[3];		// 05
 	NiCulledGeoList	* m_culledGeo;	// 08
 };
+
+
 
 /**** BSTempEffects ****/
 

@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <string>
 #include "Script.h"
-#include "Hooks_Gameplay.h"
 
+/*******************************
+*	Callbacks
+*******************************/
 void SaveModList(OBSESerializationInterface* obse)
 {
 	DataHandler* dhand = *g_dataHandler;
@@ -81,100 +83,15 @@ UInt8 ResolveModIndexForPreload(UInt8 modIndexIn)
 	return (modIndexIn < s_numPreloadMods) ? s_preloadModRefIDs[modIndexIn] : 0xFF;
 }
 
-// values of obse global data which can be persisted in the co-savefc0d5400  
-enum {
-	kOBSEGlobal_MovementSpeedModifier,
-	kOBSEGlobal_SpellEffectivenessModifier,
-	// anything else?
-
-	kOBSEGlobal_MAX
-};
-
-// when the game is saved, save any persistent global data
-void SaveGlobals (OBSESerializationInterface* obse)
-{
-	UInt8 globId;
-	obse->OpenRecord('GLOB', 0);
-	double mvmtSpeedMod = GetPersistentPlayerMovementSpeedModifier ();
-	if (0.0 != mvmtSpeedMod)
-	{
-		globId = kOBSEGlobal_MovementSpeedModifier;
-		obse->WriteRecordData (&globId, sizeof (globId));
-		obse->WriteRecordData (&mvmtSpeedMod, sizeof(mvmtSpeedMod));
-	}
-
-	double effMod = GetPersistentPlayerSpellEffectivenessModifier ();
-	if (0.0 != effMod)
-	{
-		globId = kOBSEGlobal_SpellEffectivenessModifier;
-		obse->WriteRecordData (&globId, sizeof (globId));
-		obse->WriteRecordData (&effMod, sizeof (effMod));
-	}
-}
-
-// after a game is loaded, read and apply any persistent global data
-void ReadGlobals (OBSESerializationInterface* obse, UInt32 dataLen)
-{
-	_MESSAGE ("Reading globals\n");
-	while (dataLen > 0) {
-		UInt8 globId;
-		obse->ReadRecordData (&globId, sizeof (globId));
-		dataLen -= sizeof (globId);
-
-		switch (globId) {
-			case kOBSEGlobal_MovementSpeedModifier:
-				{
-					double mod;
-					obse->ReadRecordData (&mod, sizeof (mod));
-					dataLen -= sizeof (mod);
-					ModPlayerMovementSpeed (mod, true);
-				}
-				break;
-			case kOBSEGlobal_SpellEffectivenessModifier:
-				{
-					double mod;
-					obse->ReadRecordData (&mod, sizeof (mod));
-					dataLen -= sizeof (mod);
-					ModPlayerSpellEffectiveness (mod, true);
-				}
-				break;
-			default:
-				_MESSAGE ("ReadGlobals >> Unexpected global ID %d\n", globId);
-				break;
-		}
-	}
-}
-
-// before a game is loaded, reset any persistent global data
-void ResetGlobals ()
-{
-	double mod = GetPersistentPlayerMovementSpeedModifier ();
-	if (0.0 != mod)
-	{
-		// only apply if non-zero, to avoid needlessly enabling the hook
-		ModPlayerMovementSpeed (-1.0 * mod, true);
-	}
-
-	mod = GetPersistentPlayerSpellEffectivenessModifier ();
-	if (0.0 != mod)
-		ModPlayerSpellEffectiveness (-1.0 * mod, true);
-}
-
-/*******************************
-*	Callbacks
-*******************************/
 void Core_SaveCallback(void * reserved)
 {
 	SaveModList(&g_OBSESerializationInterface);
 	g_StringMap.Save(&g_OBSESerializationInterface);
 	g_ArrayMap.Save(&g_OBSESerializationInterface);
-	SaveGlobals (&g_OBSESerializationInterface);
 }
 
 void Core_LoadCallback(void * reserved)
 {
-	ResetGlobals ();
-
 	OBSESerializationInterface* intfc = &g_OBSESerializationInterface;
 	UInt32 type, version, length;
 
@@ -190,9 +107,6 @@ void Core_LoadCallback(void * reserved)
 		case 'ARVE':
 		case 'MODS':	
 			break;		// processed during preload
-		case 'GLOB':
-			ReadGlobals (intfc, length);
-			break;
 		default:
 			_MESSAGE("Unhandled chunk type in LoadCallback: %d", type);
 			continue;
@@ -202,7 +116,6 @@ void Core_LoadCallback(void * reserved)
 
 void Core_NewGameCallback(void * reserved)
 {
-	ResetGlobals ();
 	g_ArrayMap.Clean();
 	g_StringMap.Clean();
 

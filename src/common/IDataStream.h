@@ -61,6 +61,9 @@ class IDataStream
 		SInt64			streamLength;
 		SInt64			streamOffset;
 		bool			swapBytes;
+
+	public:
+		DEF_EXCEPTION(EOFException);
 };
 
 /**

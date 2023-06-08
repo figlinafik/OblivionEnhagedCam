@@ -1,10 +1,10 @@
 #pragma once
 
 /*
-	Expressions are evaluated according to a set of rules stored in lookup tables. Each type of operand can
+	Expressions are evaluated according to a set of rules stored in lookup tables. Each type of operand can 
 	be resolved to zero or more	"lower" types as defined by ConversionRule. Operators use OperationRules based
-	on the types of each operand to	determine the result type. Types can be ambiguous at compile-time (array
-	elements, command results) but always resolve to a concrete type at run-time. Rules are applied in the order
+	on the types of each operand to	determine the result type. Types can be ambiguous at compile-time (array 
+	elements, command results) but always resolve to a concrete type at run-time. Rules are applied in the order 
 	they are defined until the first one matching the operands is encountered. At run-time this means the routines
 	which perform the operations can know that the operands are of the expected type.
 */
@@ -18,6 +18,11 @@ struct FunctionContext;
 class FunctionCaller;
 
 #include "ScriptTokens.h"
+#include <stack>
+
+#if OBLIVION
+#include <cstdarg>
+#endif
 
 extern ErrOutput g_ErrOut;
 
@@ -167,7 +172,7 @@ class ExpressionParser
 		kError_CantFindVariable,		// string:varName
 		kError_ExpectedStringVariable,
 		kError_UnscriptedObject,		// string:objName
-		kError_TooManyArgs,
+		kError_TooManyArgs,	
 		kError_RefRequired,				// string:commandName
 		kError_MissingParam,			// string:paramName, int:paramIndex
 		kError_UserFuncMissingArgList,	// string:userFunctionName
@@ -176,8 +181,8 @@ class ExpressionParser
 		kError_UserFunctionVarsMustPrecedeDefinition,
 		kError_UserFunctionParamsUndefined,
 		kError_ExpectedStringLiteral,
-		kWarning_UnquotedString,		// string:unquotedString
 
+		kWarning_UnquotedString,		// string:unquotedString
 		kWarning_FunctionPointer,
 
 		kError_Max
@@ -226,6 +231,4 @@ bool PrecompileScript(ScriptBuffer* buf);
 bool Cmd_Expression_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer* lineBuf, ScriptBuffer* scriptBuf);
 
 extern Operator s_operators[];
-
-#define INI_SECTION_COMPILER		"Compiler"
 

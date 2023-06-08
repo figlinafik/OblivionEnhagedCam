@@ -3,6 +3,7 @@
 #include "GameBSExtraData.h"
 #include "GameForms.h"
 
+
 // ### incomplete
 
 #include "Utilities.h"
@@ -140,7 +141,7 @@ public:
 		ListNode	* next;
 
 		Character* Info() const { return character; }
-		ListNode* Next() const { return next; }
+        ListNode* Next() const { return next; }
 	};
 
 	ListNode	* followers;
@@ -303,7 +304,7 @@ public:
 	{
 		TESObjectREFR*	linkedDoor;
 		float			x; //x, y, z, zRot refer to teleport marker's position and rotation
-		float			y;
+		float			y; 
 		float			z;
 		float			xRot;		// angles in radians. x generally 0
 		float			yRot;		// y generally -0.0, no reason to modify
@@ -407,17 +408,12 @@ public:
 
 	enum
 	{
-		kMusicType_Default = 0,
 		kMusicType_Public = 1,
-		kMusicType_Dungeon = 2,
-
-		kMusicType_MAX
+		kMusicType_Dungeon = 2
 	};
 
 	UInt8 musicType;
 	UInt8 pad[3];
-
-	static ExtraCellMusicType* Create(UInt32 _musicType);
 };
 
 class ExtraCrimeGold : public BSExtraData
@@ -452,7 +448,7 @@ public:
 		Entry			* next;
 
 		TESObjectREFR* Info() const { return child; }
-		Entry* Next() const { return next; }
+        Entry* Next() const { return next; }
 	};
 
 	Entry childList;
@@ -542,14 +538,6 @@ public:
 	ExtraAction();
 	~ExtraAction();
 
-	enum
-	{
-		kFlag_NormalActivation			= 1 << 0,		// if not set, TESObjectREFR::Activate will execute the attached script
-		kFlag_RunOnActivateBlock		= 1 << 1,		// checked by the OnActivate block's handler
-		kFlag_Unk03						= 1 << 2,
-		kFlag_Unk04						= 1 << 3,
-	};
-
 	TESObjectREFR	* actionRef;
 	UInt8			typeFlags;
 	UInt8			unk11[3];
@@ -561,7 +549,7 @@ public:
 	ExtraEditorID();
 	~ExtraEditorID();
 
-	BSStringT		editorID;
+	String		editorID;
 };
 
 class ExtraDetachTime : public BSExtraData
@@ -607,8 +595,9 @@ public:
 	UInt32			unk20;		// initialized to childCell->unk08
 	TESChildCell*	unk24;		// copy of childCell
 	UInt32			unk28;		// copy of unk20
-	UInt32			unk2C;		// copy of unk24
+	UInt32			unk2C;		// copy of unk24 
 };
+
 
 class ExtraEditorCommonDialogData : public BSExtraData	// editor only. added to the window's extraList (which is its userdata)
 {

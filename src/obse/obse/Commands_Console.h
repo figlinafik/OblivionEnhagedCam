@@ -14,7 +14,5 @@ extern CommandInfo kCommandInfo_DBG_echo;
 
 extern CommandInfo kCommandInfo_PrintD;
 
-extern CommandInfo kCommandInfo_ToggleDebugText2;
-
 bool RunScriptLine(const char * buf);
 bool RunScriptLineOnREFR(const char * buf, TESObjectREFR* callingObj, bool bSuppressOutput = false);

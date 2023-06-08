@@ -51,11 +51,9 @@ extern CommandInfo kCommandInfo_SetOLMPGrids;
 extern CommandInfo kCommandInfo_OLMPOR;
 extern CommandInfo kCommandInfo_GetGridsToLoad;
 
+extern CommandInfo kCommandInfo_QuestExists;
 extern CommandInfo kCommandInfo_GlobalVariableExists;
 
 extern CommandInfo kCommandInfo_GetCellChanged;
 
 extern CommandInfo kCommandInfo_ResolveModIndex;
-
-extern CommandInfo kCommandInfo_SetModAlias;
-extern CommandInfo kCommandInfo_GetModAlias;

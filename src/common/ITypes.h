@@ -1,7 +1,5 @@
 #pragma once
 
-#include "common/IErrors.h"
-
 #pragma warning(disable: 4221)
 #include <cmath>
 
@@ -51,18 +49,22 @@ inline UInt64 Swap64(UInt64 in)
 	return temp;
 }
 
-inline void SwapFloat(float * in)
+inline float SwapFloat(float in)
 {
-	UInt32	* temp = (UInt32 *)in;
+	UInt32	* temp = (UInt32 *)(&in);
 
 	*temp = Swap32(*temp);
+
+	return in;
 }
 
-inline void SwapDouble(double * in)
+inline float SwapDouble(double in)
 {
-	UInt64	* temp = (UInt64 *)in;
+	UInt64	* temp = (UInt64 *)(&in);
 
 	*temp = Swap64(*temp);
+
+	return in;
 }
 
 inline bool IsBigEndian(void)
@@ -126,7 +128,7 @@ template <typename T>
 class Bitfield
 {
 	public:
-				Bitfield()					{ }
+				Bitfield()					{ field = 0; }
 				~Bitfield()					{ }
 		
 		void	Clear(void)					{ field = 0; }						//!< Clears all bits
@@ -137,8 +139,6 @@ class Bitfield
 		void	UnSet(UInt32 data)			{ Clear(data); }					//!< Clears individual bits
 		void	Mask(UInt32 data)			{ field &= data; }					//!< Masks individual bits
 		void	Toggle(UInt32 data)			{ field ^= data; }					//!< Toggles individual bits
-		void	Write(UInt32 data, bool state)
-											{ if(state) Set(data); else Clear(data); }
 		
 		T		Get(void) const				{ return field; }					//!< Gets all bits
 		T		Get(UInt32 data) const		{ return field & data; }			//!< Gets individual bits
@@ -157,10 +157,6 @@ class Bitfield
 typedef Bitfield <UInt8>	Bitfield8;		//!< An 8-bit bitfield
 typedef Bitfield <UInt16>	Bitfield16;		//!< A 16-bit bitfield
 typedef Bitfield <UInt32>	Bitfield32;		//!< A 32-bit bitfield
-
-STATIC_ASSERT(sizeof(Bitfield8) == 1);
-STATIC_ASSERT(sizeof(Bitfield16) == 2);
-STATIC_ASSERT(sizeof(Bitfield32) == 4);
 
 /**
  *	A bitstring
@@ -246,7 +242,7 @@ class Vector2
 
 		void	Scale(float scale)					{ x *= scale; y *= scale; }
 
-		void	SwapBytes(void)	{ SwapFloat(&x); SwapFloat(&y); }
+		void	SwapBytes(void)	{ x = SwapFloat(x); y = SwapFloat(y); }
 
 		Vector2 &	operator+=(const Vector2 & rhs)	{ x += rhs.x; y += rhs.y; return *this; }
 		Vector2 &	operator-=(const Vector2 & rhs)	{ x -= rhs.x; y -= rhs.y; return *this; }
@@ -306,7 +302,7 @@ public:
 
 	void	Scale(float scale)	{ x *= scale; y *= scale; z *= scale; }
 
-	void	SwapBytes(void)	{ SwapFloat(&x); SwapFloat(&y); SwapFloat(&z); }
+	void	SwapBytes(void)	{ x = SwapFloat(x); y = SwapFloat(y); z = SwapFloat(z); }
 
 	Vector3 &	operator+=(const Vector3 & rhs)	{ x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
 	Vector3 &	operator-=(const Vector3 & rhs)	{ x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }

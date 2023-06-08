@@ -10,6 +10,7 @@
 #include "GameAPI.h"
 #include "GameForms.h"
 #include "GameProcess.h"
+#include <set>
 #include "ArrayVar.h"
 
 static bool Cmd_IsMajor_Execute(COMMAND_ARGS)
@@ -28,7 +29,7 @@ static bool Cmd_IsMajor_Execute(COMMAND_ARGS)
 		if (!npc || !npc->npcClass) return true;
 		theClass = npc->npcClass;
 	}
-
+	
 	if (theClass->IsMajorSkill(skill)) {
 		*result = 1;
 	}
@@ -75,7 +76,7 @@ static bool Cmd_GetClass_Execute(COMMAND_ARGS)
 		npc = OBLIVION_CAST(thisObj->baseForm, TESForm, TESNPC);
 
 	if (!npc || !npc->npcClass) return true;
-
+	
 	*refResult = npc->npcClass->refID;
 	if (IsConsoleMode())
 		Console_Print("GetClass >> %s (%08X)", GetFullName(npc->npcClass), *refResult);
@@ -86,6 +87,7 @@ static bool Cmd_GetClass_Execute(COMMAND_ARGS)
 static bool Cmd_GetClassAttribute_Execute(COMMAND_ARGS)
 {
 	*result = 0;
+
 
 	UInt32 which = 0;
 	TESClass* theClass = NULL;
@@ -247,6 +249,7 @@ static bool Cmd_GetClassSpecialization_Execute(COMMAND_ARGS)
 {
 	*result = 0;
 
+
 	TESClass* theClass = NULL;
 
 	ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &theClass);
@@ -354,6 +357,7 @@ static ParamInfo kParams_IsMajorC[2] =
 	{	"skill", kParamType_Integer, 0 },
 	{	"class", kParamType_Class, 1 },
 };
+
 
 CommandInfo kCommandInfo_IsClassSkill =
 {
@@ -537,20 +541,6 @@ CommandInfo kCommandInfo_SetClassSkills2 =
 };
 
 DEFINE_COMMAND(GetSkillSpecialization, returns the skills specialization, 0, 1, kParams_OneActorValue);
-CommandInfo kCommandInfo_GetSkillSpecializationC =
-{
-	"GetSkillSpecializationC",
-	"",
-	0,
-	"returns the skills specialization",
-	0,
-	1,
-	kParams_OneInt,
-	HANDLER(Cmd_GetSkillSpecialization_Execute),
-	Cmd_Default_Parse,
-	NULL,
-	0
-};
 
 static ParamInfo kParams_SetSkillSpecialization[2] =
 {
@@ -558,24 +548,4 @@ static ParamInfo kParams_SetSkillSpecialization[2] =
 	{ "specialization",	kParamType_Integer,		0	},
 };
 
-static ParamInfo kParams_SetSkillSpecializationC[2] =
-{
-	{ "skill",			kParamType_Integer,		0	},
-	{ "specialization",	kParamType_Integer,		0	},
-};
-
 DEFINE_COMMAND(SetSkillSpecialization, sets the skills specialization, 0, 2, kParams_SetSkillSpecialization);
-CommandInfo kCommandInfo_SetSkillSpecializationC =
-{
-	"SetSkillSpecializationC",
-	"",
-	0,
-	"sets the skills specialization",
-	0,
-	2,
-	kParams_SetSkillSpecializationC,
-	HANDLER(Cmd_SetSkillSpecialization_Execute),
-	Cmd_Default_Parse,
-	NULL,
-	0
-};

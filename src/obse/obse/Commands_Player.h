@@ -19,6 +19,7 @@ extern CommandInfo kCommandInfo_GetPlayerSkillAdvancesC;
 extern CommandInfo kCommandInfo_SetPlayerSkillAdvances;
 extern CommandInfo kCommandInfo_SetPlayerSkillAdvancesC;
 
+
 extern CommandInfo kCommandInfo_SetPCAMurderer;
 
 extern CommandInfo kCommandInfo_GetPlayersLastRiddenHorse;
@@ -44,6 +45,7 @@ extern CommandInfo kCommandInfo_SetPCTrainingSessionsUsed;
 
 extern CommandInfo kCommandInfo_GetCurrentRegion;
 
+
 extern CommandInfo kCommandInfo_ModPCMovementSpeed;
 extern CommandInfo kCommandInfo_GetPCMovementSpeedModifier;
 
@@ -57,15 +59,23 @@ extern CommandInfo kCommandInfo_SetPlayerBirthSign;
 
 extern CommandInfo kCommandInfo_SetPlayerSkeletonPath;
 
+extern CommandInfo kCommandInfo_GetActiveQuest;
+extern CommandInfo kCommandInfo_SetActiveQuest;
+
+extern CommandInfo kCommandInfo_GetCurrentQuests;
+extern CommandInfo kCommandInfo_GetCompletedQuests;
+
 extern CommandInfo kCommandInfo_GetPCAttributeBonusC;
 extern CommandInfo kCommandInfo_SetPCAttributeBonusC;
+
+extern CommandInfo kCommandInfo_IsQuestCompleted;
+extern CommandInfo kCommandInfo_UncompleteQuest;
+
+extern CommandInfo kCommandInfo_ClearActiveQuest;
 
 extern CommandInfo kCommandInfo_GetTransactionInfo;
 
 extern CommandInfo kCommandInfo_GetRequiredSkillExp;
-extern CommandInfo kCommandInfo_GetRequiredSkillExpC;
 
 extern CommandInfo kCommandInfo_SetPlayersLastRiddenHorse;
 extern CommandInfo kCommandInfo_ClearPlayersLastRiddenHorse;
-
-extern CommandInfo kCommandInfo_SetFlyCameraSpeedMult;

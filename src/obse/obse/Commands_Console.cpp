@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "Commands_Console.h"
 #include "ParamInfos.h"
 #include "Script.h"
@@ -89,16 +91,12 @@ bool RunScriptLine(const char* buf)
 	Script	* tempScriptObj = (Script *)scriptObjBuf;
 
 	void	* scriptState = GetGlobalScriptStateObj();
-	bool bResult = false;
 
-	if (scriptState && *((void**)scriptState))		// ### need to add a guard as the state object can be NULL sometimes (no idea why)
-	{
-		tempScriptObj->Constructor();
-		tempScriptObj->MarkAsTemporary();
-		tempScriptObj->SetText(buf);
-		bResult = tempScriptObj->CompileAndRun(*((void**)scriptState), 1, NULL);
-		tempScriptObj->StaticDestructor();
-	}
+	tempScriptObj->Constructor();
+	tempScriptObj->MarkAsTemporary();
+	tempScriptObj->SetText(buf);
+	bool bResult = tempScriptObj->CompileAndRun(*((void**)scriptState), 1, NULL);
+	tempScriptObj->StaticDestructor();
 
 	return bResult;
 }
@@ -112,16 +110,12 @@ bool RunScriptLineOnREFR(const char * buf, TESObjectREFR* callingObj, bool bSupp
 	Script	* tempScriptObj = (Script *)scriptObjBuf;
 
 	void	* scriptState = GetGlobalScriptStateObj();
-	bool bResult = false;
 
-	if (scriptState && *((void**)scriptState))
-	{
-		tempScriptObj->Constructor();
-		tempScriptObj->MarkAsTemporary();
-		tempScriptObj->SetText(buf);
-		bResult = tempScriptObj->CompileAndRun(*((void**)scriptState), 1, callingObj);
-		tempScriptObj->StaticDestructor();
-	}
+	tempScriptObj->Constructor();
+	tempScriptObj->MarkAsTemporary();
+	tempScriptObj->SetText(buf);
+	bool bResult = tempScriptObj->CompileAndRun(*((void**)scriptState), 1, callingObj);
+	tempScriptObj->StaticDestructor();
 
 	ToggleConsoleOutput(true);
 	return bResult;
@@ -214,7 +208,7 @@ static bool Cmd_SetDebugMode_Execute(COMMAND_ARGS)
 	if (modIndex > 0 && modIndex < 0xFF)
 	{
 		UInt8 modBit = modIndex % 32;			//which bit to toggle
-		//modIndex /= 32;
+		//modIndex /= 32;							
 		UInt8 bucket = modIndex / 32;			//index into bitfield array
 		if (bEnableDebug)
 			ModDebugStates[bucket].Set(1 << modBit);
@@ -223,7 +217,7 @@ static bool Cmd_SetDebugMode_Execute(COMMAND_ARGS)
 
 		if (IsConsoleMode())
 			Console_Print("Debug statements toggled %s for mod %02X", (bEnableDebug ? "on" : "off"), modIndex);
-	}
+	}						
 
 	return true;
 }
@@ -285,12 +279,6 @@ bool Cmd_DBG_echo_Execute(COMMAND_ARGS)
 		_MESSAGE(buffer);
 	}
 
-	return true;
-}
-
-static bool Cmd_ToggleDebugText2_Execute(COMMAND_ARGS)
-{
-	InterfaceManager::ToggleDebugText();
 	return true;
 }
 
@@ -434,6 +422,7 @@ static ParamInfo kParams_OneOBSEString[] =
 	{	"string",	kOBSEParamType_String,	0	},
 };
 
+
 CommandInfo kCommandInfo_PrintD =
 {
 	"PrintD",
@@ -448,5 +437,3 @@ CommandInfo kCommandInfo_PrintD =
 	NULL,
 	0
 };
-
-DEFINE_CMD_ALT(ToggleDebugText2, TDT2, toggles debug text off without leaving the text frozen on the screen if called during gamemode, 0, NULL);

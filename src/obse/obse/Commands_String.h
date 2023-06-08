@@ -63,6 +63,3 @@ extern CommandInfo kCommandInfo_GetTexturePath;
 extern CommandInfo kCommandInfo_SetTexturePath;
 
 extern CommandInfo kCommandInfo_GetRawFormIDString;
-
-extern CommandInfo kCommandInfo_sv_ToUpper;
-extern CommandInfo kCommandInfo_sv_ToLower;

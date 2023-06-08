@@ -31,11 +31,11 @@ public:
 };
 
 // 8
-class BSStringT
+class String
 {
 public:
-	BSStringT();
-	~BSStringT();
+	String();
+	~String();
 
 	char	* m_data;
 	UInt16	m_dataLen;
@@ -45,7 +45,7 @@ public:
 	bool	Includes(const char* toFind) const;
 	bool	Replace(const char* toReplace, const char* replaceWith); // replaces instance of toReplace with replaceWith
 	bool	Append(const char* toAppend);
-	double	Compare(const BSStringT& compareTo, bool caseSensitive = false);
+	double	Compare(const String& compareTo, bool caseSensitive = false);
 };
 
 extern NiTPointerList <TESForm>	* g_quickKeyList;	//array of 8 NiTPointerLists of size 0-1 with pointers to hotkeyed items/spells
@@ -67,9 +67,9 @@ public:
 	virtual void Unk_09(UInt32 arg0, UInt32 arg1) = 0;
 	virtual void Unk_0A(UInt32 arg0, UInt32 arg1, UInt32 arg2, UInt32 arg3) = 0;
 	virtual void Unk_0B(UInt32 arg0, UInt32 arg1, UInt32 arg2, UInt32 arg3) = 0;
-	virtual void IncrementUnk0CCount(void) = 0;
-	virtual void DecrementUnk0CCount(void) = 0;
-	virtual UInt32 GetUnk0CCount(void) = 0;
+	virtual void IncrementUnk0CCount(void) = 0;	
+	virtual void DecrementUnk0CCount(void) = 0;		
+	virtual UInt32 GetUnk0CCount(void) = 0;	
 
 	void	* unk04;				// 004
 	UInt32	numBuckets;				// 008
@@ -92,7 +92,7 @@ public:
 	};
 
 	// void** vtbl
-	Node	* head;						// 004
+	Node	* head;						// 004 
 	Node	* tail;						// 008
 	UInt32	unk0C;						// 00C -init to c'tr arg1
 	void	* unk10;					// 010 -dynamic alloc
@@ -100,10 +100,11 @@ public:
 	UInt32	unk18;						// 0x18 -init to 0
 };
 
+
 enum {
 	eListCount = -3,
 	eListEnd = -2,
-	eListInvalid = -1,
+	eListInvalid = -1,		
 };
 
 template <class Item, bool _bHeadIsPtr>
@@ -113,6 +114,7 @@ class tListBase
 
 public:
 	struct _Node {
+		
 		tItem*	item;
 		_Node*	next;
 
@@ -187,12 +189,14 @@ private:
 		return numFreed;
 	}
 
+
 	struct NodePos {
 		NodePos(): node(NULL), index(eListInvalid) {}
 
 		_Node*	node;
 		SInt32	index;
 	};
+
 
 	NodePos GetNthNode(SInt32 index) const {
 		NodePos pos;
@@ -232,8 +236,9 @@ public:
 		}
 		Item* Get() { return (m_cur) ? m_cur->Item() : NULL; }
 	};
-
+	
 	const Iterator Begin() const { return Iterator(Head()); }
+
 
 	UInt32 Count() const {
 		NodePos pos = GetNthNode(eListCount);
@@ -280,11 +285,7 @@ public:
 		const _Node* pCur = (prev) ? prev->next : Head();
 		bool bContinue = true;
 		while (pCur && bContinue) {
-			if (pCur->Item() == NULL)
-				bContinue = true;
-			else
-				bContinue = op.Accept(pCur->Item());
-
+			bContinue = op.Accept(pCur->Item());
 			if (bContinue) {
 				pCur = pCur->next;
 			}
@@ -294,7 +295,7 @@ public:
 	template <class Op>
 	Item* Find(Op& op) const
 	{
-		const _Node* pCur = Head();
+		const _Node* pCur = Head(); 
 
 		bool bFound = false;
 		while (pCur && !bFound)
@@ -316,7 +317,7 @@ public:
 	{
 		Iterator curIt = (prev.End()) ? Begin() : ++prev;
 		bool bFound = false;
-
+		
 		while(!curIt.End() && !bFound) {
 			const tItem * pCur = *curIt;
 			if (pCur) {
@@ -324,7 +325,7 @@ public:
 			}
 			if (!bFound) {
 				++curIt;
-			}
+			}	
 		}
 		return curIt;
 	}
@@ -360,7 +361,7 @@ public:
 		FreeNodes(const_cast<_Node*>(Head()), AcceptAll());
 	}
 
-	Item* RemoveNth(SInt32 n)
+	Item* RemoveNth(SInt32 n) 
 	{
 		Item* pRemoved = NULL;
 		if (n == 0) {
@@ -374,7 +375,7 @@ public:
 		return pRemoved;
 	};
 
-	Item* ReplaceNth(SInt32 n, tItem* item)
+	Item* ReplaceNth(SInt32 n, tItem* item) 
 	{
 		Item* pReplaced = NULL;
 		NodePos nodePos = GetNthNode(n);

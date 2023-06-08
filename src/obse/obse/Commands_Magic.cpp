@@ -64,22 +64,22 @@ static bool GetEffectItemValue(EffectItem* effect, UInt32 valueType, double* res
 				*result = (SInt32)(effect->effectCode);
 				break;
 			}
-		case kMagic_EffectMagnitude:
+		case kMagic_EffectMagnitude:	
 			{
 				*result = effect->magnitude;
 				break;
 			}
-		case kMagic_EffectArea:
+		case kMagic_EffectArea:			
 			{
 				*result = effect->area;
 				break;
 			}
-		case kMagic_EffectDuration:
+		case kMagic_EffectDuration:		
 			{
 				*result = effect->duration;
 				break;
 			}
-		case kMagic_EffectRange:
+		case kMagic_EffectRange:		
 			{
 				*result = effect->range;
 				break;
@@ -201,12 +201,13 @@ static bool GetNthEffectItemValue(EffectItemList::Entry* entry, UInt32 valueType
 	if (!entry || !result) return true;
 	EffectItemVisitor visitor(entry);
 	EffectItem* pEffectItem = visitor.GetNthInfo(whichEffect);
-	return GetEffectItemValue(pEffectItem, valueType, result);
+	return GetEffectItemValue(pEffectItem, valueType, result);		
 }
 
 static bool GetMagicItemValue(MagicItem* magicItem, UInt32 valueType, UInt32 whichEffect, double* result)
 {
 	if (!magicItem) return true;
+
 
 	switch(valueType) {
 		case kMagic_ItemType:
@@ -260,7 +261,7 @@ static bool GetMagicItemValue(MagicItem* magicItem, UInt32 valueType, UInt32 whi
 				default:
 					break;
 			}
-
+			
 			break;
 		}
 
@@ -270,7 +271,7 @@ static bool GetMagicItemValue(MagicItem* magicItem, UInt32 valueType, UInt32 whi
 		case kMagic_EffectDuration:
 		case kMagic_EffectRange:
 		{
-			return GetNthEffectItemValue(&magicItem->list.effectList, valueType, whichEffect, result);
+			return GetNthEffectItemValue(&magicItem->list.effectList, valueType, whichEffect, result);	
 		}
 
 		case kMagic_SpellType:
@@ -296,9 +297,11 @@ static bool GetMagicItemValue(MagicItem* magicItem, UInt32 valueType, UInt32 whi
 			}
 			break;
 		}
-	}
+
+	}		
 	return true;
 }
+
 
 static bool Cmd_GetMagicItemValue_Execute(COMMAND_ARGS)
 {
@@ -357,6 +360,9 @@ public:
 	UInt32 Found() { return m_count; }
 };
 
+
+
+
 static bool MagicItemHasEffectCode(EffectItemList::Entry* entry, EffectCodeFinder& finder, bool bReturnCount, double* result)
 {
 	if (!entry || ! result) return true;
@@ -371,6 +377,7 @@ static bool MagicItemHasEffectCode(EffectItemList::Entry* entry, EffectCodeFinde
 	}
 	return true;
 }
+
 
 const bool bReturnCountT = true;
 const bool bReturnCountF = false;
@@ -408,6 +415,7 @@ static bool Cmd_MagicItemHasEffectCount_Execute(COMMAND_ARGS)
 	return MagicItemHasEffect_Execute(PASS_COMMAND_ARGS, bReturnCountT, bUsingCodeF);
 }
 
+
 static bool Cmd_MagicItemHasEffectCode_Execute(COMMAND_ARGS)
 {
 	return MagicItemHasEffect_Execute(PASS_COMMAND_ARGS, bReturnCountF, bUsingCodeT);
@@ -435,7 +443,7 @@ static bool Cmd_MagicItemHasEffectItemScript_Execute(COMMAND_ARGS)
 	TESForm* form = NULL;
 	bool bArgsExtracted = ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &scriptItemVar, &form);
 	if (!bArgsExtracted || !scriptItemVar || !form) return true;
-
+	
 	EffectItemList* list = GetEffectList(form);
 	if (!list) return true;
 
@@ -446,6 +454,7 @@ static bool Cmd_MagicItemHasEffectItemScript_Execute(COMMAND_ARGS)
 	}
 	return true;
 }
+
 
 static bool GetNthEffectItemValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 {
@@ -465,7 +474,7 @@ static bool GetSpellItemValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 	*result = 0;
 	SpellItem* spell = NULL;
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &spell)) return true;
-
+	
 	if (spell) {
 		return GetSpellItemValue(spell, whichValue, result, (thisObj) ? thisObj : NULL);
 	}
@@ -477,13 +486,14 @@ static bool GetEnchantmentItemValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 	*result = 0;
 	MagicItem* magicItem = NULL;
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &magicItem)) return true;
-
+	
 	EnchantmentItem* enchantmentItem = (EnchantmentItem*)Oblivion_DynamicCast(magicItem, 0, RTTI_MagicItem, RTTI_EnchantmentItem, 0);
 	if (enchantmentItem) {
 		return GetEnchantmentItemValue(enchantmentItem, whichValue, result);
 	}
 	return true;
 }
+
 
 static bool Cmd_GetMagicItemType_Execute(COMMAND_ARGS)
 {
@@ -580,9 +590,10 @@ const bool bForModF = false;
 class ChangeMagicValue
 {
 public:
-	ChangeMagicValue(UInt32 whichValue, bool bForMod, Script* scriptObj)
+	ChangeMagicValue(UInt32 whichValue, bool bForMod, Script* scriptObj) 
 		: m_form(NULL), m_whichValue(whichValue), m_floatVal(0), m_integerVal(0), m_bForMod(bForMod), m_script(scriptObj) {}
 	~ChangeMagicValue() {}
+
 
 	UInt32 WhichValue() const { return m_whichValue; }
 	float FloatVal() const { return m_floatVal; }
@@ -606,25 +617,26 @@ private:
 	Script* m_script;
 };
 
+
 static bool ChangeEffectItemValue(EffectItem* effect, ChangeMagicValue& cmv, double* result)
 {
 	if (!effect || !result) return true;
 	switch(cmv.WhichValue()) {
 		case kMagic_EffectMagnitude:
 			{
-				cmv.ForMod() ? effect->ModMagnitude(cmv.FloatVal()) :
+				cmv.ForMod() ? effect->ModMagnitude(cmv.FloatVal()) : 
 					effect->SetMagnitude(cmv.IntegerVal());
 				break;
 			}
-		case kMagic_EffectArea:
+		case kMagic_EffectArea:			
 			{
-				cmv.ForMod() ? effect->ModArea(cmv.FloatVal()) :
+				cmv.ForMod() ? effect->ModArea(cmv.FloatVal()) : 
 					effect->SetArea(cmv.IntegerVal());
 				break;
 			}
-		case kMagic_EffectDuration:
+		case kMagic_EffectDuration:		
 			{
-				cmv.ForMod() ? effect->ModDuration(cmv.FloatVal()) :
+				cmv.ForMod() ? effect->ModDuration(cmv.FloatVal()) : 
 					effect->SetDuration(cmv.IntegerVal());
 				break;
 			}
@@ -665,7 +677,7 @@ static bool ChangeEffectItemValue(EffectItem* effect, ChangeMagicValue& cmv, dou
 		case kMagic_EffectScriptName:
 			{
 				if (effect->IsScriptedEffect() && effect->scriptEffectInfo) {
-					BSStringT& effectName = effect->scriptEffectInfo->effectName;
+					String& effectName = effect->scriptEffectInfo->effectName;
 					if (cmv.ForMod()) {
 						std::string strTextArg(cmv.StringVal());
 						// look and see if the input has the pipe character
@@ -798,6 +810,7 @@ static bool Cmd_ModNthEffectItemScriptName_Execute(COMMAND_ARGS)
 	return ChangeNthEffectItem_Execute(PASS_COMMAND_ARGS, kMagic_EffectScriptName, bForModT);
 }
 
+
 static bool SetNthEffectItemVisualEffect_Execute(COMMAND_ARGS, bool bUseCode)
 {
 	*result = 0;
@@ -874,12 +887,14 @@ static bool Cmd_RemoveNthEffectItem_Execute(COMMAND_ARGS)
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form, &whichEffect);
 	if (!form) return NULL;
 
+
 	EffectItemList* list = GetEffectList(form);
 	if (!list) return true;
 	bool bFound = list->RemoveItem(whichEffect);
 
 	return true;
 }
+
 
 //static bool RemoveEffectItems_Execute(COMMAND_ARGS, bool bHostile)
 //{
@@ -961,6 +976,7 @@ static bool ChangeMagicItem(MagicItem* magicItem, ChangeMagicValue& cmv, double*
 	}
 	return true;
 }
+
 
 static bool ChangeSpellItem(SpellItem* spell, ChangeMagicValue& cmv, double* result)
 {
@@ -1130,16 +1146,17 @@ static bool Cmd_ModEnchantmentCost_Execute(COMMAND_ARGS)
 	return ChangeEnchantmentItem_Execute(PASS_COMMAND_ARGS, kMagic_EnchantmentCost, bForModT);
 }
 
+
 static bool Cmd_CopyNthEffectItem_Execute(COMMAND_ARGS)
 {
 	*result = 0;
 	TESForm* from = NULL;
 	TESForm* to = NULL;
 	UInt32 whichEffect = 0;
-
+	
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &from, &to, &whichEffect);
 	if (!from || !to) return true;
-
+	
 	EffectItemList* fromList = GetEffectList(from);
 	EffectItemList* toList = GetEffectList(to);
 	if (!fromList || ! toList) return true;
@@ -1156,14 +1173,14 @@ static bool Cmd_CopyAllEffectItems_Execute(COMMAND_ARGS)
 	TESForm* from = NULL;
 	TESForm* to = NULL;
 	UInt32 whichEffect = 0;
-
+	
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &from, &to, &whichEffect);
 	if (!from || !to) return true;
-
+	
 	EffectItemList* fromList = GetEffectList(from);
 	EffectItemList* toList = GetEffectList(to);
 	if (!fromList || ! toList) return true;
-
+	
 	UInt32 count = fromList->CountItems();
 	for (UInt32 n = 0; n < count; n++) {
 		toList->CopyItemFrom(*fromList, n);
@@ -1177,9 +1194,9 @@ static bool Cmd_RemoveAllEffectItems_Execute(COMMAND_ARGS)
 	*result = 0;
 	TESForm* from = NULL;
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &from);
-	if (!from)
+	if (!from) 
 		return true;
-
+	
 	EffectItemList* spellEffectList = GetEffectList(from);
 	if (spellEffectList) {
 		spellEffectList->RemoveAllItems();
@@ -1212,7 +1229,7 @@ static bool AddEffectItem_Execute(COMMAND_ARGS, bool bUsingCode)
 {
 	*result = -1;
 	EffectSetting* magicEffect = NULL;
-	UInt32 effectCode = 0;
+	UInt32 effectCode = 0;	
 	TESForm* form = NULL;
 	if (bUsingCode) {
 		ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &effectCode, &form);
@@ -1552,11 +1569,13 @@ static bool Cmd_GetNthEffectItem_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
+
 #endif // OBLIVION
 
-static ParamInfo kParams_GetMagicItemValue[3] =
+static ParamInfo kParams_GetMagicItemValue[3] = 
 {
-	{	"value", kParamType_Integer, 0 },
+	{	"value", kParamType_Integer, 0 }, 
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 1 },
 };
@@ -1573,7 +1592,7 @@ CommandInfo kCommandInfo_GetMagicItemValue =
 	0
 };
 
-static ParamInfo kParams_MagicItemHasEffect[3] =
+static ParamInfo kParams_MagicItemHasEffect[3] = 
 {
 	{	"effect code", kParamType_MagicEffect, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -1604,7 +1623,7 @@ CommandInfo kCommandInfo_MagicItemHasEffectCount =
 	0
 };
 
-static ParamInfo kParams_MagicItemHasEffectCode[3] =
+static ParamInfo kParams_MagicItemHasEffectCode[3] = 
 {
 	{	"effect code", kParamType_Integer, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -1635,7 +1654,7 @@ CommandInfo kCommandInfo_MagicItemHasEffectCountCode =
 	0
 };
 
-static ParamInfo kParams_MagicItemHasEffectItemScript[2] =
+static ParamInfo kParams_MagicItemHasEffectItemScript[2] = 
 {
 	{	"script", kParamType_MagicItem, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -1652,6 +1671,7 @@ CommandInfo kCommandInfo_MagicItemHasEffectItemScript =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_GetMagicItemType =
 {
@@ -1683,7 +1703,7 @@ CommandInfo kCommandInfo_GetMagicItemEffectCount =
 	0
 };
 
-static ParamInfo kParams_GetNthEffectItem[2] =
+static ParamInfo kParams_GetNthEffectItem[2] = 
 {
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 1 },
@@ -1899,7 +1919,8 @@ CommandInfo kCommandInfo_GetEnchantmentCost =
 	0
 };
 
-static ParamInfo kParams_AddFullEffectItem[6] =
+
+static ParamInfo kParams_AddFullEffectItem[6] = 
 {
 	{	"effect", kParamType_MagicEffect, 0 },
 	{	"magnitude", kParamType_Integer, 0 },
@@ -1924,7 +1945,7 @@ CommandInfo kCommandInfo_AddFullEffectItem =
 	0
 };
 
-static ParamInfo kParams_AddFullEffectItemC[6] =
+static ParamInfo kParams_AddFullEffectItemC[6] = 
 {
 	{	"effect code", kParamType_Integer, 0 },
 	{	"magnitude", kParamType_Integer, 0 },
@@ -1970,14 +1991,14 @@ CommandInfo kCommandInfo_AddScriptedEffectItem =
 	NULL,
 	0
 };
-static ParamInfo kParams_SetNthEffectItemValue[3] =
+static ParamInfo kParams_SetNthEffectItemValue[3] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 1 },
 };
 
-static ParamInfo kParams_ModNthEffectItemValue[3] =
+static ParamInfo kParams_ModNthEffectItemValue[3] = 
 {
 	{	"value", kParamType_Float, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -2089,14 +2110,14 @@ CommandInfo kCommandInfo_SetNthEffectItemRange =
 	0
 };
 
-static ParamInfo kParams_SetNthEffectActorValue[3] =
+static ParamInfo kParams_SetNthEffectActorValue[3] = 
 {
 	{	"value", kParamType_ActorValue, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 1 },
 };
 
-static ParamInfo kParams_SetNthEffectActorValueC[3] =
+static ParamInfo kParams_SetNthEffectActorValueC[3] = 
 {
 	{	"actor value code", kParamType_Integer, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -2208,12 +2229,13 @@ CommandInfo kCommandInfo_IsNthEffectItemScriptHostile =
 	0
 };
 
-static ParamInfo kParams_SetNthEffectItemScript[3] =
+static ParamInfo kParams_SetNthEffectItemScript[3] = 
 {
 	{	"script", kParamType_MagicItem, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 1 },
 };
+
 
 CommandInfo kCommandInfo_SetNthEffectItemScript =
 {
@@ -2230,7 +2252,7 @@ CommandInfo kCommandInfo_SetNthEffectItemScript =
 	0
 };
 
-static ParamInfo kParams_SetNthEffectItemEffect[3] =
+static ParamInfo kParams_SetNthEffectItemEffect[3] = 
 {
 	{	"effect", kParamType_MagicEffect, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -2297,7 +2319,7 @@ CommandInfo kCommandInfo_SetNthEffectItemScriptHostile =
 	0
 };
 
-static ParamInfo kParams_SetNthEffectItemScriptName[3] =
+static ParamInfo kParams_SetNthEffectItemScriptName[3] = 
 {
 	{	"name", kParamType_String, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -2327,6 +2349,7 @@ CommandInfo kCommandInfo_ModNthEffectItemScriptName =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_RemoveNthEffectItem =
 {
@@ -2358,13 +2381,13 @@ CommandInfo kCommandInfo_RemoveAllEffectItems =
 	0
 };
 
-static ParamInfo kParams_SetSpellItemVal[2] =
+static ParamInfo kParams_SetSpellItemVal[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"spell", kParamType_SpellItem, 0 },
 };
 
-static ParamInfo kParams_ModSpellItemVal[2] =
+static ParamInfo kParams_ModSpellItemVal[2] = 
 {
 	{	"value", kParamType_Float, 0 },
 	{	"spell", kParamType_SpellItem, 0 },
@@ -2445,13 +2468,13 @@ CommandInfo kCommandInfo_SetSpellExplodesWithNoTarget =
 	0
 };
 
-static ParamInfo kParams_SetMagicItemVal[2] =
+static ParamInfo kParams_SetMagicItemVal[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
 };
 
-static ParamInfo kParams_ModMagicItemVal[2] =
+static ParamInfo kParams_ModMagicItemVal[2] = 
 {
 	{	"value", kParamType_Float, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -2562,7 +2585,7 @@ CommandInfo kCommandInfo_ModEnchantmentCost =
 //	0
 //};
 
-static ParamInfo kParams_CopyNthEffectItem[3] =
+static ParamInfo kParams_CopyNthEffectItem[3] = 
 {
 	{	"from Magic Item", kParamType_MagicItem, 0 },
 	{	"toMagicItem", kParamType_MagicItem, 0 },
@@ -2584,7 +2607,7 @@ CommandInfo kCommandInfo_CopyNthEffectItem =
 	0
 };
 
-static ParamInfo kParams_CopyAllEffectItems[2] =
+static ParamInfo kParams_CopyAllEffectItems[2] = 
 {
 	{	"from Magic Item", kParamType_MagicItem, 0 },
 	{	"toMagicItem", kParamType_MagicItem, 0 },
@@ -2605,13 +2628,13 @@ CommandInfo kCommandInfo_CopyAllEffectItems =
 	0
 };
 
-static ParamInfo kParams_AddEffectItem[2] =
+static ParamInfo kParams_AddEffectItem[2] = 
 {
 	{	"effect", kParamType_MagicEffect, 0 },
 	{	"toMagicItem", kParamType_MagicItem, 0 },
 };
 
-static ParamInfo kParams_AddEffectItemC[2] =
+static ParamInfo kParams_AddEffectItemC[2] = 
 {
 	{	"effect code", kParamType_Integer, 0 },
 	{	"toMagicItem", kParamType_MagicItem, 0 },

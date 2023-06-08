@@ -8,13 +8,14 @@
 #include "Hooks_SaveLoad.h"
 #include "Hooks_DirectInput8Create.h"
 #include "GameForms.h"
+#include <set>
+#include <string>
 #include "obse/Commands_Input.h"
 #include "obse/GameMenus.h"
 #include "GameData.h"
 #include "GameOSDepend.h"
 #include "Hooks_Gameplay.h"
 #include "StringVar.h"
-#include "ModTable.h"
 #include "obse/GameObjects.h"
 #include "obse_common/SafeWrite.h"
 #include "NiObjects.h"
@@ -35,7 +36,7 @@
 static bool Cmd_SetNumericGameSetting_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	char	settingName[256] = { 0 };
 	float	settingData = 0;
 
@@ -74,10 +75,39 @@ static bool Cmd_SetNumericGameSetting_Execute(COMMAND_ARGS)
 	return true;
 }
 
+// ### TODO: collapse this and SettingInfo
+struct INISettingEntry
+{
+	struct Data
+	{
+		union
+		{
+			bool	b;
+			float	f;
+			int		i;
+			char	* s;
+			UInt32	u;
+		} data;
+		char	* name;
+	};
+
+	Data			* data;
+	INISettingEntry	* next;
+};
+
+#if OBLIVION_VERSION == OBLIVION_VERSION_1_1
+static const UInt32 g_INISettingList = 0x00AF1898;
+#elif OBLIVION_VERSION == OBLIVION_VERSION_1_2
+static const UInt32 g_INISettingList = 0x00B07BF0;
+#elif OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
+static const UInt32 g_INISettingList = 0x00B07BF0;
+#else
+#error unsupported version of oblivion
+#endif
+
 static INISettingEntry* GetIniSetting(const char* settingName)
 {
-	IniSettingCollection* settings = IniSettingCollection::GetSingleton ();
-	for(INISettingEntry * entry = &settings->settingsList; entry; entry = entry->next)
+	for(INISettingEntry * entry = (INISettingEntry *)(g_INISettingList + 0x10C); entry; entry = entry->next)
 	{
 		INISettingEntry::Data	* data = entry->data;
 		if(data && data->name && !_stricmp(settingName, data->name))
@@ -90,7 +120,7 @@ static INISettingEntry* GetIniSetting(const char* settingName)
 static bool Cmd_SetNumericINISetting_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	char	settingName[256] = { 0 };
 	float	settingData = 0;
 
@@ -99,26 +129,26 @@ static bool Cmd_SetNumericINISetting_Execute(COMMAND_ARGS)
 
 	INISettingEntry* entry = GetIniSetting(settingName);
 	if (entry)
-	{
+	{	
 		INISettingEntry::Data* data = entry->data;
 		*result = 1;
 
 		switch(data->name[0])
 		{
 			case 'i':	// int
-				data->i = settingData;
+				data->data.i = settingData;
 				break;
 
 			case 'f':	// float
-				data->f = settingData;
+				data->data.f = settingData;
 				break;
 
 			case 'u':	// unsigned
-				data->u = settingData;
+				data->data.u = settingData;
 				break;
 
 			case 'b':	// bool
-				data->b = (settingData != 0);
+				data->data.b = (settingData != 0);
 				break;
 
 			default:
@@ -133,7 +163,7 @@ static bool Cmd_SetNumericINISetting_Execute(COMMAND_ARGS)
 bool Cmd_GetNumericINISetting_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	char	settingName[256] = { 0 };
 
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &settingName))
@@ -148,19 +178,19 @@ bool Cmd_GetNumericINISetting_Execute(COMMAND_ARGS)
 			switch(data->name[0])
 			{
 				case 'i':	// int
-					*result = data->i;
+					*result = data->data.i;
 					break;
 
 				case 'f':	// float
-					*result = data->f;
+					*result = data->data.f;
 					break;
 
 				case 'u':	// unsigned
-					*result = data->u;
+					*result = data->data.u;
 					break;
 
 				case 'b':	// bool
-					*result = data->b ? 1 : 0;
+					*result = data->data.b ? 1 : 0;
 					break;
 
 				default:
@@ -182,7 +212,7 @@ static bool Cmd_GetStringIniSetting_Execute(COMMAND_ARGS)
 	{
 		INISettingEntry* entry = GetIniSetting(settingName);
 		if (entry && (entry->data->name[0] == 'S' || entry->data->name[0] == 's'))
-			settingString = entry->data->s;
+			settingString = entry->data->data.s;
 	}
 
 	AssignToStringVar(PASS_COMMAND_ARGS, settingString);
@@ -204,8 +234,8 @@ static bool Cmd_SetStringIniSetting_Execute(COMMAND_ARGS)
 			if (entry && (entry->data->name[0] == 'S' || entry->data->name[0] == 's'))
 			{
 				UInt32 valLen = strlen(settingVal) + 1;
-				entry->data->s = new char[valLen];				// this leaks. INI string alloc'd where?
-				strcpy_s(entry->data->s, valLen, settingVal);
+				entry->data->data.s = new char[valLen];				// this leaks. INI string alloc'd where?
+				strcpy_s(entry->data->data.s, valLen, settingVal);
 			}
 		}
 	}
@@ -275,7 +305,7 @@ static bool Cmd_GetGameRestarted_Execute(COMMAND_ARGS)
 		*result = 1;
 		regScripts.insert(scriptObj->refID);
 	}
-
+	
 	return true;
 }
 
@@ -396,20 +426,18 @@ static bool Cmd_MessageEX_Execute(COMMAND_ARGS)
 {
 	*result = 0;
 	char buffer[kMaxMessageLength];
-	// updated 0021: kyoma's MenuQue plugin causes UI messages to take duration into account
-	// so we accept a duration now
-	float duration = 2.0;
-	if (ExtractFormatStringArgs(0, buffer, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_MessageEX.numParams, &duration))
+
+	if (ExtractFormatStringArgs(0, buffer, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_MessageEX.numParams))
 	{
 		*result = 1;
 		if (*MessageIconPath || *MessageSoundID)
 		{
-			QueueUIMessage_2(buffer, duration, MessageIconPath, MessageSoundID);
+			QueueUIMessage_2(buffer, 2.0, MessageIconPath, MessageSoundID);
 			*MessageIconPath = 0;
 			*MessageSoundID = 0;
 		}
 		else
-			QueueUIMessage(buffer, 0, 1, duration);
+			QueueUIMessage(buffer, 0, 1, 1);
 	}
 
 	return true;
@@ -438,7 +466,7 @@ static bool Cmd_MessageBoxEX_Execute(COMMAND_ARGS)
 	//extract the buttons
 	char* b[10] = {0};
 	UInt32 btnIdx = 0;
-
+	
 	for (char* ch = buffer; *ch && btnIdx < 10; ch++)
 	{
 		if (*ch == GetSeparatorChar(scriptObj))
@@ -486,9 +514,10 @@ static bool Cmd_IsModLoaded_Execute(COMMAND_ARGS)
 	if (!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &modName))
 		return true;
 
-	if (ModTable::Get().IsModLoaded (modName))
-		*result = 1.0;
-
+	const ModEntry* modEntry = (*g_dataHandler)->LookupModByName(modName);
+	if (modEntry)
+		if (modEntry->IsLoaded())
+			*result = 1;
 	if (IsConsoleMode())
 	{
 		if (*result)
@@ -506,7 +535,7 @@ static bool Cmd_GetModIndex_Execute(COMMAND_ARGS)
 	if (!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &modName))
 		return true;
 
-	UInt32 modIndex = ModTable::Get().GetModIndex (modName);
+	UInt32 modIndex = (*g_dataHandler)->GetModIndex(modName);
 	*result = modIndex;
 	if (IsConsoleMode())
 		Console_Print("Mod Index: %02X", modIndex);
@@ -540,7 +569,6 @@ static bool Cmd_ResolveModIndex_Execute(COMMAND_ARGS)
 
 static bool Cmd_GetNumLoadedMods_Execute(COMMAND_ARGS)
 {
-	// note this doesn't care about 'aliased' mods in ModTable, and probably shouldn't
 	*result = (*g_dataHandler)->GetActiveModCount();
 	return true;
 }
@@ -555,7 +583,7 @@ static bool Cmd_GetSourceModIndex_Execute(COMMAND_ARGS)
 
 	if (!form)
 		form = thisObj;
-
+	
 	if (form)
 	{
 		if (form->IsCloned())
@@ -594,9 +622,9 @@ static bool WildcardCompare(const char * String, const char * WildcardComp)
 			RollbackCompare = WildcardComp++;
 			RollbackString = String;
 		}
-
+		
 		// looking for a single wildcard character but run out of characters in String to compare it to
-		if(*WildcardComp == '?'&& !*String)
+		if(*WildcardComp == '?'&& !*String)  
 			return false;
 
 		// the current characters don't match and are not wildcarded
@@ -613,7 +641,7 @@ static bool WildcardCompare(const char * String, const char * WildcardComp)
 		}
 
 		// if the Wildcard string hasn't reached the end, move to the next character
-		if(*WildcardComp)
+		if(*WildcardComp)				
 			WildcardComp++;
 
 		// move to the next character in String and loop if we aren't at the end
@@ -1011,28 +1039,14 @@ static bool Cmd_GlobalVariableExists_Execute(COMMAND_ARGS)
 	return true;
 }
 
-static bool Cmd_SetModAlias_Execute (COMMAND_ARGS)
+static bool Cmd_QuestExists_Execute(COMMAND_ARGS)
 {
-	char name[0x100] = "", alias[0x100] = "";
+	char questName[0x200] = { 0 };
+	*result = 0;
 
-	if (ExtractArgs(EXTRACT_ARGS, name, alias) && *name && *alias)
-		*result = ModTable::Get().SetAlias (name, ModTable::Get().GetModIndex (alias)) ? 1.0 : 0.0;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &questName) && questName)
+		*result = (*g_dataHandler)->GetQuestByEditorName(questName, strlen(questName)) ? 1 : 0;
 
-	DEBUG_PRINT ("SetModAlias >> %.0f", *result);
-	return true;
-}
-
-static bool Cmd_GetModAlias_Execute (COMMAND_ARGS)
-{
-	char name[0x100] = "";
-	std::string alias;
-
-	if (ExtractArgs(EXTRACT_ARGS, name) && *name)
-		alias = ModTable::Get().GetAlias (name);
-
-	AssignToStringVar (PASS_COMMAND_ARGS, alias.c_str ());
-
-	DEBUG_PRINT ("GetModAlias >> %s", alias.c_str ());
 	return true;
 }
 
@@ -1134,6 +1148,7 @@ CommandInfo kCommandInfo_GetFPS =
 	0
 };
 
+
 CommandInfo kCommandInfo_IsGlobalCollisionDisabled =
 {
 	"IsGlobalCollisionDisabled",
@@ -1204,38 +1219,12 @@ static ParamInfo kParams_Message[21] =
 	{"variable",		kParamType_Float, 1},
 };
 
-static ParamInfo kParams_MessageEx[22] =
-{
-	{"format string",	kParamType_String, 0},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"variable",		kParamType_Float, 1},
-	{"duration",		kParamType_Float, 1}
-};
-
 CommandInfo kCommandInfo_MessageEX =
 {
 	"MessageEX", "MsgEX",
 	0,
 	"Prints a formatted message",
-	0, 22, kParams_MessageEx,
+	0, 21, kParams_Message,
 	HANDLER(Cmd_MessageEX_Execute),
 	Cmd_Default_Parse,
 	NULL,
@@ -1466,12 +1455,10 @@ CommandInfo kCommandInfo_OLMPOR =
 };
 
 DEFINE_COMMAND(GetGridsToLoad, returns the effective value of the uGridsToLoad ini setting, 0, 0, NULL);
+DEFINE_COMMAND(QuestExists, returns 1 if a quest exists with the specified editorID, 0, 1, kParams_OneString);
 DEFINE_CMD_ALT(GlobalVariableExists, GlobalExists, returns 1 if a global var exists with the specified editorID, 0, kParams_OneString);
 DEFINE_COMMAND(GetCellChanged, returns 1 for one frame per calling script when the player enters a new interior or exterior cell, 0, 0, NULL);
 
-DEFINE_COMMAND(ResolveModIndex,
+DEFINE_COMMAND(ResolveModIndex, 
 			   "given a mod index referring to a mod stored in the current savegame, returns that mod's current mod index",
 			   0, 1, kParams_OneInt);
-
-DEFINE_COMMAND (SetModAlias, sets the alias for a mod name, 0, 2, kParams_TwoStrings);
-DEFINE_COMMAND (GetModAlias, retrieves the alias for a mod name, 0, 1, kParams_OneString);

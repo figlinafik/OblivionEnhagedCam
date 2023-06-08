@@ -126,7 +126,7 @@ public:
 
 	enum {
 		kButtonID_Button1 =		0x04,
-		//	...
+		//	...	
 		kButtonID_Button10 =	0x0C,
 		kButtonID_Close	=		0x1F	// not actually a button
 	};
@@ -135,7 +135,7 @@ public:
 	TileText		* messageText;		// 2C
 	TileRect		* focusBox;			// 30
 	TileImage		* buttons[10];		// 34..58 each has a child TileText
-	void			* buttonCallback;	// 5C
+	void			* buttonCallback;	// 5C 
 	UInt8			minButtonIndex;		// 60
 	UInt8			pad61[3];			// 61
 
@@ -162,6 +162,8 @@ public:
 	UInt32			unk50;				// 50 init'd to arg3 of CreateQuantityMenu()
 	UInt32			unk54;				// 54
 };
+
+	
 
 enum {
 	kFilterInv_Weapons	= 1 << 0,
@@ -248,7 +250,6 @@ public:
 	TESForm*	GetItem();
 
 	static UInt32 GetQuantity();
-	static void Update();
 };
 
 // 5C
@@ -257,7 +258,7 @@ class HUDInfoMenu : public Menu
 public:
 	HUDInfoMenu();
 	~HUDInfoMenu();
-
+	
 	enum {
 		kHUDInfoValue_ActionText		= kTileValue_user0,
 		kHUDInfoValue_Unk01,				// default 128
@@ -334,14 +335,14 @@ public:
 		kField_KnownEffectsText,			// 0x10
 		kField_AddedEffectsText,
 		kField_EnchItemRect			= 0x14,
-		kField_SoulGemRect			= 0x16,
+		kFieldSoulGemRect			= 0x16,
 		kField_EnchItemIcon			= 0x19,
 		kField_SoulGemIcon			= 0x1A,
 	};
 
 	// fields
 	EnchantmentItem*	enchantItem;			// 028 - temp! not the item player gets when enchantment is finished
-	Unk0*				soulGemInfo;			// 02C
+	Unk0*				soulGemInfo;			// 02C 
 	Unk0*				enchantableInfo;		// 030 - enchantableInfo->form == unenchanted item
 	void*				unk034;					// 034
 	UInt32				cost;					// 038
@@ -368,7 +369,8 @@ public:
 	TileImage*			enchItemIcon;			// 08C
 	void				* unk090;				// 090 pointer to some struct with EffectSetting info
 	TileRect			* unk094;				// 094 - active tile?
-	BSStringT				enchantName;			// 098 as entered by player
+	String				enchantName;			// 098 as entered by player
+
 };
 STATIC_ASSERT(sizeof(EnchantmentMenu) == 0x0A0);
 
@@ -517,10 +519,8 @@ public:
 	UInt32			unk054;			//054
 	UInt32			unk058;			//058
 	UInt8			unk05C;			//05C
-	UInt8			pad05D[3];
+	UInt8			pad05D[3];	
 	MenuSpellList	spells;			//060
-
-	void Update();
 };
 
 template <typename T>
@@ -638,10 +638,10 @@ public:
 	UInt32				unk080;			//080 init'd to 1
 	UInt32				unk084;			//084
 	UInt8				unk088;			//088
-	UInt8				pad087[3];
-	BSStringT				str08C;			//08C
+	UInt8				pad087[3];		
+	String				str08C;			//08C 
 	UInt8				unk094[3];		//094
-	UInt8				pad097;
+	UInt8				pad097;	
 };
 
 class AlchemyItem;
@@ -662,7 +662,7 @@ public:
 	};
 
 	struct EffectData {
-		UInt32			effectCode;
+		UInt32			effectCode;	
 		UInt32			unk4;			// magnitude?
 	};
 
@@ -670,6 +670,7 @@ public:
 		EffectData	* data;
 		EffectEntry	* next;
 	};
+
 
 	struct IngredientInfo {
 		BaseExtraList		** extraList;
@@ -708,7 +709,7 @@ public:
 	ApparatusInfo		* apparatus[4];			//078 .. 084
 	float				unk088;					//088
 	UInt32				unk08C;					//08C
-	TileRect			* unk090;				//090	- active tile?
+	TileRect			* unk090;				//090	- active tile? 
 	AlchemyItem			* potion;				//094
 	float				unk098;					//098
 	UInt32				unk09C;					//09C
@@ -783,15 +784,15 @@ public:
 	SInt32				unk094;						//094
 	SInt32				worldMapWidth;				//098 unk098 thru unk0AC used in converting map coords to world coords
 	SInt32				worldMapHeight;				//09C yes, signed. add 4.2949673e9 when converting if negative
-	SInt32				unk0A0;						//0A0
+	SInt32				unk0A0;						//0A0 
 	UInt32				unk0A4;						//0A4 signed?
 	SInt32				unk0A8;						//0A8
 	UInt32				unk0AC;						//0Ac signed?
-	BSStringT				destinationName;			// 0B0 updated only when clicking on a marker, not on mouseover
+	String				destinationName;			// 0B0 updated only when clicking on a marker, not on mouseover
 	float				targetX;					// 0B8 x, y of selected map marker icon (NOT world coords)
 	float				targetY;					// 0BC these only updated on click
 	UInt32				unk0C0;						// 0C0
-	MapMarkerEntry		* mapMarkers;				//0C4
+	MapMarkerEntry		* mapMarkers;				//0C4 
 	void				* unk0C8;					//0C8
 	UInt32				unk0CC;						//0CC
 	TESWorldSpace		* worldSpace;				//0D0
@@ -854,7 +855,7 @@ public:
 	UInt32			endPosX;					//050 always the same within a UI setup, sum of active window's x and width
 	UInt32			startPosX;					//054 gets lower as the popup width increases (since it needs to start earlier in order to be hidden at the start)
 	UInt8			state;						//058 seen: 0 for displayed, 1 for to-display, 2 for hidden, 3 for to-hide.
-	UInt8			pad058[3];					//
+	UInt8			pad058[3];					//		
 	UInt32			unk05C;						//05C
 };
 

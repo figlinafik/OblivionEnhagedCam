@@ -3,6 +3,7 @@
 #include "GameForms.h"
 #include "GameObjects.h"
 #include "Hooks_Script.h"
+#include <string>
 #include "ParamInfos.h"
 #include "FunctionScripts.h"
 
@@ -188,13 +189,8 @@ ScriptToken* Eval_Eq_Form(OperatorType op, ScriptToken* lh, ScriptToken* rh, Exp
 ScriptToken* Eval_Eq_Form_Number(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
 {
 	bool result = false;
-
-	// only makes sense to compare forms to zero
-	if ((rh->Type() == kTokenType_Number || rh->Type() == kTokenType_NumericVar) && (rh->GetNumber() == 0 && lh->GetFormID() == 0))
+	if (rh->GetNumber() == 0 && lh->GetFormID() == 0)	// only makes sense to compare forms to zero
 		result = true;
-	else if (rh->Type() == kTokenType_Form && rh->GetFormID() == 0 && lh->GetNumber() == 0)
-		result = true;
-
 	switch (op)
 	{
 	case kOpType_Equals:
@@ -254,6 +250,7 @@ ScriptToken* Eval_Arithmetic(OperatorType op, ScriptToken* lh, ScriptToken* rh, 
 		context->Error("Unhandled operator %s", OpTypeToSymbol(op));
 		return NULL;
 	}
+
 }
 
 ScriptToken* Eval_Integer(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
@@ -424,6 +421,7 @@ ScriptToken* Eval_ExponentEquals(OperatorType op, ScriptToken* lh, ScriptToken* 
 	return ScriptToken::Create(lh->GetVar()->data);
 }
 
+
 ScriptToken* Eval_PlusEquals_Global(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
 {
 	lh->GetGlobal()->data += rh->GetNumber();
@@ -461,6 +459,7 @@ ScriptToken* Eval_ExponentEquals_Global(OperatorType op, ScriptToken* lh, Script
 	lh->GetGlobal()->data = pow(lhNum,rh->GetNumber());
 	return ScriptToken::Create(lh->GetGlobal()->data);
 }
+
 
 ScriptToken* Eval_PlusEquals_String(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
 {
@@ -515,7 +514,7 @@ ScriptToken* Eval_Multiply_String_Number(OperatorType op, ScriptToken* lh, Scrip
 	}
 
 	return ScriptToken::Create(result.c_str());
-}
+}	
 
 ScriptToken* Eval_PlusEquals_Elem_Number(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
 {
@@ -898,6 +897,7 @@ ScriptToken* Eval_Box_Array(OperatorType op, ScriptToken* lh, ScriptToken* rh, E
 	return ScriptToken::CreateArray(arr);
 }
 
+
 ScriptToken* Eval_Pair(OperatorType op, ScriptToken* lh, ScriptToken* rh, ExpressionEvaluator* context)
 {
 	return ScriptToken::Create(lh, rh);
@@ -931,7 +931,7 @@ OperationRule kOpRule_Equality[] =
 	{	kTokenType_Number, kTokenType_Number, kTokenType_Boolean, OP_HANDLER(Eval_Eq_Number)	},
 	{	kTokenType_String, kTokenType_String, kTokenType_Boolean, OP_HANDLER(Eval_Eq_String)	},
 	{	kTokenType_Form, kTokenType_Form, kTokenType_Boolean, OP_HANDLER(Eval_Eq_Form)	},
-	{	kTokenType_Form, kTokenType_Number, kTokenType_Boolean, OP_HANDLER(Eval_Eq_Form_Number)	},
+	{	kTokenType_Form, kTokenType_Number, kTokenType_Boolean, OP_HANDLER(Eval_Eq_Form_Number), true	},
 	{	kTokenType_Array, kTokenType_Array, kTokenType_Boolean, OP_HANDLER(Eval_Eq_Array)	}
 };
 
@@ -1072,6 +1072,7 @@ OperationRule kOpRule_DividedEquals[] =
 	{	kTokenType_Global,		kTokenType_Number,		kTokenType_Number,	OP_HANDLER(Eval_DividedEquals_Global),	true	},
 };
 
+
 OperationRule kOpRule_ExponentEquals[] =
 {
 #if !OBLIVION
@@ -1086,11 +1087,12 @@ OperationRule kOpRule_ExponentEquals[] =
 	{	kTokenType_Global,		kTokenType_Number,		kTokenType_Number,	OP_HANDLER(Eval_ExponentEquals_Global),	true	},
 };
 
+
 OperationRule kOpRule_Negation[] =
 {
 #if !OBLIVION
 	{	kTokenType_Ambiguous, kTokenType_Invalid, kTokenType_Number, NULL, true	},
-#endif
+#endif	
 	{	kTokenType_Number, kTokenType_Invalid, kTokenType_Number, OP_HANDLER(Eval_Negation), true	},
 };
 
@@ -1178,7 +1180,7 @@ OperationRule kOpRule_Dereference[] =
 {
 #if !OBLIVION
 	{	kTokenType_Ambiguous, kTokenType_Invalid, kTokenType_ArrayElement, NULL, true	},
-#endif
+#endif	
 	{	kTokenType_Array, kTokenType_Invalid, kTokenType_ArrayElement, OP_HANDLER(Eval_Dereference), true	},
 };
 
@@ -1230,9 +1232,9 @@ Operator s_operators[] =
 
 	{	15,	">",	2,	kOpType_GreaterThan,OP_RULES(Comparison)	},
 	{	15,	"<",	2,	kOpType_LessThan,	OP_RULES(Comparison)	},
-	{	15,	">=",	2,	kOpType_GreaterOrEqual,	OP_RULES(Comparison)	},
-	{	15,	"<=",	2,	kOpType_LessOrEqual,	OP_RULES(Comparison)	},
-
+	{	15,	">=",	2,	kOpType_GreaterOrEqual,	OP_RULES(Comparison)	},			
+	{	15,	"<=",	2,	kOpType_LessOrEqual,	OP_RULES(Comparison)	},									
+									
 	{	16,	"|",	2,	kOpType_BitwiseOr,	OP_RULES(Integer)		},		// ** higher precedence than in C++
 	{	17,	"&",	2,	kOpType_BitwiseAnd,	OP_RULES(Integer)		},
 
@@ -1482,13 +1484,13 @@ bool ExpressionEvaluator::Active()
 	return ThreadLocalData::Get().expressionEvaluator != NULL;
 }
 
-void ExpressionEvaluator::ToggleErrorSuppression(bool bSuppress) {
+void ExpressionEvaluator::ToggleErrorSuppression(bool bSuppress) { 
 	if (bSuppress) {
 		m_flags.Clear(kFlag_ErrorOccurred);
-		m_flags.Set(kFlag_SuppressErrorMessages);
+		m_flags.Set(kFlag_SuppressErrorMessages); 
 	}
-	else
-		m_flags.Clear(kFlag_SuppressErrorMessages);
+	else 
+		m_flags.Clear(kFlag_SuppressErrorMessages); 
 }
 
 void ExpressionEvaluator::Error(const char* fmt, ...)
@@ -1570,12 +1572,12 @@ void PrintCompiledCode(ScriptLineBuffer* buf)
 // Threading not a concern in script editor; ExpressionParser not used at run-time.
 static SInt32 s_parserDepth = 0;
 
-ExpressionParser::ExpressionParser(ScriptBuffer* scriptBuf, ScriptLineBuffer* lineBuf)
+ExpressionParser::ExpressionParser(ScriptBuffer* scriptBuf, ScriptLineBuffer* lineBuf) 
 	: m_scriptBuf(scriptBuf), m_lineBuf(lineBuf), m_len(strlen(m_lineBuf->paramText)), m_numArgsParsed(0)
-{
+{ 
 	ASSERT(s_parserDepth >= 0);
 	s_parserDepth++;
-	memset(m_argTypes, kTokenType_Invalid, sizeof(m_argTypes));
+	memset(m_argTypes, kTokenType_Invalid, sizeof(m_argTypes)); 
 }
 
 ExpressionParser::~ExpressionParser()
@@ -1596,6 +1598,7 @@ bool ExpressionParser::ParseArgs(ParamInfo* params, UInt32 numParams, bool bUses
 	UInt32 i = 0;
 	while ((ch = Peek(Offset())))
 	{
+
 #if 0
 		if (ch == '{')
 		{
@@ -1613,12 +1616,12 @@ bool ExpressionParser::ParseArgs(ParamInfo* params, UInt32 numParams, bool bUses
 				break;
 			}
 		}
-		else
+		else 
 #endif
 		if (!isspace(ch))
 			break;
 
-		Offset()++;
+		Offset()++;		
 	}
 
 	UInt8* dataStart = m_lineBuf->dataBuf + m_lineBuf->dataOffset;
@@ -1722,9 +1725,8 @@ bool ExpressionParser::ValidateArgType(UInt32 paramType, Token_Type argType, boo
 			case kParamType_QuestStage:
 			case kParamType_CrimeType:
 				// string var included here b/c old sv_* cmds take strings as integer IDs
-				return (CanConvertOperand(argType, kTokenType_Number) || CanConvertOperand(argType, kTokenType_StringVar) ||
-					CanConvertOperand(argType, kTokenType_Variable));
-			case kParamType_ActorValue:
+				return (CanConvertOperand(argType, kTokenType_Number) || CanConvertOperand(argType, kTokenType_StringVar));
+			case kParamType_ActorValue:				
 				// we accept string or int for this
 				// at run-time convert string to int if necessary and possible
 				return CanConvertOperand(argType, kTokenType_String) || CanConvertOperand(argType, kTokenType_Number);
@@ -2025,7 +2027,7 @@ bool ExpressionParser::ParseUserFunctionDefinition()
 			}
 		}
 	}
-
+	
 	// write destructible var info
 	m_lineBuf->WriteByte(arrayVarIndexes.size());
 	for (UInt32 i = 0; i < arrayVarIndexes.size(); i++)
@@ -2056,38 +2058,35 @@ Token_Type ExpressionParser::Parse()
 static ErrOutput::Message s_expressionErrors[] =
 {
 	// errors
-		"Could not parse this line.",
-		"Too many operators.",
-		"Too many operands.",
-		"Mismatched brackets.",
-		"Invalid operands for operator %s.",
-		"Mismatched quotes.",
-		"Left of dot must be quest or persistent reference.",
-		"Unknown variable '%s'.",
-		"Expected string variable after '$'.",
-		"Cannot access variable on unscripted object '%s'.",
-		"More args provided than expected by function or command.",
-		"Commands '%s' must be called on a reference."	,
-		"Missing required parameter '%s' for parameter #'%d'.",
-		"Missing argument list for user-defined function '%s'.",
-		"Expected user function.",
-		"User function scripts may only contain one script block.",
-		"Variables in user function scripts must precede function definition.",
-		"Could not parse user function parameter list in function definition.\nMay be caused by undefined variable,  missing brackets, or attempt to use a single variable to hold more than one parameter.",
-		"Expected string literal.",
+	{	"Could not parse this line."	},
+	{	"Too many operators."	},
+	{	"Too many operands.",	},
+	{	"Mismatched brackets."	},
+	{	"Invalid operands for operator %s."	},
+	{	"Mismatched quotes."	},
+	{	"Left of dot must be quest or persistent reference."	},
+	{	"Unknown variable '%s'."	},
+	{	"Expected string variable after '$'."	},
+	{	"Cannot access variable on unscripted object '%s'."	},
+	{	"More args provided than expected by function or command."	},
+	{	"Commands '%s' must be called on a reference."		},
+	{	"Missing required parameter '%s' for parameter #'%d'."	},
+	{	"Missing argument list for user-defined function '%s'."	},
+	{	"Expected user function."	},
+	{	"User function scripts may only contain one script block."	},
+	{	"Variables in user function scripts must precede function definition."	},
+	{	"Could not parse user function parameter list in function definition.\nMay be caused by undefined variable,  missing {brackets}, or attempt to use a single variable to hold more than one parameter."	},
+	{	"Expected string literal."	},
 
 	// warnings
-		ErrOutput::Message ("Unquoted argument '%s' will be treated as string by default. Check spelling if a form or variable was intended.", true, true),
-		ErrOutput::Message ("Usage of ref variables as pointers to user-defined functions prevents type-checking of function arguments. Make sure the arguments provided match those expected by the function being called.", true, true),
+	{	"Unquoted argument '%s' will be treated as string by default. Check spelling if a form or variable was intended.", true	},
+	{	"Usage of ref variables as pointers to user-defined functions prevents type-checking of function arguments. Make sure the arguments provided match those expected by the function being called.", true },
 
 	// default
-		"Undefined error."
+	{	"Undefined error."	}
 };
 
 ErrOutput::Message * ExpressionParser::s_Messages = s_expressionErrors;
-
-#define INI_COMPILER_WARNUNQUOTEDSTRING		"bWarningUnquotedString"
-#define INI_COMPILER_WARNFUNCTPTR			"bWarningUDFRefVar"
 
 void ExpressionParser::Message(UInt32 errorCode, ...)
 {
@@ -2095,24 +2094,8 @@ void ExpressionParser::Message(UInt32 errorCode, ...)
 	va_list args;
 	va_start(args, errorCode);
 	ErrOutput::Message* msg = &s_Messages[errorCode];
-
-	if (msg->CanDisable())
-	{
-		UInt32 enabled = 0;
-
-		switch (errorCode)
-		{
-		case kWarning_UnquotedString:
-			GetConfigOption_UInt32(INI_SECTION_COMPILER, INI_COMPILER_WARNUNQUOTEDSTRING, &enabled);
-			break;
-		case kWarning_FunctionPointer:
-			GetConfigOption_UInt32(INI_SECTION_COMPILER, INI_COMPILER_WARNFUNCTPTR, &enabled);
-			break;
-		}
-
-		if (enabled)
-			g_ErrOut.vShow(s_Messages[errorCode], args);
-	}
+	if (msg->bCanDisable)
+		g_ErrOut.vShow(s_Messages[errorCode], args);
 	else		// prepend line # to message
 	{
 		char msgText[0x400];
@@ -2120,7 +2103,7 @@ void ExpressionParser::Message(UInt32 errorCode, ...)
 			sprintf_s(msgText, sizeof(msgText), "Error line %d\n\n%s", m_lineBuf->lineNumber, msg->fmt);
 			g_ErrOut.vShow(msgText, args);
 		#else
-			vsprintf_s(msgText, sizeof(msgText), msg->fmt.c_str(), args);
+			vsprintf_s(msgText, sizeof(msgText), msg->fmt, args);
 			ShowCompilerError(m_scriptBuf, "%s", msgText);
 		#endif
 	}
@@ -2236,9 +2219,9 @@ Token_Type ExpressionParser::ParseSubExpression(UInt32 exprLen)
 			if (operandType == kTokenType_Command)
 			{
 				CommandReturnType retnType = g_scriptCommands.GetReturnType(cmdInfo);
-				if (retnType == kRetnType_String)
+				if (retnType == kRetnType_String)		
 					operandType = kTokenType_String;
-				else if (retnType == kRetnType_Array)
+				else if (retnType == kRetnType_Array)	
 					operandType = kTokenType_Array;
 				else if (retnType == kRetnType_Form)
 					operandType = kTokenType_Form;
@@ -2338,7 +2321,7 @@ Token_Type ExpressionParser::PopOperator(std::stack<Operator*> & ops, std::stack
 
 	return result;
 }
-
+		
 ScriptToken* ExpressionParser::ParseOperand(bool (* pred)(ScriptToken* operand))
 {
 	char ch;
@@ -2347,7 +2330,7 @@ ScriptToken* ExpressionParser::ParseOperand(bool (* pred)(ScriptToken* operand))
 		if (!isspace(ch))
 			break;
 
-		Offset()++;
+		Offset()++;		
 	}
 
 	ScriptToken* token = ParseOperand();
@@ -2390,7 +2373,6 @@ Operator* ExpressionParser::ParseOperator(bool bExpectBinaryOperator, bool bCons
 		}
 		else if (!curOp->IsUnary() && !curOp->IsOpenBracket())
 			continue;
-
 		if (ch == curOp->symbol[0])
 			ops.push_back(curOp);
 	}
@@ -2432,7 +2414,7 @@ Operator* ExpressionParser::ParseOperator(bool bExpectBinaryOperator, bool bCons
 		Offset() += strlen(op->symbol);
 
 	return op;
-}
+}	
 
 // format a string argument
 static void FormatString(std::string& str)
@@ -2459,7 +2441,7 @@ static void FormatString(std::string& str)
 			pos += 1;
 			continue;
 		}
-
+		
 		str.insert(pos, 1, toInsert);	// insert char at current pos
 		str.erase(pos + 1, 2);			// erase format specifier
 		pos += 1;
@@ -2613,6 +2595,7 @@ ScriptToken* ExpressionParser::ParseOperand(Operator* curOp)
 		}
 		else
 			return ScriptToken::Create(varInfo, refIdx, theVarType);
+
 	}
 	else if (bExpectStringVar)
 	{
@@ -2659,7 +2642,7 @@ bool ExpressionParser::ParseFunctionCall(CommandInfo* cmdInfo)
 	m_lineBuf->callingRefIndex = 0;
 	m_lineBuf->lineOffset = 0;
 	m_lineBuf->paramTextLen = m_lineBuf->paramTextLen - oldOffset;
-
+	
 	// parse the command if numParams > 0
 	bool bParsed = ParseNestedFunction(cmdInfo, m_lineBuf, m_scriptBuf);
 
@@ -2730,7 +2713,7 @@ void ShowRuntimeError(Script* script, const char* fmt, ...)
 	Console_Print(errorMsg);
 	_MESSAGE(errorMsg);
 
-	PluginManager::Dispatch_Message(0, OBSEMessagingInterface::kMessage_RuntimeScriptError, errorMsg, 4, NULL);
+	PluginManager::Dispatch_Message(0, OBSEMessagingInterface::kMessage_RuntimeScriptError, errorMsg, 4, NULL); 
 
 	va_end(args);
 }
@@ -2837,7 +2820,7 @@ void ExpressionEvaluator::PopFromStack()
 	localData.expressionEvaluator = m_parent;
 }
 
-ExpressionEvaluator::ExpressionEvaluator(COMMAND_ARGS) : m_opcodeOffsetPtr(opcodeOffsetPtr), m_result(result),
+ExpressionEvaluator::ExpressionEvaluator(COMMAND_ARGS) : m_opcodeOffsetPtr(opcodeOffsetPtr), m_result(result), 
 	m_thisObj(thisObj), script(scriptObj), eventList(eventList), m_params(paramInfo), m_numArgsExtracted(0), m_baseOffset(0),
 	m_expectedReturnType(kRetnType_Default)
 {
@@ -2846,7 +2829,7 @@ ExpressionEvaluator::ExpressionEvaluator(COMMAND_ARGS) : m_opcodeOffsetPtr(opcod
 
 	memset(m_args, 0, sizeof(m_args));
 
-	m_containingObj = (TESObjectREFR*)arg3;
+	m_containingObj = (TESObjectREFR*)arg3;	
 	m_baseOffset = *opcodeOffsetPtr - 4;
 
 	m_flags.Clear();
@@ -2907,7 +2890,7 @@ bool ExpressionEvaluator::ExtractDefaultArgs(va_list varArgs, bool bConvertTESFo
 class OverriddenScriptFormatStringArgs : public FormatStringArgs
 {
 public:
-	OverriddenScriptFormatStringArgs(ExpressionEvaluator* eval, UInt32 fmtStringPos) : m_eval(eval), m_curArgIndex(fmtStringPos+1) {
+	OverriddenScriptFormatStringArgs(ExpressionEvaluator* eval, UInt32 fmtStringPos) : m_eval(eval), m_curArgIndex(fmtStringPos+1) { 
 		m_fmtString = m_eval->Arg(fmtStringPos)->GetString();
 	}
 
@@ -2932,7 +2915,7 @@ public:
 			return false;
 		}
 	}
-
+			
 	virtual bool SkipArgs(UInt32 numToSkip) { m_curArgIndex += numToSkip; return m_curArgIndex <= m_eval->NumArgs(); }
 	virtual bool HasMoreArgs() { return m_curArgIndex < m_eval->NumArgs(); }
 	virtual std::string GetFormatString() { return m_fmtString; }
@@ -2991,9 +2974,9 @@ bool ExpressionEvaluator::ExtractFormatStringArgs(va_list varArgs, UInt32 fmtStr
 bool ExpressionEvaluator::ConvertDefaultArg(ScriptToken* arg, ParamInfo* info, bool bConvertTESForms, va_list& varArgs)
 {
 	// hooray humongous switch statements
-	switch (info->typeID)
+	switch (info->typeID) 
 	{
-		case kParamType_Array:
+		case kParamType_Array: 
 			{
 				UInt32* out = va_arg(varArgs, UInt32*);
 				*out = arg->GetArray();
@@ -3218,7 +3201,7 @@ bool ExpressionEvaluator::ConvertDefaultArg(ScriptToken* arg, ParamInfo* info, b
 							case kParamType_Container:
 								{
 									TESObjectREFR* refr = OBLIVION_CAST(form, TESForm, TESObjectREFR);
-									if (refr && refr->GetContainer()) {
+									if (refr && refr->GetContainer()) {	
 										TESObjectREFR** out = va_arg(varArgs, TESObjectREFR**);
 										*out = refr;
 									}
@@ -3318,7 +3301,7 @@ bool ExpressionEvaluator::ConvertDefaultArg(ScriptToken* arg, ParamInfo* info, b
 ScriptToken* ExpressionEvaluator::Evaluate()
 {
 	std::stack<ScriptToken*> operands;
-
+	
 	UInt16 argLen = Read16();
 	UInt8* endData = Data() + argLen - sizeof(UInt16);
 	while (Data() < endData)
@@ -3396,7 +3379,7 @@ ScriptToken* ExpressionEvaluator::Evaluate()
 			case kRetnType_Array:
 			{
 				// ###TODO: cmds can return arrayID '0', not necessarily an error, does this support that?
-				if (g_ArrayMap.Exists(cmdResult) || !cmdResult)
+				if (g_ArrayMap.Exists(cmdResult) || !cmdResult)	
 				{
 					delete curToken;
 					curToken = ScriptToken::CreateArray(cmdResult);
@@ -3425,6 +3408,7 @@ ScriptToken* ExpressionEvaluator::Evaluate()
 			delete cmdToken;
 			cmdToken = NULL;
 		}
+
 
 		if (!(curToken->Type() == kTokenType_Operator))
 			operands.push(curToken);
@@ -3616,7 +3600,6 @@ private:
 
 	bool		HandleDirectives();		// compiler directives at top of script prefixed with '@'
 	bool		ProcessBlock(BlockType blockType);
-	void		StripComments(std::string& line);
 	bool		AdvanceLine();
 	const char	* BlockTypeAsString(BlockType type);
 public:
@@ -3648,29 +3631,6 @@ Preprocessor::Preprocessor(ScriptBuffer* buf) : m_buf(buf), m_loopDepth(0), m_cu
 	AdvanceLine();
 }
 
-void Preprocessor::StripComments( std::string& line )
-{
-	for (UInt32 i = 0; i < line.length(); i++)
-	{
-		if (line[i] == '"')
-		{
-			if (i + 1 == line.length())	// trailing, mismatched quote - CS will catch
-				break;
-
-			i = line.find('"', i+1);
-			if (i == -1)		// mismatched quotes, CS compiler will catch
-				break;
-			else
-				i++;
-		}
-		else if (line[i] == ';')
-		{
-			line = line.substr(0, i);
-			break;
-		}
-	}
-}
-
 bool Preprocessor::AdvanceLine()
 {
 	if (m_scriptTextOffset >= m_scriptText.length())
@@ -3679,15 +3639,13 @@ bool Preprocessor::AdvanceLine()
 	m_curLineNo++;
 
 	UInt32 endPos = m_scriptText.find("\r\n", m_scriptTextOffset);
-	if (endPos == -1)		// last line, no CR/LF
+	if (endPos == -1)						// last line, no CRLF
 	{
 		m_curLineText = m_scriptText.substr(m_scriptTextOffset, m_scriptText.length() - m_scriptTextOffset);
-		StripComments(m_curLineText);
 		m_scriptTextOffset = m_scriptText.length();
-
 		return true;
 	}
-	else if (endPos != -1 && m_scriptTextOffset == endPos)		// empty line
+	else if (m_scriptTextOffset == endPos)		// empty line
 	{
 		m_scriptTextOffset += 2;
 		return AdvanceLine();
@@ -3695,7 +3653,28 @@ bool Preprocessor::AdvanceLine()
 	else									// line contains text
 	{
 		m_curLineText = m_scriptText.substr(m_scriptTextOffset, endPos - m_scriptTextOffset);
-		StripComments(m_curLineText);
+
+		// strip comments
+		for (UInt32 i = 0; i < m_curLineText.length(); i++)
+		{
+			if (m_curLineText[i] == '"')
+			{
+				if (i + 1 == m_curLineText.length())	// trailing, mismatched quote - CS will catch
+					break;
+
+				i = m_curLineText.find('"', i+1);
+				if (i == -1)		// mismatched quotes, CS compiler will catch
+					break;
+				else
+					i++;
+			}
+			else if (m_curLineText[i] == ';')
+			{
+				m_curLineText = m_curLineText.substr(0, i);
+				break;
+			}
+		}
+
 		m_scriptTextOffset = endPos + 2;
 		return true;
 	}
@@ -3725,7 +3704,7 @@ bool Preprocessor::Process()
 			bContinue = AdvanceLine();
 			continue;
 		}
-
+		
 		const char* tok = token.c_str();
 		bool bIsBlockKeyword = false;
 		for (UInt32 i = 0; i < s_numBlocks; i++)
@@ -3742,7 +3721,7 @@ bool Preprocessor::Process()
 						g_ErrOut.Show("Invalid %s block structure on line %d.", blockStr, m_curLineNo);
 						return false;
 					}
-
+					
 					blockStack.pop();
 					if (cur->type == kBlockType_Loop)
 						m_loopDepth--;
@@ -3756,7 +3735,7 @@ bool Preprocessor::Process()
 				}
 			}
 		}
-
+		
 		if (!bIsBlockKeyword)
 		{
 			if (!_stricmp(tok, "continue") || !_stricmp(tok, "break"))
@@ -3799,7 +3778,7 @@ bool Preprocessor::Process()
 						}
 						else if (false && varType == Script::eVarType_String)	// this is un-deprecated b/c older plugins don't register return types
 						{
-							g_ErrOut.Show("Error line %d:\nUse of Set to assign to string variables is deprecated. Use Let instead.", m_curLineNo);
+							g_ErrOut.Show("Error line %d:\nUse of Set to assign to string variables is deprecated. Use Let instead.", m_curLineNo); 
 							return false;
 						}
 					}

@@ -67,24 +67,30 @@ struct ModEntry
 			kFlag_Active =		1 << 3
 		};
 
+		template <typename tData> struct Node
+		{
+			tData		* data;
+			Node<tData>	* next;
+		};
+
 		struct	ChunkInfo
 		{
 			UInt32	type;		// e.g. 'GRUP', 'GLOB', etc
 			UInt32	length;
 		};
 
-		struct	FormInfo
+		struct	FormInfo	// ###TODO double check this, see 46B910 (TESForm virtual func, accepts Unk23C* as arg)
 		{
-			ChunkInfo		chunkInfo;
-			UInt32			flags;
-			UInt32			formID;
-			TrackingData	trackingData;
+			ChunkInfo	chunkInfo;
+			UInt32		flags;
+			UInt32		formID;
+			UInt32		unk10;
 		};
 
-		struct  SizeInfo
+		struct  SizeInfo	// as seen in the editor
 		{
+			UInt32		fileSizeLow;			// WIN32_FIND_DATA::nFileSizeLow 
 			UInt32		fileSizeHigh;			// WIN32_FIND_DATA::nFileSizeHigh
-			UInt32		fileSizeLow;			// WIN32_FIND_DATA::nFileSizeLow
 		};
 
 		// static members: B33C1C, B33C20
@@ -104,21 +110,21 @@ struct ModEntry
 		FormInfo	formInfo;					// 23C
 		UInt32	chunkType250;					// 250
 		UInt32	unk254[(0x290 - 0x254) >> 2];	// 254
-		WIN32_FIND_DATA	findData;				// 290
+		WIN32_FIND_DATA	findData;				// 290 
 		UInt32	version;						// 3D0 plugin version (0.8/1.0)
 		UInt32	formCount;						// 3D4 record/form count
 		UInt32	nextFormID;						// 3D8 used by TESFile::sub_486BF0 in the editor
 		UInt32	flags;							// 3DC
-		tList<char>		masterList;				// 3E0 linked list of .esm dependencies
-		tList<SizeInfo>	masterSizeInfo;			// 3E8 linked list of file size info for above list
+		Node<char>		masterList;				// 3E0 linked list of .esm dependencies
+		Node<SizeInfo>	masterSizeInfo;			// 3E8 linked list of file size info for above list
 		UInt32	idx;							// 3F0
 		void	* unk3F4;						// 3F4
 		UInt32	unk3F8;							// 3F8
 		UInt32	unk3FC;							// 3FC
 		UInt8	unk400;							// 400 init to -1
 		UInt8	pad401[3];
-		BSStringT	authorName;						// 404
-		BSStringT	modDescription;					// 40C
+		String	authorName;						// 404
+		String	modDescription;					// 40C
 		UInt32	unk414;							// 414
 		UInt32	unk418;							// 418
 	};
@@ -205,6 +211,12 @@ public:
 	DataHandler();
 	~DataHandler();
 
+	template <typename tData> struct Node
+	{
+		tData		* data;
+		Node<tData>	* next;
+	};
+
 	struct _Unk8B8											// as seen in the editor
 	{
 		UInt32				unk00;							// 00
@@ -214,29 +226,29 @@ public:
 	};
 
 	BoundObjectListHead		* boundObjects;					// 000
-	tList<TESPackage>		packages;						// 004
-	tList<TESWorldSpace>	worldSpaces;					// 00C
-	tList<TESClimate>		climates;						// 014
-	tList<TESWeather>		weathers;						// 01C
-	tList<EnchantmentItem>	enchantmentItems;				// 024
-	tList<SpellItem>		spellitems;						// 02C
-	tList<TESHair>			hairs;							// 034
-	tList<TESEyes>			eyes;							// 03C
-	tList<TESRace>			races;							// 044
-	tList<TESLandTexture>	landTextures;					// 04C
-	tList<TESClass>			classes;						// 054
-	tList<TESFaction>		factions;						// 05C
-	tList<Script>			scripts;						// 064
-	tList<TESSound>			sounds;							// 06C
-	tList<TESGlobal>		globals;						// 074
-	tList<TESTopic>			topics;							// 07C
-	tList<TESQuest>			quests;							// 084
-	tList<BirthSign>		birthsigns;						// 08C
-	tList<TESCombatStyle>	combatStyles;					// 094
-	tList<TESLoadScreen>	loadScreens;					// 09C
-	tList<TESWaterForm>		waterForms;						// 0A4
-	tList<TESEffectShader>	effectShaders;					// 0AC
-	tList<TESObjectANIO>	objectAnios;					// 0B4
+	Node<TESPackage>		packages;						// 004
+	Node<TESWorldSpace>		worldSpaces;					// 00C
+	Node<TESClimate>		climates;						// 014
+	Node<TESWeather>		weathers;						// 01C
+	Node<EnchantmentItem>	enchantmentItems;				// 024
+	Node<SpellItem>			spellitems;						// 02C
+	Node<TESHair>			hairs;							// 034
+	Node<TESEyes>			eyes;							// 03C
+	Node<TESRace>			races;							// 044
+	Node<TESLandTexture>	landTextures;					// 04C
+	Node<TESClass>			classes;						// 054
+	Node<TESFaction>		factions;						// 05C
+	Node<Script>			scripts;						// 064
+	Node<TESSound>			sounds;							// 06C
+	Node<TESGlobal>			globals;						// 074
+	Node<TESTopic>			topics;							// 07C
+	Node<TESQuest>			quests;							// 084
+	Node<BirthSign>			birthsigns;						// 08C
+	Node<TESCombatStyle>	combatStyles;					// 094
+	Node<TESLoadScreen>		loadScreens;					// 09C
+	Node<TESWaterForm>		waterForms;						// 0A4
+	Node<TESEffectShader>	effectShaders;					// 0AC
+	Node<TESObjectANIO>		objectAnios;					// 0B4
 	TESRegionList			* regionList;					// 0BC
 	NiTArray <TESObjectCELL *>	cellArray;					// 0C0
 	UInt32					unk0D0[2];						// 0D0
@@ -311,7 +323,7 @@ public:
 
 	virtual void Unk_00(void) = 0;
 	virtual UInt32 FindFile(const char* filePath, UInt32 arg1, UInt32 arg2, UInt32 arg3) = 0;	//seen (char*, 0, 0, -1)
-	virtual void Unk_02(void) = 0;
+	virtual void Unk_02(void) = 0;	
 	virtual UInt32 Unk_03(const char* filePath, UInt8 arg1, UInt32 arg2) = 0; //seen (char*,0xC1, 0xFFFF)
 	virtual void Unk_04(void) = 0;
 
@@ -321,8 +333,8 @@ public:
 		kFileStatus_Packed
 	};	//return values for FindFile(), Unk_03()
 
-	//vtbl					00
-	NiTArray<const char*>	searchPaths;	//NiTArray@PBD@@ - Single entry containing filepath "Data\"
+	//vtbl				00
+	NiTArray<UInt32>	array;	//NiTArray@PBD@@ - Single entry containing filepath "Data\"
 };
 
 extern FileFinder** g_FileFinder;
@@ -349,10 +361,6 @@ public:
 	static float  TimeScale() ;
 	static UInt32 GameHoursPassed() ;
 	static UInt32 HoursToRespawnCell() ;
-
-	// monthID in range [1, 12]
-	static UInt16 GetFirstDayOfMonth(UInt32 monthID);
-	static UInt16 GetNumDaysInMonth(UInt32 monthID);
 };
 
 class GridDistantArray;
@@ -419,7 +427,7 @@ public:
 	UInt32			unk24;		// 24 seem 0
 
 	GridEntry* GetGridEntry(UInt32 x, UInt32 y);	// x and y range from 0 to (size-1)
-};
+};		
 
 // 0AC
 class TES
@@ -428,7 +436,7 @@ public:
 	TES();
 	~TES();
 
-	// only 1 virtual fn. If worldSpace is null, uses this->worldSpace
+	// only 1 virtual fn. If worldSpace is null, uses this->worldSpace 
 	virtual void Unk_00(UInt32 arg0, UInt32 arg1, UInt32 arg2, UInt32 arg3, TESWorldSpace* worldSpace);
 
 	static TES* GetSingleton();
@@ -443,26 +451,26 @@ public:
 	// void		** vtbl >> oddly, vtbl pointer is NULL in global TES object though c'tor initializes it...
 	GridDistantArray	* gridDistantArray;		// 04
 	GridCellArray		* gridCellArray;		// 08
-	NiNode				* sceneGraphObjectRoot;				// 0C
-	NiNode				* sceneGraphLandLOD;				// 10
+	NiNode				* niNode0C;				// 0C
+	NiNode				* niNode10;				// 10
 	BSTempNodeManager	* tempNodeManager;		// 14
 	NiDirectionalLight	* niDirectionalLight;	// 18
 	BSFogProperty		* fogProperty;			// 1C
-	SInt32				extXCoord;					// 20 cell grid x coordinate within current worldspace
-	SInt32				extYCoord;					// 24 grid y
-	SInt32				unk28;					// 28 same as unk20?
-	SInt32				unk2C;					// 2C same as unk24?
+	UInt32				unk20;					// 20 cell grid x coordinate within current worldspace
+	UInt32				unk24;					// 24 grid y
+	UInt32				unk28;					// 28 same as unk20?
+	UInt32				unk2C;					// 2C same as unk24?
 	TESObjectCELL		* currentExteriorCell;	// 30
 	TESObjectCELL		* currentInteriorCell;	// 34
-	TESObjectCELL		** interiorCellBufferArray;				// 38
-	TESObjectCELL		** exteriorCellBufferArray;			// 3C ?
+	void				* unk38;				// 38
+	TESObjectCELL		** cellArray;			// 3C ?
 	UInt32				unk40;					// 40
 	UInt32				unk44;					// 44
 	UInt32				unk48;					// 48 seen 0x7FFFFFFF; seen caching unk20 in editor
 	UInt32				unk4C;					// 4C seen 0x7FFFFFFF; seen caching unk24 in editor
 	UInt32				unk50;					// 50
-	void				* waterSurfaceManager;	// 54 some struct; seen { 0, 0, BSRenderedTexture*, ... }
-	void				* waterNodeData;		// 58
+	void				* unk54;				// 54 some struct; seen { 0, 0, BSRenderedTexture*, ... }
+	void				* unk58;				// 58
 	Sky					* sky;					// 5C
 	UInt32				unk60;					// 60
 	UInt32				unk64;					// 64

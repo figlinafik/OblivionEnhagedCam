@@ -39,13 +39,14 @@ extern CommandInfo kCommandInfo_SetInputText;
 #include "GameForms.h"
 #include "GameObjects.h"
 #include "GameMenus.h"
+#include <string>
 #include "Hooks_Gameplay.h"
 #include "Hooks_DirectInput8Create.h"
 #include "GameOSDepend.h"
 
 // base class for various text input menus
 // Functions which manipulate the input text return new insertion point
-// Code assumes opening and closing brackets are always matched correctly and that FONT and DIV tags are not removed
+// Code assumes opening and closing brackets are always matched correctly and that FONT and DIV tags are not removed 
 // from beginning of input string (TextInputHandler::InsertInText() checks for invalid tags so this is
 // a safe assumption)
 class TextInputMenu
@@ -85,7 +86,7 @@ public:
 	UInt32 InsertText(UInt32 insertPos, const char* toInsert);	//as above
 	UInt32 DeleteText(UInt32 startPos, bool bBackwards = false, bool bDeleteWord = false);
 	UInt32 SeekPosition(UInt32 fromPos, bool bBackwards, bool bSeekWordStart) const;
-	void   Erase(UInt32 pos);
+	void   Erase(UInt32 pos);	
 	UInt32 GetInputLength()	const		{	return m_inputText.length();	}
 	bool   IsFull()	const				{	return m_inputText.length() >= m_maxLen;	}
 	std::string GetInputText() const	{	return m_inputText;	}
@@ -155,10 +156,10 @@ class TextInputHandler
 public:
 	~TextInputHandler()
 		{	delete m_menu;	}
-	static TextInputHandler * GetTextBox()
+	static TextInputHandler * GetTextBox()	
 		{	return s_singleton;	}
 	static bool Create(TextInputMenu* menu);
-	void GetInputString(char* outString) const;
+	void GetInputString(char* outString) const;	
 	void Update();										// check for input, update cursor, redisplay if necessary
 	void Close();										// release the text input handler for use by another script
 	UInt8 GetControlKeyPressed();

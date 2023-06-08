@@ -9,6 +9,8 @@
 #include "GameForms.h"
 #include "GameProcess.h"
 #include "GameTasks.h"
+#include <set>
+#include <map>
 #include "InternalSerialization.h"
 #include "Hooks_Script.h"
 #include "Hooks_Gameplay.h"
@@ -19,31 +21,7 @@
 #include "NiObjects.h"
 #include "obse_common/SafeWrite.h"
 
-// link two persistent door refs, add to LowPathWorld. Fails if either already has ExtraTeleport
-typedef void (__cdecl * _LinkDoors)(TESObjectREFR* door1, TESObjectREFR* door2);
-
-// Remove ExtraTeleport from door and its linked door, and removes from LowPathWorld.
-typedef void (__cdecl * _RemoveExtraTeleportFromDoorRef)(TESObjectREFR* doorRef);
-
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const _LinkDoors LinkDoors = (_LinkDoors)0x004B80E0;
-static const _RemoveExtraTeleportFromDoorRef RemoveExtraTeleportFromDoorRef = (_RemoveExtraTeleportFromDoorRef)0x004B6D50;
-static LowPathWorld** g_LowPathWorld = (LowPathWorld**)0x00B3BE00;
-#else
-#error unsupported Oblivion version
-#endif
-
 static const _Cmd_Execute Cmd_Activate_Execute = (_Cmd_Execute)0x00507650;
-
-// global pathing objects, multi-threaded pathing system, make life easier.
-class LowPathWorldPtr
-{
-public:
-	LowPathWorldPtr() { EnterCriticalSection (g_pathingMutex); }
-	~LowPathWorldPtr() {LeaveCriticalSection (g_pathingMutex); }
-
-	LowPathWorld* operator->() { return *g_LowPathWorld; }
-};
 
 static bool Cmd_GetTravelHorse_Execute(COMMAND_ARGS)
 {
@@ -78,7 +56,7 @@ static bool Cmd_SetTravelHorse_Execute(COMMAND_ARGS)
 		ExtraTravelHorse* xHorse = (ExtraTravelHorse*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraTravelHorse, 0);
 		if (xHorse) {
 			*refResult = xHorse->horseRef->refID;
-			xHorse->horseRef = objectRef;
+			xHorse->horseRef = objectRef;			
 		}
 	}
 	else		//add
@@ -112,16 +90,16 @@ static bool Cmd_SetOpenKey_Execute(COMMAND_ARGS)
 {
 	TESForm* form;
 	*result = 0;
-
-	if (!thisObj)
+	
+	if (!thisObj)	
 		return true;
 
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form);
-	if (!form)
+	if (!form)	
 		return true;
 
 	TESKey* key = (TESKey*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESKey, 0);
-	if (!key)
+	if (!key)	
 		return true;
 
 	ExtraLock* xLock = NULL;
@@ -239,7 +217,7 @@ static SInt8 IsOffLimits(BaseExtraList* xDataList, TESNPC* actor)
 	TESForm* owner = GetOwner(xDataList);
 	if (owner)
 	{
-		if (owner->typeID == kFormType_NPC)
+		if (owner->typeID == kFormType_NPC)			
 		{
 			if (owner->refID == actor->refID)			//owned by this actor
 				offLimits = 0;
@@ -290,7 +268,7 @@ static bool Cmd_IsOffLimits_Execute(COMMAND_ARGS)
 	else if (!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &actor))
 		return true;
 
-	if (!actor || actor == (*g_thePlayer)->baseForm)	// if actor arg omitted use player
+	if (!actor || actor == (*g_thePlayer)->baseForm)	// if actor arg omitted use player		
 	{
 		// let the game do the work if it's the player
 		*result = CALL_MEMBER_FN(thisObj, IsOffLimitsToPlayer)() ? 1 : 0;
@@ -372,7 +350,7 @@ static bool Cmd_GetTeleportCell_Execute(COMMAND_ARGS)
 	{
 		ExtraTeleport* xTele = (ExtraTeleport*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraTeleport, 0);
 
-		// parentCell will be null if linked door's cell is not currently loaded (e.g. most exterior cells)
+		// parentCell will be null if linked door's cell is not currently loaded (e.g. most exterior cells) 
 		if (xTele && xTele->data && xTele->data->linkedDoor && xTele->data->linkedDoor->parentCell)
 			*refResult = xTele->data->linkedDoor->parentCell->refID;
 	}
@@ -496,87 +474,6 @@ static bool Cmd_SetDoorTeleport_Execute(COMMAND_ARGS)
 	return true;
 }
 
-static bool Cmd_LinkToDoor_Execute(COMMAND_ARGS)
-{
-	TESObjectREFR* door1 = thisObj, * door2 = NULL;
-
-	// avoid very bad things
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &door2)
-		&& door1 && door2
-		&& door1 != door2
-		&& door1->IsPersistent()
-		&& door2->IsPersistent()
-		&& OBLIVION_CAST(door1->baseForm, TESForm, TESObjectDOOR)
-		&& OBLIVION_CAST(door2->baseForm, TESForm, TESObjectDOOR)
-		)
-	{
-		ExtraTeleport::Data* data1 = door1->GetExtraTeleportData();
-		ExtraTeleport::Data* data2 = door2->GetExtraTeleportData();
-
-		// ###TODO: the #if-ed out stuff below works, mostly. Problem is that the game ignores a CHANGE_EXTRA_TELEPORT flag if the teleport was removed
-		// So after changing the destination of a door, exiting, and reloading, the door previously linked to that door will once again be linked to it
-		// For the time being, only allow linking two doors which have no ExtraTeleport already
-		if (data1 || data2)
-			return true;
-#if 0
-		if (data1 && data2 && data1->linkedDoor == door1 && data2->linkedDoor == door2)
-		{
-			// doors are already linked.
-			*result = 1.0;
-			return true;
-		}
-
-		// try to preserve the positioning of the actor when coming through the door, if an ExtraTeleport already exists
-		Vector3 pos1, pos2;
-		float rot1, rot2;
-
-		if (data1)
-		{
-			data1->linkedDoor->MarkAsModified (TESObjectREFR::kChanged_DoorExtraTeleport);
-			data1 = data1->linkedDoor->GetExtraTeleportData();
-			pos2 = Vector3 (data1->x, data1->y, data1->z);
-			rot2 = data1->zRot;
-			RemoveExtraTeleportFromDoorRef (door1);
-		}
-
-		if (data2)
-		{
-			data2->linkedDoor->MarkAsModified (TESObjectREFR::kChanged_DoorExtraTeleport);
-			data2 = data2->linkedDoor->GetExtraTeleportData();
-			pos1 = Vector3 (data2->x, data2->y, data2->z);
-			rot1 = data2->zRot;
-			RemoveExtraTeleportFromDoorRef (door2);
-		}
-#endif
-
-		LinkDoors (door1, door2);
-
-#if 0
-		if (data1)
-		{
-			data1 = door1->GetExtraTeleportData();
-			data1->x = pos1.x;
-			data1->y = pos1.y;
-			data1->z = pos1.z;
-			data1->zRot = rot1;
-		}
-
-		if (data2)
-		{
-			data2 = door2->GetExtraTeleportData();
-			data2->x = pos2.x;
-			data2->y = pos2.y;
-			data2->z = pos2.z;
-			data2->zRot = rot2;
-		}
-#endif
-
-		*result = 1.0;
-	}
-
-	return true;
-}
-
 struct CellScanInfo
 {
 	const	TESObjectCELL::ObjectListEntry *	prev;	//last ref returned to script
@@ -592,7 +489,7 @@ struct CellScanInfo
 	CellScanInfo()
 	{	}
 
-	CellScanInfo(UInt8 _cellDepth, UInt8 _formType, bool _includeTaken, TESObjectCELL* _cell)
+	CellScanInfo(UInt8 _cellDepth, UInt8 _formType, bool _includeTaken, TESObjectCELL* _cell) 
 					:	cellDepth(_cellDepth), formType(_formType), includeTakenRefs(_includeTaken), prev(NULL), cell(_cell)
 	{
 		world = cell->worldSpace;
@@ -709,14 +606,6 @@ public:
 	}
 };
 
-class RefMatcherMapMarker
-{
-public:
-	bool Accept(const TESObjectREFR* refr) {
-		return (!refr->IsDeleted() && refr->baseForm->refID == kFormID_MapMarker);
-	}
-};
-
 class RefMatcherItem
 {
 	bool m_includeTaken;
@@ -778,7 +667,7 @@ public:
 	{
 		if (m_form)
 			m_magicItem = OBLIVION_CAST(m_magicItem, TESForm, MagicItem);
-
+		
 		m_magicCaster = OBLIVION_CAST(m_owningActor, Actor, MagicCaster);
 	}
 
@@ -786,7 +675,7 @@ public:
 	{
 		if (refr->baseForm->typeID != kFormType_Ammo || refr->IsDeleted())
 			return false;
-
+		
 		MagicProjectile* magic = OBLIVION_CAST(refr, TESObjectREFR, MagicProjectile);
 		ArrowProjectile* arrow = OBLIVION_CAST(refr, TESObjectREFR, ArrowProjectile);
 
@@ -795,7 +684,7 @@ public:
 		case kType_Arrow:
 			if (m_form && refr->baseForm != m_form)
 				return false;
-
+			
 			if (!arrow)
 				return false;
 			else if (arrow->shooter != m_owningActor)
@@ -803,7 +692,7 @@ public:
 			else
 			{
 				curLifetime = arrow->elapsedTime;
-				return true;
+				return true;	
 			}
 
 		case kType_Magic:
@@ -827,7 +716,7 @@ public:
 				curLifetime = arrow->elapsedTime;
 				return true;
 			}
-
+			
 			if (magic && magic->caster == m_magicCaster)
 			{
 				curLifetime = magic->elapsedTime;
@@ -858,9 +747,6 @@ static const TESObjectCELL::ObjectListEntry* GetCellRefEntry(CellListVisitor vis
 	case 71:	//Owned Projectile
 		if (projFinder)
 			entry = visitor.Find(*projFinder, prev);
-		break;
-	case 72:	// map marker
-		entry = visitor.Find(RefMatcherMapMarker(), prev);
 		break;
 	default:
 		entry = visitor.Find(RefMatcherFormType(formType, includeTaken), prev);
@@ -905,6 +791,7 @@ static TESObjectREFR* CellScan(Script* scriptObj, TESObjectCELL* cellToScan = NU
 		scanScripts.erase(idx);
 		return NULL;
 	}
+
 }
 
 static bool GetFirstRef_Execute(COMMAND_ARGS, bool bUsePlayerCell = true)
@@ -915,7 +802,7 @@ static bool GetFirstRef_Execute(COMMAND_ARGS, bool bUsePlayerCell = true)
 	UInt32* refResult = (UInt32*)result;
 	TESObjectCELL* cell = NULL;
 	*refResult = 0;
-
+	
 	PlayerCharacter* pc = *g_thePlayer;
 	if (!pc)
 		return true;						//avoid crash when these functions called in main menu before parentCell instantiated
@@ -961,6 +848,7 @@ static bool Cmd_GetFirstRefInCell_Execute(COMMAND_ARGS)
 
 static bool Cmd_GetNextRef_Execute(COMMAND_ARGS)
 {
+	
 	PlayerCharacter* pc = *g_thePlayer;
 	if (!pc || !(pc->parentCell))
 		return true;						//avoid crash when these functions called in main menu before parentCell instantiated
@@ -1019,9 +907,6 @@ static bool GetNumRefs_Execute(COMMAND_ARGS, bool bUsePlayerCell = true)
 			break;
 		case 70:
 			*result += visitor.CountIf(RefMatcherItem(bIncludeTakenRefs));
-			break;
-		case 72:
-			*result += visitor.CountIf(RefMatcherMapMarker());
 			break;
 		default:
 			*result += visitor.CountIf(RefMatcherFormType(formType, bIncludeTakenRefs));
@@ -1082,7 +967,7 @@ static bool Cmd_GetNumChildRefs_Execute(COMMAND_ARGS)
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_EnableStateChildren);
 	if (!xData)
 		return true;
-
+	
 	ExtraEnableStateChildren* xKids = (ExtraEnableStateChildren*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraEnableStateChildren, 0);
 	if (xKids)
 		*result = EnableStateChildrenVisitor(&xKids->childList).Count();
@@ -1105,7 +990,7 @@ static bool Cmd_GetNthChildRef_Execute(COMMAND_ARGS)
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_EnableStateChildren);
 	if (!xData)
 		return true;
-
+	
 	ExtraEnableStateChildren* xKids = (ExtraEnableStateChildren*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraEnableStateChildren, 0);
 	if (xKids)
 	{
@@ -1140,7 +1025,7 @@ static bool Cmd_IsActivatable_Execute(COMMAND_ARGS)
 
 	if (!thisObj)
 		return true;
-
+	
 	UInt32 type = thisObj->baseForm->typeID;
 	if (type >= kFormType_Activator && type <= kFormType_Ingredient)
 		*result = 1;
@@ -1361,7 +1246,7 @@ static bool Cmd_SetMagicProjectileSpell_Execute(COMMAND_ARGS)
 
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &spell))
 		return true;
-
+	
 	MagicProjectile* mag = (MagicProjectile*)Oblivion_DynamicCast(thisObj, 0, RTTI_TESObjectREFR, RTTI_MagicProjectile, 0);
 	if (mag && spell)
 		mag->magicItem = &(spell->magicItem);
@@ -1394,6 +1279,7 @@ static bool Cmd_SetPlayerProjectile_Execute(COMMAND_ARGS)
 //NULL for projectile source = BAD.
 static bool Cmd_ClearProjectileSource_Execute(COMMAND_ARGS)
 {
+
 /*	if (thisObj)
 	{
 		MobileObject* mob = (MobileObject*)Oblivion_DynamicCast(thisObj, 0, RTTI_TESObjectREFR, RTTI_MobileObject, 0);
@@ -1479,7 +1365,7 @@ static bool GetSound_Execute(COMMAND_ARGS, UInt32 whichSound)
 	if (!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 		return false;
 
-	form = form->TryGetREFRParent();
+	form = form->TryGetREFRParent(); 
 	if (!form)
 	{
 		if (thisObj)
@@ -1567,7 +1453,7 @@ static bool SetSound_Execute(COMMAND_ARGS, UInt32 whichSound)
 	if (!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &sound, &form))
 		return false;
 
-	form = form->TryGetREFRParent();
+	form = form->TryGetREFRParent(); 
 	if (!form)
 	{
 		if (thisObj)
@@ -1645,7 +1531,7 @@ static bool Cmd_DeleteReference_Execute(COMMAND_ARGS)
 	{
 		// don't delete actors or objects in inventories
 		// references must be disabled before deletion
-		if (!arg3 && !thisObj->IsActor() && thisObj->IsDisabled())
+		if (!arg3 && !thisObj->IsActor() && thisObj->IsDisabled())		
 		{
 			IOManager* ioMan = IOManager::GetSingleton();
 			if (ioMan)
@@ -1703,7 +1589,7 @@ static bool GetProjectileValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 			case kProjectile_Time:
 				*result = arrow->elapsedTime;
 				return true;
-			case kProjectile_Distance:
+			case kProjectile_Distance:	
 				// TODO: decode ArrowProjectile class to expose this
 				return true;
 			default:
@@ -1711,7 +1597,7 @@ static bool GetProjectileValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 			}
 		}
 	}
-
+	
 	return true;
 }
 
@@ -2067,12 +1953,12 @@ static bool Cmd_GetTeleportCellName_Execute(COMMAND_ARGS)
 
 	// a little hacky, but I like keeping constructors for game types undefined to avoid
 	// accidentally creating them.
-	char dummy[sizeof(BSStringT)] = { 0 };
-	BSStringT* strName = (BSStringT*)dummy;
+	char dummy[sizeof(String)] = { 0 };
+	String* strName = (String*)dummy;
 	strName->Set("");
 
 	if (thisObj) {
-		thisObj->GetTeleportCellName(strName);
+		thisObj->GetTeleportCellName(strName); 
 	}
 
 	AssignToStringVar(PASS_COMMAND_ARGS, strName->m_data);
@@ -2253,7 +2139,7 @@ static bool Cmd_HasEffectShader_Execute(COMMAND_ARGS)
 
 	return true;
 }
-
+	
 static bool Cmd_IsInOblivion_Execute(COMMAND_ARGS)
 {
 	*result = 0.0;
@@ -2314,6 +2200,7 @@ static bool Cmd_SetTimeLeft_Execute(COMMAND_ARGS)
 
 	return true;
 }
+
 
 #endif
 
@@ -3092,7 +2979,7 @@ DEFINE_COMMAND(SetBaseForm,
 			   1,
 			   kParams_OneInventoryObject);
 
-static ParamInfo kParams_GetProjectile[3] =
+static ParamInfo kParams_GetProjectile[3] = 
 {
 	{	"type",			kParamType_Integer,			1	},
 	{	"maxLifetime",	kParamType_Float,			1	},
@@ -3186,7 +3073,7 @@ DEFINE_COMMAND(SetPos_T, like setPos but change in position not saved, 1, 2, kPa
 DEFINE_COMMAND(SetOwnership_T, like SetOwnership but change not saved, 1, 1, kParams_OneOptionalOwner);
 DEFINE_COMMAND(ClearOwnership_T, like ClearOwnership but change not saved, 1, 0, NULL);
 
-static ParamInfo kParams_OneEffectShader[1] =
+static ParamInfo kParams_OneEffectShader[1] = 
 {
 	{ "effectShader",	kParamType_EffectShader,	0	},
 };
@@ -3196,5 +3083,3 @@ DEFINE_COMMAND(IsInOblivion, returns 1 if the reference is in Oblivion, 1, 0, NU
 
 DEFINE_COMMAND(GetTimeLeft, returns the time left for the light reference, 1, 0, NULL);
 DEFINE_COMMAND(SetTimeLeft, sets the time left for the light reference, 1, 1, kParams_OneFloat);
-
-DEFINE_COMMAND(LinkToDoor, links the caling door reference with the specified door reference, 1, 1, kParams_OneObjectRef);

@@ -1,7 +1,5 @@
 #include "common/IDebugLog.h"
 #include <share.h>
-#include "common/IFileStream.h"
-#include <shlobj.h>
 
 std::FILE			* IDebugLog::logFile = NULL;
 char				IDebugLog::sourceBuf[16] = { 0 };
@@ -17,7 +15,7 @@ IDebugLog::LogLevel	IDebugLog::printLevel = IDebugLog::kLevel_Message;
 
 IDebugLog::IDebugLog()
 {
-	//
+	Open("debug.log");
 }
 
 IDebugLog::IDebugLog(const char * name)
@@ -27,8 +25,7 @@ IDebugLog::IDebugLog(const char * name)
 
 IDebugLog::~IDebugLog()
 {
-	if(logFile)
-		fclose(logFile);
+	fclose(logFile);
 }
 
 void IDebugLog::Open(const char * path)
@@ -50,19 +47,6 @@ void IDebugLog::Open(const char * path)
 		}
 		while(!logFile && (id < 5));
 	}
-}
-
-void IDebugLog::OpenRelative(int folderID, const char * relPath)
-{
-	char	path[MAX_PATH];
-
-	ASSERT(SUCCEEDED(SHGetFolderPath(NULL, folderID, NULL, SHGFP_TYPE_CURRENT, path)));
-
-	strcat_s(path, sizeof(path), relPath);
-
-	IFileStream::MakeAllDirs(path);
-
-	Open(path);
 }
 
 /**

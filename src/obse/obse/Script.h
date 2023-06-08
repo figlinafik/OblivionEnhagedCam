@@ -40,7 +40,7 @@ public:
 
 	struct RefVariable
 	{
-		BSStringT	name;		// variable name/editorID (not used at run-time)
+		String	name;		// variable name/editorID (not used at run-time)
 		TESForm	* form;
 		UInt32	varIdx;		// always zero in editor
 
@@ -81,7 +81,7 @@ public:
 		UInt8			type;		// 10
 		UInt8			pad11[3];	// 11
 		UInt32			unk14;		// 14
-		BSStringT			name;		// 18
+		String			name;		// 18
 	};
 
 	struct VarInfoEntry
@@ -99,11 +99,11 @@ public:
 	// 14
 	struct ScriptInfo
 	{
-		UInt32	unk0;		// 00
-		UInt32	numRefs;	// 04
-		UInt32	dataLength;	// 08
-		UInt32	varCount;	// 0C
-		UInt32	type;		// 10
+		UInt32	unk0;		// 00 
+		UInt32	numRefs;	// 04 
+		UInt32	dataLength;	// 08 
+		UInt32	varCount;	// 0C 
+		UInt32	type;		// 10 
 	};
 
 	enum {
@@ -158,29 +158,15 @@ STATIC_ASSERT(sizeof(Script) == SCRIPT_SIZE);
 // 6C
 struct QuestStageItem
 {
-	struct LogDate {
-		UInt16	dayOfYear;
-		UInt16	year;
-
-		void Get(UInt16& d, UInt32& m, UInt16& y);
-		bool Set(UInt32 d, UInt32 m, UInt32 y);
-		bool Set(const LogDate& date);
-
-		static LogDate Create(UInt32 d, UInt32 m, UInt32 y);
-	};
-
 	UInt32			unk00;			// 00
 	ConditionEntry	conditionList;	// 04
 	Script			resultScript;	// 0C
 	UInt32			unk5C;			// 5C disk offset to log text records? consistent within a single quest
 	UInt8			index;			// 60 sequential
-	UInt8			unk61;			// 61 previously 'hasLogText', which is incorrect
+	bool			hasLogText;		// 61
 	UInt8			unk62[2];		// 62 pad?
-	LogDate			* logDate;		// 64 alloc'ed when added to log. (Why use a 32-bit pointer to a 32-bit structure?)
-	TESQuest		* owningQuest;	// 68
-
-	const char* GetLogText() const;
-	bool SetLogDate(const LogDate& date);	// only supported if date already set (quest stage item is known to player)
+	UInt32			logDate;		// 64
+	TESQuest		* owningQuest;	// 68;
 };
 
 #if OBLIVION
@@ -213,7 +199,7 @@ struct ScriptLineBuffer
 
 // size 0x58? Nothing initialized beyond 0x50.
 struct ScriptBuffer
-{
+{	
 	template <typename tData> struct Node
 	{
 		tData		* data;
@@ -221,13 +207,13 @@ struct ScriptBuffer
 	};
 
 	char			* scriptText;		// 000
-	UInt32			textOffset;			// 004
+	UInt32			textOffset;			// 004 
 	UInt32			unk008;				// 008
-	BSStringT			scriptName;			// 00C
+	String			scriptName;			// 00C
 	UInt32			unk014;				// 014
 	UInt16			unk018;				// 018
 	UInt16			unk01A;				// 01A
-	UInt32			curLineNumber;		// 01C
+	UInt32			curLineNumber;		// 01C 
 	UInt8			* scriptData;		// 020 pointer to 0x4000-byte array
 	UInt32			dataOffset;			// 024
 	UInt32			unk028;				// 028

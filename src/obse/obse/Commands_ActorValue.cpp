@@ -250,46 +250,6 @@ static bool Cmd_GetAVForBaseActorC_Execute(COMMAND_ARGS)
 	return Cmd_GetAVForBaseActor_Execute(PASS_COMMAND_ARGS);
 }
 
-static bool Cmd_GetLuckModifiedSkill_Execute(COMMAND_ARGS)
-{
-	UInt32 skill, luck, capped = 1;
-	*result = -1.0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &skill, &luck, &capped)) {
-		*result = GetLuckModifiedSkill(skill, luck, capped);
-	}
-
-	if (IsConsoleMode()) {
-		Console_Print("GetLuckModifiedSkill >> %.2f", *result);
-	}
-
-	return true;
-}
-
-static bool Cmd_GetAVSkillMasteryLevel_Execute(COMMAND_ARGS)
-{
-	*result = 0;
-	UInt32 skillCode = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &skillCode) && thisObj)
-	{
-		if (skillCode >= kActorVal_Armorer && skillCode <= kActorVal_Speechcraft)
-		{
-			Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-			if (actor)
-			{
-				*result = GetSkillMasteryLevel(actor->GetBaseActorValue(skillCode));
-
-				if (IsConsoleMode()) {
-					Console_Print("GetAVSkillMasteryLevel >> %.2f", *result);
-				}
-			}
-		}
-	}
-
-	return true;
-}
-
 #endif
 
 
@@ -509,28 +469,3 @@ DEFINE_COMMAND(SetAVModC,
 
 DEFINE_COMMAND(GetMaxAVC, returns the maximum value of the actor value for the calling actor, 1, 1, kParams_OneInt);
 DEFINE_COMMAND(GetAVForBaseActorC, returns the actor value defined for the base actor, 0, 2, kParams_GetAVForBaseActorC);
-
-static ParamInfo kParams_GetLuckModifiedSkill[] =
-{
-	{	"skill level",	kParamType_Integer,		0	},
-	{	"luck",			kParamType_Integer,		0	},
-	{	"capped",		kParamType_Integer,		1	},
-};
-
-DEFINE_COMMAND(GetLuckModifiedSkill, returns the skill modified for luck, 0, 3, kParams_GetLuckModifiedSkill);
-
-DEFINE_COMMAND(GetAVSkillMasteryLevel, returns the mastery level of the skill, 1, 1, kParams_OneActorValue);
-CommandInfo kCommandInfo_GetAVSkillMasteryLevelC =
-{
-	"GetAVSkillMasteryLevelC",
-	"",
-	0,
-	"returns the mastery level of the skills",
-	1,
-	1,
-	kParams_OneInt,
-	HANDLER(Cmd_GetAVSkillMasteryLevel_Execute),
-	Cmd_Default_Parse,
-	NULL,
-	0
-};

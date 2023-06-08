@@ -11,13 +11,13 @@
 
 #include "EventManager.h"
 #include "FunctionScripts.h"
-#include "ModTable.h"
 
 enum EScriptMode {
 	eScript_HasScript,
 	eScript_Get,
 	eScript_Remove,
 };
+
 
 static bool GetScript_Execute(COMMAND_ARGS, EScriptMode eMode)
 {
@@ -39,9 +39,9 @@ static bool GetScript_Execute(COMMAND_ARGS, EScriptMode eMode)
 	} else {
 		if (script) {
 			UInt32* refResult = (UInt32*)result;
-			*refResult = script->refID;
+			*refResult = script->refID;		
 		}
-		if (eMode == eScript_Remove && scriptForm) {
+		if (eMode == eScript_Remove) {
 			scriptForm->script = NULL;
 		}
 	}
@@ -63,6 +63,7 @@ static bool Cmd_RemoveScript_Execute(COMMAND_ARGS)
 {
 	return GetScript_Execute(PASS_COMMAND_ARGS, eScript_Remove);
 }
+
 
 static bool Cmd_SetScript_Execute(COMMAND_ARGS)
 {
@@ -271,7 +272,7 @@ static bool Cmd_ResetAllVariables_Execute(COMMAND_ARGS)
 		*result = list->ResetAllVariables();
 
 	return true;
-}
+}	
 
 static bool Cmd_GetFormFromMod_Execute(COMMAND_ARGS)
 {
@@ -285,7 +286,7 @@ static bool Cmd_GetFormFromMod_Execute(COMMAND_ARGS)
 		UInt8 modIndex = 0xFF;
 		if (_stricmp(modName, "NONE"))	// pass "NONE" to look up dynamic form (in savegame)
 		{
-			modIndex = ModTable::Get().GetModIndex(modName);
+			modIndex = (*g_dataHandler)->GetModIndex(modName);
 			if (modIndex == 0xFF)	// mod not loaded
 				return true;
 		}
@@ -423,17 +424,17 @@ static bool ExtractEventCallback(ExpressionEvaluator& eval, EventManager::EventC
 			TESObjectREFR* sourceFilter = NULL;
 			TESForm* targetFilter = NULL;
 			TESObjectREFR* thisObjFilter = NULL;
-
+			
 			// any filters?
 			for (UInt32 i = 2; i < eval.NumArgs(); i++) {
 				const TokenPair* pair = eval.Arg(i)->GetPair();
 				if (pair && pair->left && pair->right) {
 					const char* key = pair->left->GetString();
 					if (key) {
-						if (!_stricmp(key, "ref") || !_stricmp(key, "first")) {
+						if (!_stricmp(key, "ref")) {
 							sourceFilter = OBLIVION_CAST(pair->right->GetTESForm(), TESForm, TESObjectREFR);
 						}
-						else if (!_stricmp(key, "object") || !_stricmp(key, "second")) {
+						else if (!_stricmp(key, "object")) {
 							// special-case MGEF
 							if (!_stricmp(eventName, "onmagiceffecthit")) {
 								const char* effStr = pair->right->GetString();
@@ -489,7 +490,10 @@ static bool Cmd_RemoveEventHandler_Execute(COMMAND_ARGS)
 
 static bool Cmd_GetCurrentEventName_Execute(COMMAND_ARGS)
 {
-	const char* eventName = EventManager::GetCurrentEventName().c_str();
+	const char* eventName = EventManager::GetCurrentEventName();
+	if (!eventName) {
+		eventName = "";
+	}
 
 	AssignToStringVar(PASS_COMMAND_ARGS, eventName);
 	return true;
@@ -512,32 +516,6 @@ static bool Cmd_GetCallingScript_Execute(COMMAND_ARGS)
 		*refResult = caller->refID;
 	}
 
-	return true;
-}
-
-static bool Cmd_DispatchEvent_Execute (COMMAND_ARGS)
-{
-	ExpressionEvaluator eval (PASS_COMMAND_ARGS);
-	if (!eval.ExtractArgs () || eval.NumArgs() == 0)
-		return true;
-
-	const char* eventName = eval.Arg(0)->GetString ();
-	if (!eventName)
-		return true;
-
-	ArrayID argsArrayId = 0;
-	const char* senderName = NULL;
-	if (eval.NumArgs() > 1)
-	{
-		if (!eval.Arg(1)->CanConvertTo (kTokenType_Array))
-			return true;
-		argsArrayId = eval.Arg(1)->GetArray ();
-
-		if (eval.NumArgs() > 2)
-			senderName = eval.Arg(2)->GetString ();
-	}
-
-	*result = EventManager::DispatchUserDefinedEvent (eventName, scriptObj, argsArrayId, senderName) ? 1.0 : 0.0;
 	return true;
 }
 
@@ -588,7 +566,8 @@ CommandInfo kCommandInfo_RemoveScript =
 	0
 };
 
-ParamInfo kParamInfo_SetScript[2] =
+
+ParamInfo kParamInfo_SetScript[2] = 
 {
 	{	"script", kParamType_MagicItem, 0 },
 	{	"object", kParamType_InventoryObject, 1},
@@ -763,7 +742,7 @@ static ParamInfo kOBSEParams_SetEventHandler[4] =
 	{ "filter",				kOBSEParamType_Pair,	1 },
 };
 
-CommandInfo kCommandInfo_SetEventHandler =
+CommandInfo kCommandInfo_SetEventHandler = 
 {
 	"SetEventHandler", "", 0,
 	"defines a function script to serve as a callback for game events",
@@ -774,7 +753,7 @@ CommandInfo kCommandInfo_SetEventHandler =
 	0
 };
 
-CommandInfo kCommandInfo_RemoveEventHandler =
+CommandInfo kCommandInfo_RemoveEventHandler = 
 {
 	"RemoveEventHandler", "", 0,
 	"removes event handlers matching the event, script, and optional filters specified",
@@ -785,24 +764,7 @@ CommandInfo kCommandInfo_RemoveEventHandler =
 	0
 };
 
-DEFINE_COMMAND(GetCurrentEventName, returns the name of the event currently being processed by an event handler,
+DEFINE_COMMAND(GetCurrentEventName, returns the name of the event currently being processed by an event handler, 
 			   0, 0, NULL);
 DEFINE_COMMAND(GetCurrentScript, returns the calling script, 0, 0, NULL);
 DEFINE_COMMAND(GetCallingScript, returns the script that called the executing function script, 0, 0, NULL);
-
-static ParamInfo kOBSEParams_DispatchEvent[3] =
-{
-	{	"eventName",			kOBSEParamType_String,	0	},
-	{	"args",					kOBSEParamType_Array,	1	},
-	{	"sender",				kOBSEParamType_String,	1	}
-};
-
-CommandInfo kCommandInfo_DispatchEvent =
-{
-	"DispatchEvent", "", 0,
-	"dispatches a user-defined event to any registered listeners",
-	0, 3, kOBSEParams_DispatchEvent,
-	HANDLER(Cmd_DispatchEvent_Execute),
-	Cmd_Expression_Parse,
-	NULL, 0
-};

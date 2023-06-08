@@ -3,7 +3,6 @@
 class Script;
 class TESForm;
 class TESObjectREFR;
-class Actor;
 
 // For dispatching events to scripts.
 // Scripts can register an event handler for any of the supported events.
@@ -33,7 +32,6 @@ namespace EventManager
 		kEventID_OnPackageStart,
 		kEventID_OnPackageDone,
 		kEventID_OnStartCombat,
-		kEventID_OnMagicEffectHit2,		// takes a ref as the mgef instead of a 4-letter effect code, for OBME support
 
 		kEventID_ScriptEventListMAX,
 
@@ -51,8 +49,6 @@ namespace EventManager
 		kEventID_OnEatIngredient,	// actor eats an ingredient
 		kEventID_OnNewGame,			// player starts a new game
 		kEventID_OnHealthDamage,	// actor takes health damage
-		kEventID_OnSoulTrap,		// player successfully traps a soul
-		kEventID_OnRaceSelectionComplete,	// player exits RaceSexMenu
 
 		// events related to changes in HighProcess::currentAction
 		// these are slightly misnamed
@@ -69,12 +65,6 @@ namespace EventManager
 		kEventID_OnCreateSpell,
 		kEventID_OnCreatePotion,
 
-		kEventID_OnQuestComplete,
-		kEventID_OnMagicCast,			// MagicCaster successfully casts a magic item
-		kEventID_OnMagicApply,			// MagicTarget successfully applies a magic item
-		kEventID_OnWaterSurface,
-		kEventID_OnWaterDive,
-
 		kEventID_GameEventMAX,
 
 		// OBSE internal events, correspond to OBSEMessagingInterface messages
@@ -84,14 +74,8 @@ namespace EventManager
 		kEventID_ExitToMainMenu,
 		kEventID_QQQ,
 		kEventID_PostLoadGame,
-		kEventID_SaveIni,
 
-		kEventID_InternalMAX,
-
-		// user-defined
-		kEventID_UserDefinedMIN = kEventID_InternalMAX,
-
-		kEventID_INVALID = 0xFFFFFFFF
+		kEventID_MAX,
 	};
 
 	// Represents an event handler registered for an event.
@@ -120,7 +104,7 @@ namespace EventManager
 		bool Equals(const EventCallback& rhs) const;	// compare, return true if the two handlers are identical
 	};
 
-	bool SetHandler(const char* eventName, EventCallback& handler);
+	bool SetHandler(const char* id, EventCallback& handler);
 
 	// removes handler only if all filters match
 	bool RemoveHandler(const char* id, EventCallback& handler);
@@ -132,22 +116,11 @@ namespace EventManager
 	void HandleOBSEMessage(UInt32 msgID, void* data);
 
 	// handle an eventID directly
-	void __stdcall HandleEvent(UInt32 id, void * arg0, void * arg1);
+	void __stdcall HandleEvent(eEventID id, void * arg0, void * arg1);
 
-	// name of whatever event is currently being handled, empty string if none
-	std::string GetCurrentEventName();
+	// name of whatever event is currently being handled
+	const char* GetCurrentEventName();
 
 	// called each frame to update internal state
 	void Tick();
-
-	void Init();
-
-	// dispatch a user-defined event from a script
-	bool DispatchUserDefinedEvent (const char* eventName, Script* sender, UInt32 argsArrayId, const char* senderName);
-
-	// OnWaterDive/Surface stuff
-	// ###TODO: move this elsewhere
-	void SetActorMaxSwimBreath(Actor* actor, float nuMax);
-	float __stdcall GetActorMaxSwimBreath(Actor* actor);
-	bool SetActorSwimBreathOverride(Actor* actor, UInt32 state);
 };

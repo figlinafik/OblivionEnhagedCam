@@ -7,6 +7,7 @@
 #include "GameForms.h"
 #include "GameObjects.h"
 #include "ArrayVar.h"
+#include <set>
 
 /* Path grid nodes don't have formIDs. We need a way for scripts to identify nodes, but scripts
 	may be interested in nodes outside of a single pathgrid when dealing with exterior cells.
@@ -91,7 +92,7 @@ public:
 		// init to node ID -1
 		m_id.localIndex = -1;
 		m_id.cellOffset = -1;
-		m_id.pad = -1;
+		m_id.pad = -1; 
 	}
 
 	UInt32 GetIntegerID() const { return  m_id.ToInteger(); }
@@ -142,6 +143,9 @@ public:
 };
 
 STATIC_ASSERT(sizeof(NodeID) == sizeof(UInt32));
+
+
+
 
 /* Cmds */
 
@@ -283,7 +287,7 @@ static bool Cmd_PathEdgeExists_Execute(COMMAND_ARGS)
 				}
 				++iter;
 			}
-
+			
 			if (!iter.End()) {
 				*result = 1.0;
 			}
@@ -415,7 +419,7 @@ class EdgeRecorder {
 	TESPathGrid			* m_grid;
 	TESObjectCELL		* m_cell;
 public:
-	EdgeRecorder(std::set<Edge> & edges, UInt16 nodeID, TESObjectCELL* cell) : m_edges(edges), m_cell(cell) {
+	EdgeRecorder(std::set<Edge> & edges, UInt16 nodeID, TESObjectCELL* cell) : m_edges(edges), m_cell(cell) { 
 		m_grid = cell->pathGrid;
 		m_nodeID = NodeID(nodeID, 0, 0);
 	}
@@ -658,9 +662,9 @@ public:
 		// Pos members are already default initialized to (0, 0)
 		if (!m_bInterior) {
 			if (worldArea) {
-				m_topLeft = Pos((worldArea->center.x - worldArea->extents.x) / 4096,
+				m_topLeft = Pos((worldArea->center.x - worldArea->extents.x) / 4096, 
 					(worldArea->center.y - worldArea->extents.y) / 4096);
-				m_bottomRight = Pos((worldArea->center.x + worldArea->extents.x) / 4096,
+				m_bottomRight = Pos((worldArea->center.x + worldArea->extents.x) / 4096, 
 					(worldArea->center.y + worldArea->extents.y) / 4096);
 				m_cur = m_topLeft;
 			}
@@ -696,7 +700,7 @@ public:
 			m_cur.y += 1;
 		}
 	}
-
+	
 private:
 	Pos				m_topLeft;
 	Pos				m_bottomRight;
@@ -750,7 +754,7 @@ template <class _Shape>
 class AreaNodeFinder
 {
 public:
-	AreaNodeFinder(_Shape& area, bool bIncludeDisabledNodes)
+	AreaNodeFinder(_Shape& area, bool bIncludeDisabledNodes) 
 		: m_area(area), m_playerCellX(0), m_playerCellY(0), m_bIncludeDisabled(bIncludeDisabledNodes)  {
 		m_centerCell = (*g_thePlayer)->parentCell;
 		if (m_centerCell && !m_centerCell->IsInterior()) {
@@ -769,7 +773,7 @@ public:
 			return false;
 		}
 
-		// iterate through all cells that could potentially intersect the area
+		// iterate through all cells that could potentially intersect the area	
 		Rect boundingRect = m_area.GetBoundingRect();
 		for (CellIterator cellIter(&boundingRect); !cellIter.Done(); cellIter.Next()) {
 			TESObjectCELL* curCell = cellIter.Get();

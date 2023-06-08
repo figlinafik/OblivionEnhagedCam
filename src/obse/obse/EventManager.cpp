@@ -12,13 +12,10 @@
 #include "ThreadLocal.h"
 #include "common/ICriticalSection.h"
 #include "Hooks_Gameplay.h"
-#include "GameOSDepend.h"
-#include "InventoryReference.h"
-#include "GameData.h"
 
 namespace EventManager {
 
-void __stdcall HandleEventForCallingObject(UInt32 id, TESObjectREFR* callingObj, void* arg0, void* arg1);
+void __stdcall HandleEventForCallingObject(eEventID id, TESObjectREFR* callingObj, void* arg0, void* arg1);
 
 static ICriticalSection s_criticalSection;
 
@@ -48,13 +45,6 @@ static void  InstallOnBlockHook();
 static void  InstallOnRecoilHook();
 static void  InstallOnStaggerHook();
 static void  InstallOnDodgeHook();
-static void  InstallOnSoulTrapHook();
-static void	 InstallIniHook();
-static void  InstallOnRaceSelectionCompleteHook();
-static void  InstallOnQuestCompleteHook();
-static void  InstallOnMagicCastHook();
-static void  InstallOnMagicApplyHook();
-static void  InstallSwimmingBreathHook();
 
 enum {
 	kEventMask_OnActivate		= 0xFFFFFFFF,		// special case as OnActivate has no event mask
@@ -64,16 +54,9 @@ typedef void (* EventHookInstaller)();
 
 struct EventInfo
 {
-	EventInfo (std::string const& name_, UInt8* params_, UInt8 nParams_, bool defer_, EventHookInstaller* installer_)
-		: name(name_), paramTypes(params_), numParams(nParams_), isDeferred(defer_), callbacks(NULL), installHook(installer_)
-		{ MakeLower (name); }
-	EventInfo (std::string const& name_, UInt8 * params_, UInt8 numParams_) : name(name_), paramTypes(params_), numParams(numParams_), isDeferred(false), callbacks(NULL), installHook(NULL)
-		{ MakeLower (name); }
-	EventInfo () : name(""), paramTypes(NULL), numParams(0), isDeferred(false), callbacks(NULL), installHook(NULL)
-		{ ; }
 	~EventInfo();
 
-	std::string					name;			// must be lowercase
+	const char					* name;				// must be lowercase
 	UInt8						* paramTypes;
 	UInt8						numParams;
 	bool						isDeferred;		// dispatch event in Tick() instead of immediately - currently unused
@@ -105,14 +88,6 @@ static EventHookInstaller s_BlockHook = InstallOnBlockHook;
 static EventHookInstaller s_RecoilHook = InstallOnRecoilHook;
 static EventHookInstaller s_StaggerHook = InstallOnStaggerHook;
 static EventHookInstaller s_DodgeHook = InstallOnDodgeHook;
-static EventHookInstaller s_SoulTrapHook = InstallOnSoulTrapHook;
-static EventHookInstaller s_IniHook = InstallIniHook;
-static EventHookInstaller s_OnRaceSelectionCompleteHook = InstallOnRaceSelectionCompleteHook;
-static EventHookInstaller s_OnQuestCompleteHook = InstallOnQuestCompleteHook;
-static EventHookInstaller s_OnMagicCastHook = InstallOnMagicCastHook;
-static EventHookInstaller s_OnMagicApplyHook = InstallOnMagicApplyHook;
-static EventHookInstaller s_OnWaterDiveSurfaceHook = InstallSwimmingBreathHook;
-
 
 // event handler param lists
 static UInt8 kEventParams_GameEvent[2] =
@@ -156,16 +131,74 @@ static UInt8 kEventParams_OneRef_OneInt[2] =
 	Script::eVarType_Ref, Script::eVarType_Integer
 };
 
-static UInt8 kEventParams_OneArray[1] =
+// EventInfo definitions
+#define EVENT_INFO(name, params, hookInstaller, deferred) \
+	{ name, kEventParams_ ## params, sizeof(kEventParams_ ## params), deferred, NULL, hookInstaller }
+
+static EventInfo	s_eventInfos[kEventID_MAX] =
 {
-	Script::eVarType_Array
+	EVENT_INFO("onhit", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onhitwith", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onmagiceffecthit", GameMGEFEvent, &s_MainEventHook, false),
+	EVENT_INFO("onactorequip", GameEvent, &s_ActorEquipHook, false),
+	EVENT_INFO("ondeath", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onmurder", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onknockout", OneRef, &s_MainEventHook, false),
+	EVENT_INFO("onactorunequip", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onalarm trespass", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onalarm steal", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onalarm attack", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onalarm pickpocket", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onalarm murder", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onpackagechange", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onpackagestart", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onpackagedone", GameEvent, &s_MainEventHook, false),
+	EVENT_INFO("onstartcombat", GameEvent, &s_MainEventHook, false),
+
+	EVENT_INFO("onactivate", GameEvent, &s_ActivateHook, false),
+	{ "onvampirefeed", NULL, 0, false, NULL, &s_VampireHook },
+	EVENT_INFO("onskillup", OneInteger, &s_SkillUpHook, false),
+	EVENT_INFO("onscriptedskillup", TwoIntegers, &s_ModPCSHook, false),
+	EVENT_INFO("onmapmarkeradd", OneRef, &s_MapMarkerHook, false),
+	EVENT_INFO("onspellcast", GameEvent, &s_SpellScrollHook, false),
+	EVENT_INFO("onscrollcast", GameEvent, &s_SpellScrollHook, false),
+	EVENT_INFO("onfallimpact", OneRef, &s_FallImpactHook, false),
+	EVENT_INFO("onactordrop", GameEvent, NULL, false),
+	EVENT_INFO("ondrinkpotion", GameEvent, &s_DrinkHook, false),
+	EVENT_INFO("oneatingredient", GameEvent, &s_EatIngredHook, false),
+	{ "onnewgame", NULL, 0, false, NULL, NULL },
+	EVENT_INFO("onhealthdamage", OneFloat_OneRef, &s_HealthDamageHook, false),
+
+	EVENT_INFO("onattack", OneRef, &s_MeleeAttackHook, false),
+	EVENT_INFO("onrelease", OneRef, &s_MeleeReleaseHook, false),
+	EVENT_INFO("onbowattack", OneRef, &s_BowAttackHook, false),
+	EVENT_INFO("onbowarrowattach", OneRef, &s_BowReleaseHook, false),	// undocumented, not hugely useful
+	EVENT_INFO("onblock", OneRef, &s_BlockHook, false),
+	EVENT_INFO("onrecoil", OneRef, &s_RecoilHook, false),
+	EVENT_INFO("onstagger", OneRef, &s_StaggerHook, false),
+	EVENT_INFO("ondodge", OneRef, &s_DodgeHook, false),
+
+	EVENT_INFO("onenchant", OneRef, NULL, false),
+	EVENT_INFO("oncreatespell", OneRef, NULL, false),
+	EVENT_INFO("oncreatepotion", OneRef_OneInt, NULL, false),
+
+	EVENT_INFO("loadgame", OneString, NULL, false),
+	EVENT_INFO("savegame", OneString, NULL, false),
+	{ "exitgame", NULL, 0, false, NULL, NULL },
+	{ "mainmenu", NULL, 0, false, NULL, NULL },
+	{ "qqq", NULL, 0, false, NULL, NULL },
+	EVENT_INFO("postloadgame", OneInteger, NULL, false),
 };
+
+#undef EVENT_INFO
+
+STATIC_ASSERT(SIZEOF_ARRAY(s_eventInfos, EventInfo) == kEventID_MAX);
 
 ///////////////////////////
 // internal functions
 //////////////////////////
 
-void __stdcall HandleEvent(UInt32 id, void * arg0, void * arg1);
+void __stdcall HandleEvent(eEventID id, void * arg0, void * arg1);
 void __stdcall HandleGameEvent(UInt32 eventMask, TESObjectREFR* source, TESForm* object);
 
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
@@ -555,7 +588,7 @@ static void DoSpellCastHook(MagicCaster* caster)
 	MagicItemForm* magicItemForm = OBLIVION_CAST(caster->GetQueuedMagicItem(), MagicItem, MagicItemForm);
 	TESObjectREFR* casterRef = OBLIVION_CAST(caster, MagicCaster, TESObjectREFR);
 	if (magicItemForm && casterRef) {
-		UInt32 eventID = OBLIVION_CAST(magicItemForm, MagicItemForm, EnchantmentItem) ? kEventID_OnScrollCast : kEventID_OnSpellCast;
+		eEventID eventID = OBLIVION_CAST(magicItemForm, MagicItemForm, EnchantmentItem) ? kEventID_OnScrollCast : kEventID_OnSpellCast;
 		HandleEvent(eventID, casterRef, magicItemForm);
 	}
 }
@@ -896,506 +929,7 @@ static void InstallOnDodgeHook()
 	InstallOnActionChangeHook(HighProcess::kAction_Dodge);
 }
 
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	// when player successfully traps a soul
-	static const UInt32 s_soulTrapPatchAddr = 0x006A4EC8;	
-
-	// when an existing EntryExtendData for a soulgem is populated with a newly captured soul
-	static const UInt32 s_createExtraSoulPatchAddr1 = 0x00484D14;
-
-	// when a new EntryExtendData for a soulgem is created for a newly captured soul
-	static const UInt32 s_createExtraSoulPatchAddr2 = 0x00484D47;
-	static const UInt32 s_createExtraSoulRetnAddr2 = 0x00484D4D;
-
-	// void tList<T>::AddEntry (T* data), prepends new entry to list
-	static const UInt32 s_BSSimpleList_AddEntry = 0x00446CB0;
-
-	// void BaseExtraList::SetExtraSoulLevel (UInt32 soulLevel)
-	static const UInt32 s_BaseExtraList_SetExtraSoulLevel = 0x0041EF30;
-#else
-#error unsupported Oblivion version
-#endif
-
-// temp ref (InventoryReference) created for most recently populated soul gem in player's inventory, valid only for a single frame
-static TESObjectREFR* s_lastFilledSoulgem = NULL;
-
-static void __stdcall SetLastFilledSoulgem (ExtraContainerChanges::EntryData* entryData, ExtraContainerChanges::EntryExtendData* extendData)
-{
-	// locate ExtraContainerChanges::Entry for this EntryData
-	TESObjectREFR* owner = *g_thePlayer;
-	ExtraContainerChanges::Entry* entry = ExtraContainerChanges::GetForRef (*g_thePlayer)->data->objList;
-	while (entry && entry->data != entryData)
-		entry = entry->next;
-
-	// create temp InventoryReference for soulgem
-	InventoryReference::Data irefData (entryData->type, entry, extendData);
-	InventoryReference* iref = InventoryReference::Create (owner, irefData, false);
-	s_lastFilledSoulgem = iref->GetRef ();
-}
-	
-static __declspec(naked) void CreateExtraSoulHook1 (void)
-{
-	__asm {
-		pushad
-		push esi		// EntryExtendData
-		push ebp		// EntryData
-		call SetLastFilledSoulgem
-
-		popad
-		jmp [s_BaseExtraList_SetExtraSoulLevel]		// overwritten function call
-	}
-}
-
-static __declspec(naked) void CreateExtraSoulHook2 (void)
-{
-	__asm {
-		push esi
-		mov esi, ecx						// List
-		call [s_BSSimpleList_AddEntry]		// overwritten function call, returns EntryExtendData*
-		pushad
-		mov ecx, esi
-		push ecx		// EntryExtendData
-		push ebp		// EntryData
-		call SetLastFilledSoulgem
-
-		popad
-		jmp [s_createExtraSoulRetnAddr2]
-	}
-}
-		
-static __declspec(naked) void OnSoulTrapHook(void)
-{
-	__asm {
-		pushad
-		mov eax, [s_lastFilledSoulgem]
-		push eax
-		push esi		// actor whose soul was captured
-		push kEventID_OnSoulTrap
-		call HandleEvent
-		popad
-
-		// we overwrote a call to QueueUIMessage, jump there and it'll return to hook location
-		jmp QueueUIMessage
-	}
-}
-
-static void InstallOnSoulTrapHook()
-{
-	WriteRelCall(s_soulTrapPatchAddr, (UInt32)&OnSoulTrapHook);
-	WriteRelJump(s_createExtraSoulPatchAddr1, (UInt32)&CreateExtraSoulHook1);
-	WriteRelJump(s_createExtraSoulPatchAddr2, (UInt32)&CreateExtraSoulHook2);
-}
-	
-// hook overwrites IniSettingCollection::Write() virtual function
-static UInt32 s_IniSettingCollection_Write = 0;
-static void SaveIniHook()
-{
-	// Ini is saved when game exits. We cannot invoke a function script at that time, so check
-	OSGlobals* globals = *g_osGlobals;
-	if (NULL == globals || 0 != globals->quitGame)
-		return;
-
-	// check if ini can be written at this time; if so dispatch pre-save event
-	IniSettingCollection* settings = IniSettingCollection::GetSingleton();	// aka 'this', since this is a virtual method
-	if (NULL != settings->writeInProgressCollection)
-		HandleEvent(kEventID_SaveIni, 0, NULL);
-
-	// just in case I've screwed something up, let the vanilla Write() method run even if we've determined above that it shouldn't
-	bool bWritten = ThisStdCall(s_IniSettingCollection_Write, settings) ? true : false;
-	
-	// if successful, dispatch post-save event
-	if (bWritten)
-		HandleEvent(kEventID_SaveIni, (void*)1, NULL);
-}
-
-static void InstallIniHook()
-{
-	IniSettingCollection* settings = IniSettingCollection::GetSingleton();
-	UInt32* vtbl = *((UInt32**)settings);
-	s_IniSettingCollection_Write = vtbl[7];
-	SafeWrite32((UInt32)(vtbl+7), (UInt32)(&SaveIniHook));
-}
-
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kChargenPatchAddr = 0x005C2B36;
-static const UInt32 kChargenCallAddr  = 0x0066C580;
-static const UInt32 kChargenRetnAddr  = 0x005C2B3B;
-#else
-#error unsupported Oblivion version
-#endif
-
-static __declspec (naked) void OnRaceSelectionCompleteHook (void)
-{
-	__asm {
-		pushad
-		push 0
-		push 0
-		push kEventID_OnRaceSelectionComplete
-		call HandleEvent
-		popad
-		call [kChargenCallAddr]
-		jmp  [kChargenRetnAddr]
-	}
-}
-
-static void InstallOnRaceSelectionCompleteHook()
-{
-	WriteRelJump (kChargenPatchAddr, (UInt32)&OnRaceSelectionCompleteHook);
-}
-
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kQuestCompletePatchAddr = 0x00529847;
-static const UInt32 kQuestCompleteRetnAddr  = 0x00529851;
-#else
-#error unsupported Oblivion version
-#endif
-
-static __declspec (naked) void OnQuestCompleteHook (void)
-{
-	__asm {
-		pushad
-		push 0
-		push ecx
-		push kEventID_OnQuestComplete
-		call HandleEvent
-		popad
-		
-		or	 byte ptr [ecx + 0x3C], 2
-		jmp  [kQuestCompleteRetnAddr]
-	}
-}
-
-static void InstallOnQuestCompleteHook()
-{
-	WriteRelJump (kQuestCompletePatchAddr, (UInt32)&OnQuestCompleteHook);
-}
-
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kMagicCasterCastMagicItemFnAddr = 0x00699190;
-static const UInt32 kMagicCasterCastMagicItemCallSites[13]  = 
-{
-	0x005020D6, 0x0050212F, 0x00514942, 0x005E4496,
-	0x00601439, 0x006033F2, 0x006174C2, 0x0062B3F3,
-	0x0062B539, 0x00634FAE, 0x0064AE06, 0x0064D786,
-	0x006728FC
-};
-
-static const UInt32 kMagicTargetAddEffectFnAddr = 0x006A27F0;
-static const UInt32 kMagicTargetAddEffectCallSites[13]  = 
-{
-	0x005E560F, 0x006A2D7F
-};
-#else
-#error unsupported Oblivion version
-#endif
-
-static bool PerformMagicCasterTargetHook(UInt32 eventID, MagicCaster* caster, MagicItem* magicItem, MagicTarget* target, UInt32 noHitVFX, ActiveEffect* av)
-{
-	bool result = false;
-	
-	if (eventID == kEventID_OnMagicCast) {
-		result = ThisStdCall(kMagicCasterCastMagicItemFnAddr, caster, magicItem, target, noHitVFX);
-	} else {
-		result = ThisStdCall(kMagicTargetAddEffectFnAddr, target, caster, magicItem, av);
-	}
-
-	if (result) {
-		TESObjectREFR* casterRef = OBLIVION_CAST(caster, MagicCaster, TESObjectREFR);
-		TESObjectREFR* targetRef = OBLIVION_CAST(target, MagicTarget, TESObjectREFR);
-		TESForm* magicItemForm = OBLIVION_CAST(magicItem, MagicItem, TESForm);
-
-		if (casterRef == NULL && caster)
-			casterRef = caster->GetParentRefr();
-
-		if (targetRef == NULL && target)
-			targetRef = target->GetParent();
-
-		if (magicItemForm) {
-			if (eventID == kEventID_OnMagicCast) {
-				HandleEventForCallingObject(kEventID_OnMagicCast, casterRef, magicItemForm, targetRef);
-			} else {
-				HandleEventForCallingObject(kEventID_OnMagicApply, targetRef, magicItemForm, casterRef);
-			}
-		}
-	}
-
-	return result;
-}
-
-static bool __stdcall DoOnMagicCastHook(MagicCaster* caster, MagicItem* magicItem, MagicTarget* target, UInt32 noHitVFX)
-{
-	return PerformMagicCasterTargetHook(kEventID_OnMagicCast, caster, magicItem, target, noHitVFX, NULL);
-}
-
-static __declspec(naked) void OnMagicCastHook(void)
-{
-	__asm {
-		push [esp + 0xC]
-		push [esp + 0xC]
-		push [esp + 0xC]
-		push ecx
-		xor eax, eax
-		call DoOnMagicCastHook
-		retn 0xC
-	} 
-}
-
-static void InstallOnMagicCastHook()
-{
-	for (int i = 0; i < 13; i++) {
-		WriteRelCall(kMagicCasterCastMagicItemCallSites[i], (UInt32)OnMagicCastHook);
-	}
-}
-
-static bool __stdcall DoOnMagicApplyHook(MagicTarget* target, MagicCaster* caster, MagicItem* magicItem, ActiveEffect* av)
-{
-	return PerformMagicCasterTargetHook(kEventID_OnMagicApply, caster, magicItem, target, 0, av);
-}
-
-static __declspec(naked) void OnMagicApplyHook(void)
-{
-	__asm {
-		push [esp + 0xC]
-		push [esp + 0xC]
-		push [esp + 0xC]
-		push ecx
-		xor eax, eax
-		call DoOnMagicApplyHook
-		retn 0xC
-	} 
-}
-
-static void InstallOnMagicApplyHook()
-{
-	for (int i = 0; i < 2; i++) {
-		WriteRelCall(kMagicTargetAddEffectCallSites[i], (UInt32)OnMagicApplyHook);
-	}
-}
-
-//max swimming breath is calculated each frame based on actor's endurance
-//hook the two calls to the function that does this
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kActorSwimBreath_CalcMax_CallAddr	= 0x00548960;	// original function for calculating max breath 
-static const UInt32 kActorSwimBreath_CalcMax1_PatchAddr = 0x00604559;
-static const UInt32 kActorSwimBreath_CalcMax1_RetnAddr	= 0x0060455E;
-static const UInt32 kActorSwimBreath_CalcMax2_PatchAddr = 0x005E01C4;
-static const UInt32 kActorSwimBreath_CalcMax2_RetnAddr	= 0x005E01C9;
-#else
-#error unsupported Oblivion version
-#endif
-static __declspec(naked) void Hook_ActorSwimBreath_CalcMax1()
-{
-	__asm
-	{
-		pushad
-		push	ebp
-		call	GetActorMaxSwimBreath
-		popad
-		jmp		[kActorSwimBreath_CalcMax1_RetnAddr]
-	}
-}
-static __declspec(naked) void Hook_ActorSwimBreath_CalcMax2()
-{
-	__asm
-	{
-		pushad
-		push	esi
-		call	GetActorMaxSwimBreath
-		popad
-		jmp		[kActorSwimBreath_CalcMax2_RetnAddr]
-	}
-}
-
-typedef std::map<Actor*,float> MaxBreathOverrideMapT;
-MaxBreathOverrideMapT s_MaxSwimmingBreathOverrideMap;
-
-void SetActorMaxSwimBreath(Actor* actor, float nuMax)
-{
-	static bool s_hooked = false;
-	if (!s_hooked)
-	{
-		s_hooked = true;
-		WriteRelJump(kActorSwimBreath_CalcMax1_PatchAddr, (UInt32)Hook_ActorSwimBreath_CalcMax1);
-		WriteRelJump(kActorSwimBreath_CalcMax2_PatchAddr, (UInt32)Hook_ActorSwimBreath_CalcMax2);
-	}
-
-	MaxBreathOverrideMapT::iterator it = s_MaxSwimmingBreathOverrideMap.find(actor);
-	if (nuMax > 0)
-	{
-		if (it != s_MaxSwimmingBreathOverrideMap.end())
-		{
-			it->second = nuMax;
-		}
-		else
-		{
-			s_MaxSwimmingBreathOverrideMap[ actor ] = nuMax;
-		}
-	}
-	else
-	{
-		if (it != s_MaxSwimmingBreathOverrideMap.end())
-		{
-			s_MaxSwimmingBreathOverrideMap.erase(it);
-		}
-	}
-}
-
-float __stdcall GetActorMaxSwimBreath(Actor* actor)
-{
-	HighProcess* highProcess = (HighProcess*)actor->process;
-	MaxBreathOverrideMapT::iterator it = s_MaxSwimmingBreathOverrideMap.find(actor);
-
-	if (it != s_MaxSwimmingBreathOverrideMap.end())
-	{
-		return it->second;
-	}
-	else
-	{
-		typedef float (* _fn)(UInt32 Endurance);
-		const _fn fn = (_fn)kActorSwimBreath_CalcMax_CallAddr;
-		return fn(actor->GetActorValue(5));
-	}
-}
-
-
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kActorSwimBreath_Override_PatchAddr = 0x006045CA;
-static const UInt32 kActorSwimBreath_Override_RetnCanBreathAddr = 0x006045DF; // code for actor that can breath, sets currentBreath to maxBreath
-static const UInt32 kActorSwimBreath_Override_RetnNoBreathAddr	= 0x006045F9; // code for actor that cannot breath 
-static const UInt32 kActorSwimBreath_Override_RetnNoTickAddr	= 0x00604635; // skips code that ticks the current breath when underwater while keeping the rest
-static const UInt32 kActorSwimBreath_Override_RetnSkipAddr		= 0x00604763; // jumps to the end of the breath code
-static const UInt32 kActorSwimBreath_Override_RetnSkip2Addr		= 0x00604879; // also skips breathing menu code if actor is player
-#else
-#error unsupported Oblivion version
-#endif
-
-enum 
-{
-	kActorSwimBreath_IsUnderWater	= 1,	 // we'll treat the boolean as a flag for more compact code
-	// the rest are possible override states  
-	kActorSwimBreath_CanBreath		= 1 << 1, // forces code to think the actor can breath, no other changes so standard behaviour of setting 'curBreath' to 'maxBreath' applies
-	kActorSwimBreath_NoBreath		= 2 << 1, // forces the code to think the actor cannot breath, no other changes so standard behaviour applies
-	kActorSwimBreath_NoTick			= 3 << 1, // stops the game from changing 'curBreath' each frame (when underwater) but still causes health damage when 'curBreath' is set below 0
-	kActorSwimBreath_SkipBreath		= 4 << 1, // completely skips breath code (BreathMenu not included)
-	kActorSwimBreath_SkipBreath2	= 5 << 1, // completely skips breath code (BreathMenu included)
-};
-typedef std::map<Actor*,UInt32> ActorSwimmingBreathMapT;
-ActorSwimmingBreathMapT s_ActorSwimmingBreathMap;
-
-bool SetActorSwimBreathOverride(Actor* actor, UInt32 state)
-{
-	if (state >= 0 && state < 4)
-	{
-		ActorSwimmingBreathMapT::iterator it = s_ActorSwimmingBreathMap.find(actor);
-		if (it != s_ActorSwimmingBreathMap.end())
-		{
-			it->second = ((it->second & kActorSwimBreath_IsUnderWater) | (state << 1));
-		}
-		return true;
-	}
-	return false;
-}
-
-UInt32 __stdcall HandleActorSwimBreath(Actor* actor, HighProcess* process, bool canBreath, bool isUnderWater, float* curBreath, float* maxBreath)
-{
-	UInt32 retnAddr = 0;
-	//ensure curBreath is initialized
-	*curBreath = process->swimBreath;
-
-	//find & update state
-	ActorSwimmingBreathMapT::iterator it = s_ActorSwimmingBreathMap.find(actor);
-	//only fire events when actor is already registered
-	if (it != s_ActorSwimmingBreathMap.end())
-	{
-		if ( (it->second & kActorSwimBreath_IsUnderWater) != isUnderWater )
-		{
-			//Console_Print("OnWater%s for (%08X)", isUnderWater ? "Dive" : "Surface", actor->refID);
-			//_MESSAGE("OnWater%s for '%s' (%08X)", isUnderWater ? "Dive" : "Surface", GetActorFullName(actor), actor->refID);
-			HandleEvent(EventManager::kEventID_OnWaterSurface + isUnderWater, actor, NULL);
-		}
-	}
-	UInt32 breathState = s_ActorSwimmingBreathMap[actor];
-	breathState = (breathState & ~kActorSwimBreath_IsUnderWater) | (isUnderWater != 0);
-	s_ActorSwimmingBreathMap[actor] = breathState;
-
-	if ( actor == *g_thePlayer && IsGodMode() )
-	{
-		// GodMode overrides everything
-		retnAddr = kActorSwimBreath_Override_RetnCanBreathAddr;
-	}
-	else if ( breathState > 1 )
-	{
-		// override is in place
-		switch ( breathState & ~kActorSwimBreath_IsUnderWater )
-		{
-		case kActorSwimBreath_CanBreath:
-			retnAddr = kActorSwimBreath_Override_RetnCanBreathAddr;
-			break;
-		case kActorSwimBreath_NoBreath:
-			retnAddr = kActorSwimBreath_Override_RetnNoBreathAddr;
-			break;
-		case kActorSwimBreath_NoTick:
-			retnAddr = kActorSwimBreath_Override_RetnNoTickAddr;
-			break;
-		case kActorSwimBreath_SkipBreath:
-			retnAddr = kActorSwimBreath_Override_RetnSkipAddr;
-			break;
-		default:
-			//_MESSAGE("Invalid swim breath override for '%s' (%08X)", GetActorFullName(actor), actor->refID);
-			retnAddr = canBreath ? kActorSwimBreath_Override_RetnCanBreathAddr : kActorSwimBreath_Override_RetnNoBreathAddr;
-			break;
-		}
-	}
-	else
-	{
-		retnAddr = canBreath ? kActorSwimBreath_Override_RetnCanBreathAddr : kActorSwimBreath_Override_RetnNoBreathAddr;
-	}
-
-	// update stack variables in case SetActor(Max)SwimBreath was called inside any of the event handlers
-	*curBreath = process->swimBreath;
-	*maxBreath = GetActorMaxSwimBreath(actor);
-
-	//ASSERT(retnAddr != NULL);
-
-	return retnAddr;
-}
-static __declspec(naked) void Hook_ActorSwimBreath_Override()
-{
-	//TESObjectREFR::IsUnderWater(Vector3& pos, TESObjectCELL* cell, float thresholdFactor); =0x005E06C0
-	static UInt32 retnAddr;
-	__asm
-	{
-		// ebx = canBreath (bool)				determined based on being underwater or not and if the actor breaths air or water
-		// esp+17h = isSwimming (bool)			from TESObjectREFR::IsUnderWater(...) w/ threshold of 70%
-		// esp+15h = isUnderWater (bool)		from TESObjectREFR::IsUnderWater(...) w/ threshold of 87.5%
-		// esp+28h = currentBreath (float)		not yet set at this point, used to change/update stack variable with our handler (if needed)
-		// esp+24h = maxBreath (float)			already calculated at this point (possibly by our other hook), may also need to be changed/updated with our handler
-		// 
-		mov		al, [esp+15h]
-		lea		edx, [esp+24h]
-		lea		ecx, [esp+28h]
-		pushad
-		push	edx		// float*
-		push	ecx		// float*
-		push	eax		// bool
-		push	ebx		// bool
-		mov		eax, [ebp+58h]
-		push	eax		// HighProcess*
-		push	ebp		// Actor*
-		call	HandleActorSwimBreath
-		mov		[retnAddr], eax
-		popad
-		mov		eax, [retnAddr]
-		jmp		eax
-	}
-}
-
-void InstallSwimmingBreathHook()
-{
-	WriteRelJump(kActorSwimBreath_Override_PatchAddr, (UInt32)Hook_ActorSwimBreath_Override);
-}
-
-UInt32 EventIDForMask(UInt32 eventMask)
+eEventID EventIDForMask(UInt32 eventMask)
 {
 	switch (eventMask) {
 		case kEventMask_OnActivate:
@@ -1435,11 +969,11 @@ UInt32 EventIDForMask(UInt32 eventMask)
 		case ScriptEventList::kEvent_OnStartCombat:
 			return kEventID_OnStartCombat;
 		default:
-			return kEventID_INVALID;
+			return kEventID_MAX;
 	}
 }
 
-UInt32 EventIDForMessage(UInt32 msgID)
+eEventID EventIDForMessage(UInt32 msgID)
 {
 	switch (msgID) {
 		case OBSEMessagingInterface::kMessage_LoadGame:
@@ -1455,26 +989,22 @@ UInt32 EventIDForMessage(UInt32 msgID)
 		case OBSEMessagingInterface::kMessage_PostLoadGame:
 			return kEventID_PostLoadGame;
 		default:
-			return kEventID_INVALID;
+			return kEventID_MAX;
 	}
 }
 
-typedef std::vector<EventInfo> EventInfoList;
-static EventInfoList s_eventInfos;
-
-UInt32 EventIDForString(const char* eventStr)
+eEventID EventIDForString(const char* eventStr)
 {
 	std::string name(eventStr);
 	MakeLower(name);
 	eventStr = name.c_str();
-	UInt32 numEventInfos = s_eventInfos.size ();
-	for (UInt32 i = 0; i < numEventInfos; i++) {
-		if (!strcmp(eventStr, s_eventInfos[i].name.c_str())) {
-			return i;
+	for (UInt32 i = 0; i < kEventID_MAX; i++) {
+		if (!strcmp(eventStr, s_eventInfos[i].name)) {
+			return (eEventID)i;
 		}
 	}
 
-	return kEventID_INVALID;
+	return kEventID_MAX;
 }
 
 bool EventCallback::Equals(const EventCallback& rhs) const
@@ -1487,8 +1017,47 @@ bool EventCallback::Equals(const EventCallback& rhs) const
 
 typedef std::list<EventCallback>	CallbackList;
 
-bool RemoveHandler(UInt32 id, EventCallback& handler);
-bool RemoveHandler(UInt32 id, Script* fnScript);
+bool SetHandler(eEventID id, EventCallback& handler)
+{
+	ScopedLock lock(s_criticalSection);
+
+	if (id < kEventID_MAX) {
+		EventInfo* info = &s_eventInfos[id];
+		// is hook installed for this event type?
+		if (info->installHook) {
+			if (*(info->installHook)) {
+				// if this hook is used by more than one event type, prevent it being installed a second time
+				(*info->installHook)();
+				*(info->installHook) = NULL;
+			}
+			// mark event as having had its hook installed
+			info->installHook = NULL;
+		}
+
+		if (!info->callbacks) {
+			info->callbacks = new CallbackList();
+		}
+		else {
+			// if an existing handler matches this one exactly, don't duplicate it
+			for (CallbackList::iterator iter = info->callbacks->begin(); iter != info->callbacks->end(); ++iter) {
+				if (iter->Equals(handler)) {
+					// may be re-adding a previously removed handler, so clear the Removed flag
+					iter->SetRemoved(false);
+					return false;
+				}
+			}
+		}
+
+		info->callbacks->push_back(handler);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool RemoveHandler(eEventID id, EventCallback& handler);
+bool RemoveHandler(eEventID id, Script* fnScript);
 
 class EventHandlerCaller : public InternalFunctionCaller
 {
@@ -1527,7 +1096,7 @@ private:
 
 // stack of event names pushed when handler invoked, popped when handler returns
 // used by GetCurrentEventName
-std::stack<std::string> s_eventStack;
+std::stack<const char*> s_eventStack;
 
 // some events are best deferred until Tick() invoked rather than being handled immediately
 // this stores info about such an event. Currently unused.
@@ -1545,7 +1114,7 @@ struct DeferredCallback
 
 std::list<DeferredCallback> s_deferredCallbacks;
 
-void __stdcall HandleEventForCallingObject(UInt32 id, TESObjectREFR* callingObj, void* arg0, void* arg1)
+void __stdcall HandleEventForCallingObject(eEventID id, TESObjectREFR* callingObj, void* arg0, void* arg1)
 {
 	ScopedLock lock(s_criticalSection);
 
@@ -1564,18 +1133,9 @@ void __stdcall HandleEventForCallingObject(UInt32 id, TESObjectREFR* callingObj,
 			}
 
 			// Check filters
-			if (iter->source) {
-				// special-case - check the source filter against the second arg, the attacker
-				if (id == kEventID_OnHealthDamage) {
-					if ((TESObjectREFR*)arg1 != iter->source) {
-						++iter;
-						continue;
-					}
-				}
-				else if (!((TESObjectREFR*)arg0 == iter->source)) {
-					++iter;
-					continue;
-				}
+			if (iter->source && !((TESObjectREFR*)arg0 == iter->source)) {
+				++iter;
+				continue;
 			}
 
 			if (iter->callingObj && !(callingObj == iter->callingObj)) {
@@ -1630,7 +1190,7 @@ void __stdcall HandleEventForCallingObject(UInt32 id, TESObjectREFR* callingObj,
 	}
 }
 
-void __stdcall HandleEvent(UInt32 id, void * arg0, void * arg1)
+void __stdcall HandleEvent(eEventID id, void * arg0, void * arg1)
 {
 	// initial implementation didn't support a calling object; pass through to impl which does
 	HandleEventForCallingObject(id, NULL, arg0, arg1);
@@ -1640,81 +1200,33 @@ void __stdcall HandleEvent(UInt32 id, void * arg0, void * arg1)
 // public API
 ///////////////
 
-std::string GetCurrentEventName()
+const char* GetCurrentEventName()
 {
 	ScopedLock lock(s_criticalSection);
 
-	return s_eventStack.size() ? s_eventStack.top() : "";
+	return s_eventStack.size() ? s_eventStack.top() : NULL;
 }
 
-bool SetHandler(const char* eventName, EventCallback& handler)
+bool SetHandler(const char* id, EventCallback& handler)
 {
-	ScopedLock lock(s_criticalSection);
-
-	UInt32 id = EventIDForString (eventName);
-	if (kEventID_INVALID == id)
-	{
-		// have to assume registering for a user-defined event which has not been used before this point
-		id = s_eventInfos.size();
-		s_eventInfos.push_back (EventInfo (eventName, kEventParams_OneArray, 1));
-	}
-
-	if (id < s_eventInfos.size()) {
-		EventInfo* info = &s_eventInfos[id];
-		// is hook installed for this event type?
-		if (info->installHook) {
-			if (*(info->installHook)) {
-				// if this hook is used by more than one event type, prevent it being installed a second time
-				(*info->installHook)();
-				*(info->installHook) = NULL;
-			}
-			// mark event as having had its hook installed
-			info->installHook = NULL;
-		}
-
-		if (!info->callbacks) {
-			info->callbacks = new CallbackList();
-		}
-		else {
-			// if an existing handler matches this one exactly, don't duplicate it
-			for (CallbackList::iterator iter = info->callbacks->begin(); iter != info->callbacks->end(); ++iter) {
-				if (iter->Equals(handler)) {
-					// may be re-adding a previously removed handler, so clear the Removed flag
-					iter->SetRemoved(false);
-					return false;
-				}
-			}
-		}
-
-		info->callbacks->push_back(handler);
-		return true;
-	}
-	else {
-		return false; 
-	}
+	return SetHandler(EventIDForString(id), handler);
 }
 
 bool RemoveHandler(const char* id, EventCallback& handler)
 {
 	ScopedLock lock(s_criticalSection);
 
-	UInt32 eventType = EventIDForString(id);
+	eEventID eventType = EventIDForString(id);
 	bool bRemovedAtLeastOne = false;
-	if (eventType < s_eventInfos.size() && s_eventInfos[eventType].callbacks) {
+	if (eventType < kEventID_MAX && s_eventInfos[eventType].callbacks) {
 		CallbackList* callbacks = s_eventInfos[eventType].callbacks;
 		for (CallbackList::iterator iter = callbacks->begin(); iter != callbacks->end(); ) {
 			if (iter->script == handler.script) {
 				bool bMatches = true;
-				if (eventType == kEventID_OnHealthDamage) { 
-					if (handler.callingObj && handler.callingObj != iter->object) {	// OnHealthDamage special-casing
-						bMatches = false;
-					}
-				}
-				else if (handler.object && handler.object != iter->object) {
+				if (handler.object && handler.object != iter->object) {
 					bMatches = false;
 				}
-				
-				if (handler.source && handler.source != iter->source) {
+				else if (handler.source && handler.source != iter->source) {
 					bMatches = false;
 				}
 
@@ -1790,14 +1302,12 @@ void __stdcall HandleGameEvent(UInt32 eventMask, TESObjectREFR* source, TESForm*
 		return;
 	}
 
-	UInt32 eventID = EventIDForMask(eventMask);
-	if (eventID != kEventID_INVALID) {
+	eEventID eventID = EventIDForMask(eventMask);
+	if (eventID < kEventID_MAX) {
 		// special-case OnMagicEffectHit
 		if (eventID == kEventID_OnMagicEffectHit) {
 			EffectSetting* setting = OBLIVION_CAST(object, TESForm, EffectSetting);
 			HandleEvent(eventID, source, setting ? (void*)setting->effectCode : 0);
-			// also send OnMagicEffectHit2, for OBME plugin support
-			HandleEvent(kEventID_OnMagicEffectHit2, source, setting);
 		}
 		else if (eventID == kEventID_OnHitWith) {
 			// special check for OnHitWith, since it gets called redundantly
@@ -1821,40 +1331,9 @@ void __stdcall HandleGameEvent(UInt32 eventMask, TESObjectREFR* source, TESForm*
 
 void HandleOBSEMessage(UInt32 msgID, void* data)
 {
-	UInt32 eventID = EventIDForMessage(msgID);
-	if (eventID != kEventID_INVALID)
+	eEventID eventID = EventIDForMessage(msgID);
+	if (eventID < kEventID_MAX)
 		HandleEvent(eventID, data, NULL);
-}
-
-bool DispatchUserDefinedEvent (const char* eventName, Script* sender, UInt32 argsArrayId, const char* senderName)
-{
-	ScopedLock lock(s_criticalSection);
-
-	// does an EventInfo entry already exist for this event?
-	UInt32 eventID = EventIDForString (eventName);
-	if (kEventID_INVALID == eventID)
-	{
-		// create new entry for this event
-		eventID = s_eventInfos.size ();
-		s_eventInfos.push_back (EventInfo (eventName, kEventParams_OneArray, 1));
-	}
-
-	// get or create args array
-	if (argsArrayId == 0)
-		argsArrayId = g_ArrayMap.Create (kDataType_String, false, sender->GetModIndex ());
-	else if (!g_ArrayMap.Exists (argsArrayId) || g_ArrayMap.GetKeyType (argsArrayId) != kDataType_String)
-		return false;
-
-	// populate args array
-	g_ArrayMap.SetElementString (argsArrayId, "eventName", eventName);
-	if (NULL == senderName)
-		senderName = (*g_dataHandler)->GetNthModName (sender->GetModIndex ());
-
-	g_ArrayMap.SetElementString (argsArrayId, "eventSender", senderName);
-
-	// dispatch
-	HandleEvent (eventID, (void*)argsArrayId, NULL);
-	return true;
 }
 
 EventInfo::~EventInfo()
@@ -1903,24 +1382,6 @@ void Tick()
 		s_deferredCallbacks.clear();
 	}
 
-
-	// cleanup temporary hook data
-	for (MaxBreathOverrideMapT::iterator itr = s_MaxSwimmingBreathOverrideMap.begin(); itr != s_MaxSwimmingBreathOverrideMap.end();)
-	{
-		if (g_actorProcessManager->highActors.IndexOf(itr->first) == -1 && itr->first != (*g_thePlayer))
-			itr = s_MaxSwimmingBreathOverrideMap.erase(itr);						// remove the actor from the map if not in high process
-		else
-			itr++;
-	}
-
-	for (ActorSwimmingBreathMapT::iterator itr = s_ActorSwimmingBreathMap.begin(); itr != s_ActorSwimmingBreathMap.end();)
-	{
-		if (g_actorProcessManager->highActors.IndexOf(itr->first) == -1 && itr->first != (*g_thePlayer))
-			itr = s_ActorSwimmingBreathMap.erase(itr);
-		else
-			itr++;
-	}
-
 	s_lastObj = NULL;
 	s_lastTarget = NULL;
 	s_lastEvent = NULL;
@@ -1929,78 +1390,6 @@ void Tick()
 	s_lastOnHitVictim = NULL;
 	s_lastOnHitAttacker = NULL;
 }
-
-void Init()
-{
-#define EVENT_INFO(name, params, hookInstaller, deferred) s_eventInfos.push_back (EventInfo (name, params, params ? sizeof(params) : 0, deferred, hookInstaller));
-
-	EVENT_INFO("onhit", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onhitwith", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onmagiceffecthit", kEventParams_GameMGEFEvent, &s_MainEventHook, false)
-	EVENT_INFO("onactorequip", kEventParams_GameEvent, &s_ActorEquipHook, false)
-	EVENT_INFO("ondeath", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onmurder", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onknockout", kEventParams_OneRef, &s_MainEventHook, false)
-	EVENT_INFO("onactorunequip", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onalarm trespass", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onalarm steal", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onalarm attack", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onalarm pickpocket", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onalarm murder", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onpackagechange", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onpackagestart", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onpackagedone", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onstartcombat", kEventParams_GameEvent, &s_MainEventHook, false)
-	EVENT_INFO("onmagiceffecthit2", kEventParams_GameEvent, &s_MainEventHook, false)
-
-	EVENT_INFO("onactivate", kEventParams_GameEvent, &s_ActivateHook, false)
-	EVENT_INFO("onvampirefeed", NULL, &s_VampireHook, false)
-	EVENT_INFO("onskillup", kEventParams_OneInteger, &s_SkillUpHook, false)
-	EVENT_INFO("onscriptedskillup", kEventParams_TwoIntegers, &s_ModPCSHook, false)
-	EVENT_INFO("onmapmarkeradd", kEventParams_OneRef, &s_MapMarkerHook, false)
-	EVENT_INFO("onspellcast", kEventParams_GameEvent, &s_SpellScrollHook, false)
-	EVENT_INFO("onscrollcast", kEventParams_GameEvent, &s_SpellScrollHook, false)
-	EVENT_INFO("onfallimpact", kEventParams_OneRef, &s_FallImpactHook, false)
-	EVENT_INFO("onactordrop", kEventParams_GameEvent, NULL, false)
-	EVENT_INFO("ondrinkpotion", kEventParams_GameEvent, &s_DrinkHook, false)
-	EVENT_INFO("oneatingredient", kEventParams_GameEvent, &s_EatIngredHook, false)
-	EVENT_INFO("onnewgame", NULL, NULL, false)
-	EVENT_INFO("onhealthdamage", kEventParams_OneFloat_OneRef, &s_HealthDamageHook, false)
-	EVENT_INFO("onsoultrap", kEventParams_GameEvent, &s_SoulTrapHook, false)
-	EVENT_INFO("onraceselectioncomplete", NULL, &s_OnRaceSelectionCompleteHook, false)
-
-	EVENT_INFO("onattack", kEventParams_OneRef, &s_MeleeAttackHook, false)
-	EVENT_INFO("onrelease", kEventParams_OneRef, &s_MeleeReleaseHook, false)
-	EVENT_INFO("onbowattack", kEventParams_OneRef, &s_BowAttackHook, false)
-	EVENT_INFO("onbowarrowattach", kEventParams_OneRef, &s_BowReleaseHook, false)	// undocumented, not hugely useful
-	EVENT_INFO("onblock", kEventParams_OneRef, &s_BlockHook, false)
-	EVENT_INFO("onrecoil", kEventParams_OneRef, &s_RecoilHook, false)
-	EVENT_INFO("onstagger", kEventParams_OneRef, &s_StaggerHook, false)
-	EVENT_INFO("ondodge", kEventParams_OneRef, &s_DodgeHook, false)
-
-	EVENT_INFO("onenchant", kEventParams_OneRef, NULL, false)
-	EVENT_INFO("oncreatespell", kEventParams_OneRef, NULL, false)
-	EVENT_INFO("oncreatepotion", kEventParams_OneRef_OneInt, NULL, false)
-
-	EVENT_INFO("onquestcomplete", kEventParams_OneRef, &s_OnQuestCompleteHook, false)
-	EVENT_INFO("onmagiccast", kEventParams_GameEvent, &s_OnMagicCastHook, false)
-	EVENT_INFO("onmagicapply", kEventParams_GameEvent, &s_OnMagicApplyHook, false)
-	EVENT_INFO("onwatersurface", kEventParams_OneRef, &s_OnWaterDiveSurfaceHook, false)
-	EVENT_INFO("onwaterdive", kEventParams_OneRef, &s_OnWaterDiveSurfaceHook, false)
-
-	EVENT_INFO("loadgame", kEventParams_OneString, NULL, false)
-	EVENT_INFO("savegame", kEventParams_OneString, NULL, false)
-	EVENT_INFO("exitgame", NULL, NULL, false)
-	EVENT_INFO("mainmenu", NULL, NULL, false)
-	EVENT_INFO("qqq", NULL, NULL, false)
-	EVENT_INFO("postloadgame", kEventParams_OneInteger, NULL, false)
-	EVENT_INFO("saveini", kEventParams_OneInteger, &s_IniHook, false)
-
-	ASSERT (kEventID_InternalMAX == s_eventInfos.size());
-
-#undef EVENT_INFO
-}
-
 
 };	// namespace
 

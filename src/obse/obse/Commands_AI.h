@@ -138,5 +138,3 @@ extern CommandInfo kCommandInfo_SetPackageTargetData;
 
 extern CommandInfo kCommandInfo_GetPackageType;
 extern CommandInfo kCommandInfo_GetCurrentPackageProcedure;
-
-extern CommandInfo kCommandInfo_GetGroundSurfaceMaterial;

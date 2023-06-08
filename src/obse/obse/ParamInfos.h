@@ -35,12 +35,6 @@ static ParamInfo kParams_OneString[1] =
 	{	"string",	kParamType_String,	0 },
 };
 
-static ParamInfo kParams_TwoStrings[2] =
-{
-	{	"string",	kParamType_String,	0 },
-	{	"string",	kParamType_String,	0 }
-};
-
 static ParamInfo kParams_OneString_OneInt[2] = 
 {
 	{	"string",	kParamType_String,	0 },

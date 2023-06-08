@@ -1,7 +1,6 @@
 #include "common/IFileStream.h"
 #include "loader_common/EXEChecksum.h"
 #include "loader_common/Options.h"
-#include "Inject.h"
 #include <string>
 
 // requires recent platform sdk
@@ -64,16 +63,16 @@ int main(int argc, char ** argv)
 		dllHasFullPath = true;
 	}
 
-	std::string		dllSuffix;
-	ProcHookInfo	procHookInfo;
+	std::string	dllSuffix;
+	bool		steamVersion;
 
-	if(!TestChecksum(procName, &dllSuffix, &procHookInfo))
+	if(!TestChecksum(procName, &dllSuffix, &steamVersion))
 	{
 		_ERROR("checksum not found");
 		return -1;
 	}
 
-	if(procHookInfo.steamVersion)
+	if(steamVersion)
 	{
 		// ### maybe check for the loader DLL and just CreateProcess("oblivion.exe") if we can?
 		PrintError("You are trying to use a Steam version of Oblivion. Steam users should launch the game through Steam, not by running obse_loader.exe. If OBSE fails to load, go to Steam > Settings > In Game and check the box marked \"Enable Steam community in game\". Please see the instructions in obse_readme.txt for more information.");
@@ -138,35 +137,19 @@ int main(int argc, char ** argv)
 
 	if(g_options.m_launchCS)
 	{
-		if(g_options.m_oldInject)
-		{
-			_MESSAGE("using old editor injection method");
+		// start the process
+		ResumeThread(procInfo.hThread);
 
-			// start the process
-			ResumeThread(procInfo.hThread);
+		// CS needs to run its crt0 code before the DLL is attached, this delays until the message pump is running
+		// note that this method makes it impossible to patch the startup code
 
-			// CS needs to run its crt0 code before the DLL is attached, this delays until the message pump is running
-			// note that this method makes it impossible to patch the startup code
+		// this is better than Sleep(1000) but still ugly
+		WaitForInputIdle(procInfo.hProcess, 1000 * 10);
 
-			// this is better than Sleep(1000) but still ugly
-			WaitForInputIdle(procInfo.hProcess, 1000 * 10);
-
-			// too late if this fails
-			result = InjectDLL(&procInfo, dllPath.c_str(), !g_options.m_noSync);
-			if(!result)
-				PrintError("Couldn't inject dll.");
-		}
-		else
-		{
-			_MESSAGE("using new editor injection method");
-
-			result = DoInjectDLL_New(&procInfo, dllPath.c_str(), &procHookInfo);
-			if(!result)
-				PrintError("Couldn't inject dll.");
-
-			// start the process either way
-			ResumeThread(procInfo.hThread);
-		}
+		// too late if this fails
+		result = InjectDLL(&procInfo, dllPath.c_str(), !g_options.m_noSync);
+		if(!result)
+			PrintError("Couldn't inject dll.");
 	}
 	else
 	{

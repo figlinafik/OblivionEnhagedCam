@@ -1,4 +1,3 @@
-#include "common/IPrefix.h"
 #include "loader_common/EXEChecksum.h"
 
 IDebugLog	gLog("obse_steam_loader.log");
@@ -21,17 +20,17 @@ static void OnAttach(void)
 	gLog.SetLogLevel(IDebugLog::kLevel_DebugMessage);
 
 	std::string	dllSuffix;
-	ProcHookInfo	procHookInfo;
+	bool		steamVersion;
 
 	// paranoia check
-	if(!TestChecksum("oblivion.exe", &dllSuffix, &procHookInfo))
+	if(!TestChecksum("oblivion.exe", &dllSuffix, &steamVersion))
 	{
 		_ERROR("checksum not found");
 		return;
 	}
 
 	// /extreme/ paranoia check
-	if(!procHookInfo.steamVersion)
+	if(!steamVersion)
 	{
 		_ERROR("not a steam version!?");
 		return;

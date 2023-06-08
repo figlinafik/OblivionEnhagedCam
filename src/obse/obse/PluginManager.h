@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "obse/PluginAPI.h"
 
 class PluginManager
@@ -27,8 +30,6 @@ public:
 	static void *		QueryInterface(UInt32 id);
 	static PluginHandle	GetPluginHandle(void);
 	static const char *	GetOblivionDir();
-	static bool			GetPluginLoaded(const char* pluginName);
-	static UInt32		GetPluginVersion(const char* pluginName);
 
 	static bool Dispatch_Message(PluginHandle sender, UInt32 messageType, void * data, UInt32 dataLen, const char* receiver);
 	static bool	RegisterListener(PluginHandle listener, const char* sender, OBSEMessagingInterface::EventCallback handler);
@@ -51,7 +52,6 @@ private:
 	const char *	SafeCallLoadPlugin(LoadedPlugin * plugin, const OBSEInterface * obse);
 
 	const char *	CheckPluginCompatibility(LoadedPlugin * plugin);
-	const char *	EarlyCheckPluginCompatibility(LoadedPlugin * plugin, const char * fileName);
 
 	typedef std::vector <LoadedPlugin>	LoadedPluginList;
 

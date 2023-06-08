@@ -11,11 +11,11 @@
 #include "HavokReflection.h"
 #include "Hooks_NetImmerse.h"
 #include "ThreadLocal.h"
-#include "EventManager.h"
 
 IDebugLog	gLog("obse.log");
 
 extern "C" {
+
 void OBSE_Initialize(void)
 {
 #ifndef _DEBUG
@@ -35,11 +35,6 @@ void OBSE_Initialize(void)
 
 		Sleep(1000 * 2);
 #endif
-		UInt32 EnableMiniDump = 0;
-		GetConfigOption_UInt32(INI_SECTION_RUNTIME, INI_RUNTIME_CRASHDUMP, &EnableMiniDump);
-
-		if (EnableMiniDump)
-			g_OriginalTopLevelExceptionFilter = SetUnhandledExceptionFilter(OBSEUnhandledExceptionFilter);
 
 		MersenneTwister::init_genrand(GetTickCount());
 
@@ -59,8 +54,6 @@ void OBSE_Initialize(void)
 		FlushInstructionCache(GetCurrentProcess(), NULL, 0);
 
 		ThreadLocalData::Init();
-
-		EventManager::Init();
 
 #ifndef _DEBUG
 	}
@@ -82,24 +75,5 @@ void OBSE_DeInitialize(void)
 
 	ThreadLocalData::DeInit();
 }
+
 };
-
-BOOL WINAPI DllMain(
-	HANDLE  hDllHandle,
-	DWORD   dwReason,
-	LPVOID  lpreserved
-	)
-{
-	switch(dwReason)
-	{
-	case DLL_PROCESS_ATTACH:
-		OBSE_Initialize();
-		break;
-
-	case DLL_PROCESS_DETACH:
-		OBSE_DeInitialize();
-		break;
-	};
-
-	return TRUE;
-}

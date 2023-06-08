@@ -376,68 +376,6 @@ static bool Cmd_CalcLevItems_Execute(COMMAND_ARGS)
 	return true;
 }
 
-static bool Cmd_GetLevCreatureTemplate_Execute(COMMAND_ARGS)
-{
-	TESForm* levCreature = NULL;
-	UInt32* refResult = (UInt32*)result;
-	*refResult = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &levCreature)) {
-		if (levCreature)	{
-			TESLevCreature* base = OBLIVION_CAST(levCreature, TESForm, TESLevCreature);
-
-			if (base && base->templateForm) {
-				*refResult = base->templateForm->refID;
-			}
-		}
-	}
-
-	return true;
-}
-
-static bool Cmd_SetLevCreatureTemplate_Execute(COMMAND_ARGS)
-{
-	TESForm* levCreature = NULL;
-	TESForm* templateActor = NULL;
-	*result = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &levCreature, &templateActor)) {
-		if (levCreature)	{
-			TESLevCreature* base = OBLIVION_CAST(levCreature, TESForm, TESLevCreature);
-			TESActorBase* temp = OBLIVION_CAST(templateActor, TESForm, TESActorBase);
-
-			if (base) {
-				base->templateForm = temp;
-			}
-		}
-	}
-
-	return true;
-}
-
-static bool Cmd_SetCalcAllLevels_Execute(COMMAND_ARGS)
-{
-	*result = 0;
-
-	TESForm* list = NULL;
-	UInt32 state = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &list, &state)) {
-		if (list)	{
-			TESLeveledList* levList = OBLIVION_CAST(list, TESForm, TESLeveledList);
-
-			if (levList) {
-				if (state)
-					levList->flags |= levList->kFlags_CalcAllLevels;
-				else
-					levList->flags &= ~levList->kFlags_CalcAllLevels;
-			}
-		}
-	}
-	
-	return true;
-}
-
 #endif
 
 static ParamInfo kParams_TwoInventoryObjects_TwoOptionalInts[4] =
@@ -671,24 +609,3 @@ static ParamInfo kParams_CalcLevItems[3] =
 
 DEFINE_COMMAND(CalcLevItems, returns an Array containing items calculated from a leveled item list,
 			   0, 3, kParams_CalcLevItems);
-
-static ParamInfo kParams_GetLevCreatureTemplate[1] =
-{
-	{	"leveledCreature",		kParamType_TESObject,	0	},
-};
-
-static ParamInfo kParams_SetLevCreatureTemplate[2] =
-{
-	{	"leveledCreature",		kParamType_TESObject,	0	},
-	{	"template",				kParamType_ActorBase,	1	}
-};
-
-static ParamInfo kParams_SetCalcAllLevels[2] =
-{
-	{	"leveledlist",			kParamType_TESObject,	0	},
-	{	"state",				kParamType_Integer,	0	}
-};
-
-DEFINE_COMMAND(GetLevCreatureTemplate, gets the template of the leveled creature, 0, 1, kParams_GetLevCreatureTemplate);
-DEFINE_COMMAND(SetLevCreatureTemplate, sets the template of the leveled creature, 0, 2, kParams_SetLevCreatureTemplate);
-DEFINE_COMMAND(SetCalcAllLevels, sets the Calc On All Levels flag on the leveled list, 0, 2, kParams_SetCalcAllLevels);

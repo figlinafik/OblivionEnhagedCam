@@ -2,12 +2,6 @@
 #include "common/IDebugLog.h"
 #include <cstdlib>
 
-__declspec(noreturn) static void IErrors_Halt(void)
-{
-	// crash
-	*((int *)0) = 0xDEADBEEF;
-}
-
 /**
  *	Report a failed assertion and exit the program
  *	
@@ -15,11 +9,10 @@ __declspec(noreturn) static void IErrors_Halt(void)
  *	@param line the line number where the error occured
  *	@param desc an error message
  */
-void _AssertionFailed(const char * file, unsigned long line, const char * desc)
+void _AssertionFailed(const char * file, UInt32 line, const char * desc)
 {
 	_FATALERROR("Assertion failed in %s (%d): %s", file, line, desc);
-
-	IErrors_Halt();
+	exit(1);
 }
 
 /**
@@ -30,7 +23,7 @@ void _AssertionFailed(const char * file, unsigned long line, const char * desc)
  *	@param desc an error message
  *	@param code the error code
  */
-void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char * desc, unsigned long long code)
+void _AssertionFailed_ErrCode(const char * file, UInt32 line, const char * desc, UInt64 code)
 {
 	if(code & 0xFFFFFFFF00000000)
 		_FATALERROR("Assertion failed in %s (%d): %s (code = %16I64X (%I64d))", file, line, desc, code, code);
@@ -40,7 +33,7 @@ void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char 
 		_FATALERROR("Assertion failed in %s (%d): %s (code = %08X (%d))", file, line, desc, code32, code32);
 	}
 	
-	IErrors_Halt();
+	exit(1);
 }
 
 /**
@@ -51,9 +44,8 @@ void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char 
  *	@param desc an error message
  *	@param code the error code
  */
-void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char * desc, const char * code)
+void _AssertionFailed_ErrCode(const char * file, UInt32 line, const char * desc, const char * code)
 {
 	_FATALERROR("Assertion failed in %s (%d): %s (code = %s)", file, line, desc, code);
-
-	IErrors_Halt();
+	exit(1);
 }

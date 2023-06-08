@@ -29,8 +29,8 @@ ScriptToken::ScriptToken() : type(kTokenType_Invalid), refIdx(0), variableType(S
 	value.num = 0;
 }
 
-ScriptToken::ScriptToken(Token_Type _type, UInt8 _varType, UInt16 _refIdx) : type(_type), variableType(_varType), refIdx(_refIdx)
-{
+ScriptToken::ScriptToken(Token_Type _type, UInt8 _varType, UInt16 _refIdx) : type(_type), variableType(_varType), refIdx(_refIdx) 
+{ 
 	INC_TOKEN_COUNT
 }
 ScriptToken::ScriptToken(bool boolean) : type(kTokenType_Boolean), refIdx(0), variableType(Script::eVarType_Invalid)
@@ -165,13 +165,13 @@ ScriptToken* ScriptToken::Create(ForEachContext* forEach)
 	return new ForEachContextToken(forEach->sourceID, forEach->iteratorID, forEach->variableType, forEach->var);
 }
 
-ScriptToken* ScriptToken::Create(ArrayID arrID, ArrayKey* key)
-{
+ScriptToken* ScriptToken::Create(ArrayID arrID, ArrayKey* key)									
+{ 
 	return key ? new ArrayElementToken(arrID, key) : NULL;
 }
 
-ScriptToken* ScriptToken::Create(Slice* slice)
-{
+ScriptToken* ScriptToken::Create(Slice* slice)													
+{ 
 	return slice ? new SliceToken(slice) : NULL;
 }
 
@@ -227,7 +227,7 @@ PairToken::PairToken(ScriptToken* l, ScriptToken* r) : ScriptToken(kTokenType_Pa
 		type = kTokenType_Invalid;
 }
 
-AssignableStringToken::AssignableStringToken(UInt32 _id, UInt32 lbound, UInt32 ubound)
+AssignableStringToken::AssignableStringToken(UInt32 _id, UInt32 lbound, UInt32 ubound) 
 	:  ScriptToken(kTokenType_AssignableString, Script::eVarType_Invalid, 0), lower(lbound), upper(ubound), substring()
 {
 	value.arrID = _id;
@@ -373,7 +373,7 @@ double ScriptToken::GetNumber() const
 	else if (type == kTokenType_Global && value.global)
 		return value.global->data;
 #if OBLIVION
-	else if ((type == kTokenType_NumericVar && value.var) || (type == kTokenType_StringVar && value.var))
+	else if (type == kTokenType_NumericVar && value.var)
 		return value.var->data;
 #endif
 	else
@@ -453,6 +453,7 @@ CommandInfo* ScriptToken::GetCommandInfo() const
 
 #if OBLIVION
 
+
 UInt32 ScriptToken::GetActorValue() const
 {
 	UInt32 actorVal = kActorVal_NoActorValue;
@@ -520,9 +521,11 @@ EffectSetting* ScriptToken::GetEffectSetting() const
 	}
 	else {
 		const char* str = GetString();
-		if (str && strlen(str) == 4) {
-			UInt32 code = *((UInt32*)str);
-			eff = EffectSetting::EffectSettingForC(code);
+		if (str) {
+			if (strlen(str) == 4) {
+				UInt32 code = *((UInt32*)str);
+				eff = EffectSetting::EffectSettingForC(code);
+			}
 		}
 		else {
 			eff = OBLIVION_CAST(GetTESForm(), TESForm, EffectSetting);
@@ -546,7 +549,7 @@ UInt32 ScriptToken::GetAnimGroup() const
 #endif // OBLIVION
 
 /*************************************************
-
+	
 	ScriptToken methods
 
 *************************************************/
@@ -822,7 +825,7 @@ double ScriptToken::GetNumericRepresentation(bool bFromHex)
 #endif
 
 /****************************************
-
+	
 	ArrayElementToken
 
 ****************************************/

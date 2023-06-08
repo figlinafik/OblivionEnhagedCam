@@ -1,20 +1,20 @@
-Oblivion Script Extender v0021
-by Ian Patterson, Stephen Abel, Paul Connelly and Madeesh Kannan
-(ianpatt, behippo, scruggsywuggsy the ferret, shadeMe)
+Oblivion Script Extender v0020
+by Ian Patterson, Stephen Abel, and Paul Connelly
+(ianpatt, behippo, and scruggsywuggsy the ferret)
 
-Additional contributions from Timeslip, The J, DragoonWraith, SkyRanger-1, badhair, JRoush and kyoma.
+Additional contributions from Timeslip, The J, DragoonWraith, SkyRanger-1, badhair, JRoush, shademe, and kyoma.
 
 The Oblivion Script Extender, or OBSE for short, is a modder's resource that expands the scripting capabilities of Oblivion. It doesn't make any modifications to oblivion.exe, TESConstructionSet.exe, or any other files in your oblivion install, so don't worry about permanent side effects. It is compatible with the 1.2.0.416 Oblivion patch, as well as the 1.2 version of the Construction Set. Versions of Oblivion downloaded via Steam are supported as well.
 
 This release adds:
--Support for user-defined events
--Ability to turn off certain compiler warnings
--Fixes for various vanilla bugs
--New events: OnSoulTrap, OnSaveIni, OnMagicEffectHit2, OnQuestComplete, OnMagicCast, OnMagicApply, OnWaterDive, OnWaterSurface
--Quest stage, combat style and cell related commands
--New loader injection method for the editor
--Misc commands and bug-fixes
-
+-Ability to use OBSE data types and expressions as arguments to *all* commands through optional compiler override
+-Path grid commands
+-Versions of existing commands which do not save their changes to the savegame
+-Commands to allow increased control over OBSE's text input functionality
+-Torch- and light-related commands
+-Numerous new cell-related commands
+-Several misc. new commands, plus bug-fixes and tweaks
+-Updates to plugin API
 
 [ Installation ]
 
@@ -22,22 +22,20 @@ The instructions for installing and running OBSE differ based on whether you are
 
 IF YOU PURCHASED A RETAIL (NON-STEAM) VERSION OF OBLIVION:
 
-1. Copy obse_1_2_416.dll, obse_editor_1_2.dll, obse_loader.exe and the Data folder to your Oblivion directory. This is usually in your Program Files folder, and should contain files called "Oblivion.exe" and "OblivionLauncher.exe".
-3. Run oblivion by running obse_loader.exe from the Oblivion directory.
+1. Copy obse_1_2_416.dll, obse_editor_1_2.dll, and obse_loader.exe to your Oblivion directory. This is usually in your Program Files folder, and should contain files called "Oblivion.exe" and "OblivionLauncher.exe".
+2. Run oblivion by running obse_loader.exe from the Oblivion directory.
 
 If you use a desktop shortcut to launch Oblivion normally, just update the shortcut to point to obse_loader.exe instead of oblivion.exe.
 
 IF YOU ARE USING THE STEAM VERSION OF OBLIVION:
 
-1. Copy obse_1_2_416.dll, obse_editor_1_2.dll, obse_steam_loader.dll and the Data folder  to your Oblivion directory. This is usually "C:\Program Files\Valve\Steam\SteamApps\common\oblivion".
+1. Copy obse_1_2_416.dll, obse_editor_1_2.dll, and obse_steam_loader.dll to your Oblivion directory. This is usually "C:\Program Files\Valve\Steam\SteamApps\common\oblivion".
 2. Ensure you have enabled the Steam community in-game, or OBSE will fail to load. Go to Steam > Settings > In-Game and check the box marked "Enable Steam Community In-Game".
 3. Launch Oblivion via Steam or by running Oblivion.exe. OBSE will automatically be run along with Oblivion when launched. To disable this, rename or move obse_steam_loader.dll. You do not need to use obse_loader.exe unless you are running the editor.
 
 RUNNING TES:CONSTRUCTION SET WITH OBSE:
 
 Scripts written with these new commands must be written via the TESConstructionSet launched with obse_loader. Open a command prompt window, navigate to your oblivion install folder, and type "obse_loader -editor". The normal editor can open plugins with these extended scripts fine, it just can't recompile them and will give errors if you try.
-
-As of v0021, the loader uses a different method to start the TESConstructionSet. The new implementation may be incompatible with some third-party plugins. To revert to the old method, use the '-oldinject' switch.
 
 [ Suggestions for Modders ]
 
@@ -129,6 +127,3 @@ Send email to gamer [at] silverlock [dot] org
 
 Paul (scruggsy)
 Send email to scruggsyW [at] comcast [dot] net
-
-Madeesh (shadeMe)
-Send email to shademe [dot] here [at] gmail [dot] com

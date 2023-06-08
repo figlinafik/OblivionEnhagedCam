@@ -34,5 +34,3 @@ extern CommandInfo kCommandInfo_GetCurrentEventName;
 
 extern CommandInfo kCommandInfo_GetCurrentScript;
 extern CommandInfo kCommandInfo_GetCallingScript;
-
-extern CommandInfo kCommandInfo_DispatchEvent;

@@ -4,8 +4,8 @@
 #include "Script.h"
 #include "ScriptUtils.h"
 #include "CommandTable.h"
-#include "GameData.h"
-#include "PluginManager.h"
+#include <stack>
+#include <string>
 
 // a size of ~1KB should be enough for a single line of code
 char s_ExpressionParserAltBuffer[0x500] = {0};
@@ -44,28 +44,17 @@ char s_ExpressionParserAltBuffer[0x500] = {0};
 #error unsupported Oblivion version
 #endif	// OBLIVION_VERSION
 
+
 static void __stdcall DoExtractString(char* scriptData, UInt32 dataLen, char* dest, ScriptEventList* eventList)
 {
 	// copy the string
 	memcpy(dest, scriptData, dataLen);
 	dest[dataLen] = 0;
-
+	
 	if (dataLen && dest[0] == '$' && eventList && eventList->m_script)	// variable name
 	{
-		// local var or quest var?
-		std::string varname(dest+1);
-		std::string::size_type dotPos = varname.find('.');
-		if (dotPos != std::string::npos) {
-			// quest var, look up the quest and its event list
-			TESQuest* quest = (*g_dataHandler)->GetQuestByEditorName(varname.substr(0, dotPos).c_str(), dotPos);
-			if (quest && quest->scriptEventList) {
-				eventList = quest->scriptEventList;
-				varname.erase(0, dotPos+1);
-			}
-		}
-
 		Script::VariableInfo* varInfo = NULL;
-		varInfo = eventList->m_script->GetVariableByName(varname.c_str());
+		varInfo = eventList->m_script->GetVariableByName(dest + 1);
 		if (varInfo)
 		{
 			ScriptEventList::Var* var;
@@ -179,7 +168,7 @@ void ResetActivationRecurseDepth()
 	static const UInt32 kEndOfLineCheckPatchAddr = 0x004F7E77;
 	static const UInt32 kEndOfLineCheckJumpDelta = 0xFFFFFCF8;
 	static const UInt32 kEndOfLineCheckJumpAddr		 = 0x004F7B75;
-
+	
 	static const UInt32 kBeginScriptCompilePatchAddr = 0x004F935E;	// calls CompileScript()
 	static const UInt32 kBeginScriptCompileCallAddr  = 0x004F9200;	// bool __fastcall CompileScript(unk, unk, Script*, ScriptBuffer*)
 	static const UInt32 kBeginScriptCompileRetnAddr  = 0x004F9363;
@@ -228,6 +217,7 @@ void PatchEndOfLineCheck(bool bDisableCheck)
 
 void PatchEndOfLineCheck(bool bDisableCheck)
 {
+
 	if (bDisableCheck)
 		SafeWrite8(kEndOfLineCheckPatchAddr, 0xEB);		// unconditional (short) jump
 	else
@@ -283,6 +273,7 @@ bool HandleLoopEnd(UInt32 offsetToEnd)
 	*((UInt32*)startPtr) = offsetToEnd;
 	return true;
 }
+
 
 #if !OBLIVION
 
@@ -345,16 +336,16 @@ namespace CompilerOverride {
 	void __stdcall ToggleOverride(bool bOverride)
 	{
 		static const UInt32 patchLoc = 0x00500FF0;	// editor default parse routine
-
+		
 		// ToggleOverride() only gets invoked when we parse a begin or end statement, so set mode accordingly
 		s_currentMode = kOverride_BlockType;
 
 		// overwritten instructions
 		static const UInt8 s_patchedInstructions[5] = { 0x81, 0xEC, 0x30, 0x02, 0x00 };
-		if (bOverride) {
+		if (bOverride) {			
 			WriteRelJump(patchLoc, (UInt32)&Hook_Cmd_Default_Parse);
 		}
-		else {
+		else {		
 			for (UInt32 i = 0; i < sizeof(s_patchedInstructions); i++) {
 				SafeWrite8(patchLoc+i, s_patchedInstructions[i]);
 			}
@@ -428,7 +419,7 @@ namespace CompilerOverride {
 			call [stricmpAddr]
 			add esp, 8
 			pop edx
-
+			
 			// a match?
 			test eax, eax
 			jnz Done
@@ -453,13 +444,10 @@ namespace CompilerOverride {
 	{
 		ASSERT(opcode == 0x10 || opcode == 0x11);
 
-		UInt32 maxScriptLength = 0x4000;	// default length, doubled when running the CSE plugin
-		if (g_pluginManager.LookupHandleFromName(("CSE")) != kPluginHandle_Invalid)
-			maxScriptLength = 0x8000;
-
 		// make sure we've got enough room in the buffer
-		if (buf->dataOffset + 4 >= maxScriptLength)
+		if (buf->dataOffset + 4 >= 0x4000) {
 			g_ErrOut.Show("Error: Max script length exceeded. Please edit and recompile.");
+		}
 		else {
 			const char* cmdName = "@PushExecutionContext";
 			SInt32 offset = 0;
@@ -468,7 +456,7 @@ namespace CompilerOverride {
 				// 'end'. Need to rearrange so we push context before the 'end' statement
 				cmdName = "@PopExecutionContext";
 				offset = -4;
-
+				
 				// move 'end' state forward by 4 bytes (i.e. at current offset)
 				*((UInt32*)(buf->scriptData+buf->dataOffset)) = 0x00000011;
 			}
@@ -485,6 +473,7 @@ namespace CompilerOverride {
 			buf->dataOffset += sizeof(UInt16);
 		}
 	}
+
 
 	static __declspec(naked) void OnCompileSuccessHook(void)
 	{
@@ -546,6 +535,7 @@ namespace CompilerOverride {
 			jmp [storeBlockLenRetnAddr]
 		}
 	}
+			
 
 	void InitHooks()
 	{
@@ -600,7 +590,7 @@ static __declspec(naked) void CompileScriptHook(void)
 {
 	static bool precompileResult;
 
-	__asm
+	__asm	
 	{
 		mov		eax,	[esp+4]					// grab the second arg (ScriptBuffer*)
 		pushad
@@ -652,7 +642,7 @@ UInt32 __stdcall CopyStringArg(char* dest, const char* src, UInt32 len, ScriptLi
 			pos += 1;
 			continue;
 		}
-
+		
 		str.insert(pos, 1, toInsert);	// insert char at current pos
 		str.erase(pos + 1, 2);			// erase format specifier
 		pos += 1;
@@ -671,7 +661,7 @@ UInt32 __stdcall CopyStringArg(char* dest, const char* src, UInt32 len, ScriptLi
 // major code differences between CS versions here so hooks differ significantly
 static __declspec(naked) void __cdecl CopyStringArgHook(void)
 {
-#if CS_VERSION == CS_VERSION_1_2
+#if CS_VERSION == CS_VERSION_1_2	
 	// overwrite call to memcpy()
 
 	// On entry:
@@ -683,7 +673,7 @@ static __declspec(naked) void __cdecl CopyStringArgHook(void)
 
 	__asm
 	{
-		push	esi
+		push	esi				
 
 		push	esi
 		push	edi
@@ -696,7 +686,7 @@ static __declspec(naked) void __cdecl CopyStringArgHook(void)
 
 		retn
 	}
-#elif CS_VERSION == CS_VERSION_1_0
+#elif CS_VERSION == CS_VERSION_1_0	
 	// string copy is done inline by CS 1.0 using rep movsd
 	// need to write length of string to scriptdata before writing string
 
@@ -759,7 +749,7 @@ namespace ExtractArgsOverride {
 		bool popped = false;
 
 		s_critSection.Enter();
-		for (std::vector<ExecutingScriptContext*>::reverse_iterator iter = s_stack.rbegin(); iter != s_stack.rend(); ++iter) {
+ 		for (std::vector<ExecutingScriptContext*>::reverse_iterator iter = s_stack.rbegin(); iter != s_stack.rend(); ++iter) {
 			ExecutingScriptContext* context = *iter;
 			if (context->threadID == curThreadID) {
 				delete context;
@@ -793,7 +783,7 @@ namespace ExtractArgsOverride {
 	static bool __stdcall DoExtractExtendedArgs(CompilerOverride::Mode mode, UInt32 _esp, va_list varArgs)
 	{
 		static const UInt8 stackOffset = 0x2C;
-
+		
 		// grab the args to ExtractArgs()
 		_esp += stackOffset;
 		ParamInfo* paramInfo = *(ParamInfo**)(_esp+0x00);
@@ -801,7 +791,7 @@ namespace ExtractArgsOverride {
 		UInt32* opcodeOffsetPtr = *(UInt32**)(_esp+0x08);
 		Script* scriptObj = *(Script**)(_esp+0x14);
 		ScriptEventList* eventList = *(ScriptEventList**)(_esp+0x18);
-
+		
 		// extract
 		return ExtractArgs(paramInfo, scriptData, scriptObj, eventList, opcodeOffsetPtr, varArgs, true, mode);
 	}
@@ -844,7 +834,7 @@ namespace ExtractArgsOverride {
 			g_ErrOut.Show("ERROR: Could not get execution context in ExtractFormattedString()");
 			return false;
 		}
-
+		
 		ExpressionEvaluator eval(paramInfo, scriptData, context->callingRef, (UInt32)context->containerRef, scriptObj, eventList,
 			NULL, opcodeOffsetPtr);
 		return eval.ExtractFormatStringArgs(varArgs, fmtStringPos, fmtStringOut, maxParams);

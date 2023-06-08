@@ -31,7 +31,6 @@ bool	OpenRecord(UInt32 type, UInt32 version);
 bool	WriteRecordData(const void * buf, UInt32 length);
 
 bool	GetNextRecordInfo(UInt32 * type, UInt32 * version, UInt32 * length);
-bool	PeekNextRecordInfo(UInt32 * type, UInt32 * version, UInt32 * length);
 UInt32	ReadRecordData(void * buf, UInt32 length);
 
 bool	ResolveRefID(UInt32 refID, UInt32 * outRefID);

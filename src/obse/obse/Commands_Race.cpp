@@ -333,73 +333,6 @@ static bool Cmd_GetRaceEyes_Execute(COMMAND_ARGS)
 
 	return true;
 }
-
-static TESRace* RaceFromForm(TESForm* baseForm, TESObjectREFR* thisObj)
-{
-	// this accepts a race, base NPC, or calling reference
-	TESRace* race = NULL;
-
-	if (!baseForm && thisObj)
-		baseForm = thisObj->baseForm;
-
-	if (baseForm) {
-		race = OBLIVION_CAST(baseForm, TESForm, TESRace);
-		if (!race) {
-			TESNPC* npc = OBLIVION_CAST(baseForm, TESForm, TESNPC);
-			if (npc) {
-				race = npc->race.race;
-			}
-		}
-	}
-
-	return race;
-}
-
-static bool Cmd_HasTail_Execute(COMMAND_ARGS)
-{
-	TESForm* form = NULL;
-	*result = 0.0;
-
-	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form)) {
-		TESRace* race = RaceFromForm(form, thisObj);
-
-		if (race && race->tails[0].nifPath.m_data) {
-			*result = 1.0;
-		}
-	}
-
-	if (IsConsoleMode()) {
-		Console_Print("HasTail >> %.0f", *result);
-	}
-
-	return true;
-}
-
-static bool Cmd_GetTailModelPath_Execute(COMMAND_ARGS)
-{
-	UInt32 gender = 0;	// default male
-	TESForm* form = NULL;	
-	const char* tailPath = NULL;
-
-	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &gender, &form) && gender <= 1) {
-		TESRace* race = RaceFromForm(form, thisObj);
-		if (race) {
-			tailPath = race->tails[gender].nifPath.m_data;
-		}
-	}
-
-	if (!tailPath)
-		tailPath = "";
-
-	AssignToStringVar(PASS_COMMAND_ARGS, tailPath);
-
-	if (IsConsoleMode()) {
-		Console_Print("GetTailModelPath >> %s", tailPath);
-	}
-
-	return true;
-}
-
 #endif
 
 static ParamInfo kParams_GetRaceAttribute[3] =
@@ -634,12 +567,3 @@ static ParamInfo kParams_OneRace_OneInt_OneFloat[3] =
 
 DEFINE_COMMAND(SetRaceScale, sets the scale of the race, 0, 3, kParams_OneRace_OneInt_OneFloat);
 DEFINE_COMMAND(SetRaceWeight, sets the weight of the race, 0, 3, kParams_OneRace_OneInt_OneFloat);
-DEFINE_COMMAND(HasTail, returns 1 if the race has a tail, 0, 1, kParams_OneOptionalRace);
-
-static ParamInfo kParams_GetTailModelPath [2] =
-{
-	{ "gender",	kParamType_Sex,		1	},
-	{ "race",	kParamType_Race,	1	}
-};
-
-DEFINE_COMMAND(GetTailModelPath, returns the tail nif path for the specified race and gender, 0, 2, kParams_GetTailModelPath);

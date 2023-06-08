@@ -4,9 +4,9 @@
 #include "NiNodes.h"
 
 /**** Tile::Value::id table ****************************************************
- *
+ *	
  *	not sure how they are generated, they clearly aren't hashes
- *
+ *	
  *	00000001 &false;
  *	00000001 &left;
  *	00000001 &xbox;
@@ -229,7 +229,7 @@
  *	0000138E screen
  *	0000138F strings
  *	00001778 &does_not_stack;
- *
+ *	
  ******************************************************************************/
 
 //NOTE: For boolean tile values, 1=false, 2=true
@@ -356,6 +356,7 @@ public:
 	// 1C
 	struct Value
 	{
+
 		union Operand {
 			Value	* ref;
 			float	* immediate;
@@ -383,9 +384,9 @@ public:
 
 		Tile	* parentTile;	// 00 - Tile * back to owning tile
 		float	num;			// 04
-		BSStringT	str;			// 08
+		String	str;			// 08
 		ExpressionList	exprList;	// 10
-		UInt16	id;				// 18
+		UInt16	id;				// 18 
 		UInt8	bIsNum;			// 1A 0 = string, 1 = number
 		UInt8	pad1B;			// 1B
 	};
@@ -393,9 +394,10 @@ public:
 	typedef NiTListBase <Tile>	RefList;
 	typedef NiTListBase <Value>	ValueList;
 
+
 	Tile *	ReadXML(const char * xmlPath);
 	Tile *	GetRoot(void);
-
+	
 	Value * GetValueByType(UInt32 valueType);
 	Value * GetValueByName(char * name);
 //	bool	SetValueByName(char* name, const char* strVal, float floatVal);
@@ -409,7 +411,7 @@ public:
 	void UpdateString(UInt32 valueType, const char* newValue);		// sets field and updates display
 	void UpdateFloat(UInt32 valueType, float newValue);				// ditto for floats
 	void DoActionEnumeration();
-	std::string GetQualifiedName();
+	std::string GetQualifiedName();	
 
 	enum {
 		kTileFlag_ChangedXY				= 0x01,
@@ -423,12 +425,12 @@ public:
 	UInt8	unk05;			// 05 - looks like bool, possibly bModified? Seems only used for x, y, width, height changed
 	UInt8	unk06;			// 06
 	UInt8	pad07;			// 07
-	BSStringT	name;			// 08
+	String	name;			// 08
 	Tile	* parent;		// 10
 	ValueList	valueList;	// 14
 	UInt32	unk24;			// 24	// NiNode *
 	void	* unk28;		// 28
-	UInt32	flags;			// 2C
+	UInt32	flags;			// 2C 
 	RefList	childList;		// 30
 };
 

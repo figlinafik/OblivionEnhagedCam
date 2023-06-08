@@ -122,13 +122,7 @@ public:
 	TESGameSound();
 	~TESGameSound();
 
-	enum {
-		kType_Voice		= 1 << 2,
-		kType_Footstep	= 1 << 3,
-	};
-
-	UInt8			typeFlags;	// 00	for calculating volume based on OSSoundGlobals::foot/voice/effectVolume
-								//      effectVolume used by default
+	UInt8			unk00;		// 00
 	UInt8			unk01;
 	UInt8			unk02[2];
 	UInt32			unk04[2];	// 04

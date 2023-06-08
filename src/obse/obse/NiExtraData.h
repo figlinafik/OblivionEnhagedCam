@@ -239,7 +239,7 @@ public:
 	~DebugTextExtraData();
 
 	UInt32	unk0C;	// 0C
-	BSStringT	data;	// 10
+	String	data;	// 10
 	UInt32	unk18;	// 18
 	UInt32	unk1C;	// 1C
 };

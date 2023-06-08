@@ -300,11 +300,10 @@ struct SettingInfo
 {
 	union
 	{
-		bool	b;
-		float	f;
 		int		i;
-		char	* s;
 		UInt32	u;
+		float	f;
+		char	* s;
 	};
 	
 	char	* name;
@@ -329,42 +328,6 @@ struct SettingInfo
 
 bool GetGameSetting(char *settingName, SettingInfo** setting);
 
-struct INISettingEntry
-{
-	typedef	SettingInfo	Data;
-
-	Data			* data;
-	INISettingEntry	* next;
-};
-
-// 114
-// ###TODO: inheritance hierarchy
-class IniSettingCollection
-{
-public:
-	virtual void AddSetting (SettingInfo* info) = 0;
-	virtual void RemoveSetting (SettingInfo* info) = 0;
-	virtual void Unk_02 (void* arg0) = 0;
-	virtual bool SaveSetting (SettingInfo* info) = 0;		// individual setting to file
-	virtual bool LoadSetting (SettingInfo* info) = 0;		// individual setting from file
-	virtual bool PrepareToWrite () = 0;						// called before WriteToFile ()
-	virtual bool FinishWrite () = 0;						// called after WriteToFile ()
-	virtual bool WriteToFile () = 0;
-	virtual bool ReadFromFile () = 0;						// requires INISettingEntry list has already been populated, refreshes values from file
-
-	IniSettingCollection ();
-	~IniSettingCollection ();
-
-	// vtbl													// 000
-	char					iniFilePath[(0x108-0x004)];		// 004
-	IniSettingCollection	* writeInProgressCollection;	// 108 set to 'this' in PrepareToWrite(), to null in FinishWrite(), checked before read/write operations
-	INISettingEntry			settingsList;					// 10C
-
-	static IniSettingCollection* GetSingleton ();
-};
-
-STATIC_ASSERT (sizeof (IniSettingCollection) == 0x114);
-
 // 134
 class InterfaceManager
 {
@@ -386,10 +349,8 @@ public:
 	UInt32			unk008[(0x018 - 0x008) >> 2];	// 008
 	void*			unk018;							// 018 NiDirectionalLight *
 	Tile			* cursor;						// 01C
-	UInt32			unk020[(0x050 - 0x020) >> 2];	// 020
-	bool			debugTextOn;					// 050
-	UInt8			unk051[3];
-	NiNode*			unk054[(0x064 - 0x054) >> 2];	// 054
+	UInt32			unk020[(0x054 - 0x020) >> 2];	// 020
+	NiNode*			unk054[(0x064 - 0x054) >> 2];	// 054 byte +50: true if debug text toggled on
 	NiNode*			unk064;							// 064 ShadowSceneNode *
 	Tile			* menuRoot;						// 068
 	Tile			* strings;						// 06C
@@ -420,8 +381,6 @@ public:
 	float GetDepth();
 	bool MenuModeHasFocus(UInt32 menuType);		// returns true if menuType is on top (has focus)
 	bool IsGameMode();
-
-	static void ToggleDebugText();
 
 };
 

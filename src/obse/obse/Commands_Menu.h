@@ -61,6 +61,3 @@ extern CommandInfo kCommandInfo_GetEnchMenuBaseItem;
 extern CommandInfo kCommandInfo_PrintActiveTileInfo;
 
 extern CommandInfo kCommandInfo_GetMapMarkers;
-
-extern CommandInfo kCommandInfo_UpdateContainerMenu;
-extern CommandInfo kCommandInfo_UpdateSpellPurchaseMenu;

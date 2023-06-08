@@ -11,6 +11,8 @@
 #include "GameObjects.h"
 
 #include "StringVar.h"
+#include <set>
+#include <map>
 #include "ArrayVar.h"
 
 static bool Cmd_GetMagicEffectName_Execute(COMMAND_ARGS)
@@ -206,6 +208,7 @@ static bool GetMagicEffectValue(EffectSetting* effect, UInt32 valueType, double*
 				*result = effect->ForEnchanting() ? 1 : 0;
 				break;
 			}
+
 
 		case kMagicEffect_NoIngredient:
 			{
@@ -1133,12 +1136,8 @@ static bool Cmd_SetMagicEffectResistValue_Execute(COMMAND_ARGS)
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newResist, &magic)) return true;
 
 	if (magic) {
-		if ((newResist >= kActorVal_Strength && newResist < kActorVal_OblivionMax) || newResist == kActorVal_NoActorValue) { // need to test non-Resist AVs
-			if (newResist == kActorVal_NoActorValue)
-				magic->resistValue = kActorVal_NoActorValue_Proper;		// special case, as the game expects the correct value
-			else
-				magic->resistValue = newResist;
-
+		if ( newResist >= kActorVal_Strength && newResist < kActorVal_OblivionMax ) { // need to test non-Resist AVs
+			magic->resistValue = newResist;
 			*result = 1;
 		}
 	}
@@ -1155,12 +1154,8 @@ static bool Cmd_SetMagicEffectResistValueC_Execute(COMMAND_ARGS)
 
 	EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
 	if (magic) {
-		if ((newResist >= kActorVal_Strength && newResist < kActorVal_OblivionMax) || newResist == kActorVal_NoActorValue) { // need to test non-Resist AVs
-			if (newResist == kActorVal_NoActorValue)
-				magic->resistValue = kActorVal_NoActorValue_Proper;		// special case, as the game expects the correct value
-			else
-				magic->resistValue = newResist;
-
+		if ( newResist >= kActorVal_Strength && newResist < kActorVal_OblivionMax ) { // need to test non-Resist AVs
+			magic->resistValue = newResist;
 			*result = 1;
 		}
 	}
@@ -1721,102 +1716,102 @@ static bool Cmd_SetMagicEffectNoHitEffectC_Execute(COMMAND_ARGS)
 
 static bool Cmd_AddMagicEffectCounter_Execute(COMMAND_ARGS)
 {
-	*result = 0;
+    *result = 0;
 
-	EffectSetting* newCounter = NULL;
-	EffectSetting* magic = NULL;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newCounter, &magic)) return true;
+    EffectSetting* newCounter = NULL;
+    EffectSetting* magic = NULL;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newCounter, &magic)) return true;
 
-	if (magic) {
-		if (newCounter) {
-			*result = magic->numCounters+1;
-			UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
-			for ( int i = 0; i < magic->numCounters; ++i )
+    if (magic) {
+        if (newCounter) {
+            *result = magic->numCounters+1;
+            UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
+            for ( int i = 0; i < magic->numCounters; ++i )
 				newCounters[i] = magic->counterArray[i];
-			newCounters[magic->numCounters] = newCounter->effectCode;
-			FormHeap_Free(magic->counterArray);
+            newCounters[magic->numCounters] = newCounter->effectCode;
+            FormHeap_Free(magic->counterArray);
 			magic->counterArray = newCounters;
-			magic->numCounters = *result;
-		}
-	}
-	return true;
+            magic->numCounters = *result;
+        }
+    }
+    return true;
 }
 
 static bool Cmd_AddMagicEffectCounterC_Execute(COMMAND_ARGS)
 {
-	*result = 0;
+    *result = 0;
 
 	UInt32 newCounterCode = 0;
 	UInt32 effectCode = 0;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newCounterCode, &effectCode)) return true;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newCounterCode, &effectCode)) return true;
 
-	EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
-	if (magic) {
-		if (EffectSetting::EffectSettingForC(newCounterCode)) {
-			*result = magic->numCounters+1;
-			UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
-			for ( int i = 0; i < magic->numCounters; ++i )
+    EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
+    if (magic) {
+        if (EffectSetting::EffectSettingForC(newCounterCode)) {
+            *result = magic->numCounters+1;
+            UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
+            for ( int i = 0; i < magic->numCounters; ++i )
 				newCounters[i] = magic->counterArray[i];
-			newCounters[magic->numCounters] = newCounterCode;
-			FormHeap_Free(magic->counterArray);
+            newCounters[magic->numCounters] = newCounterCode;
+            FormHeap_Free(magic->counterArray);
 			magic->counterArray = newCounters;
-			magic->numCounters = *result;
-		}
-	}
-	return true;
+            magic->numCounters = *result;
+        }
+    }
+    return true;
 }
 
 static bool Cmd_RemoveNthMagicEffectCounter_Execute(COMMAND_ARGS)
 {
-	*result = 0;
+    *result = 0;
 
-	UInt32 index = -1;
-	EffectSetting* magic = NULL;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &index, &magic)) return true;
+    UInt32 index = -1;
+    EffectSetting* magic = NULL;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &index, &magic)) return true;
 
-	if (magic) {
+    if (magic) {
 		if (index >= 0 && index < magic->numCounters) {
-			*result = magic->numCounters-1;
-			UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
+            *result = magic->numCounters-1;
+            UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
 			for ( int i = 0; i < magic->numCounters; ++i ) {
 				if ( i < index )
 					newCounters[ i ] = magic->counterArray[i];
 				else if ( i > index )
 					newCounters[i-1] = magic->counterArray[i];
 			}
-			FormHeap_Free(magic->counterArray);
+            FormHeap_Free(magic->counterArray);
 			magic->counterArray = newCounters;
-			magic->numCounters = *result;
-		}
-	}
-	return true;
+            magic->numCounters = *result;
+        }
+    }
+    return true;
 }
 
 static bool Cmd_RemoveNthMagicEffectCounterC_Execute(COMMAND_ARGS)
 {
-	*result = 0;
+    *result = 0;
 
 	UInt32 index = -1;
 	UInt32 effectCode = 0;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &index, &effectCode)) return true;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &index, &effectCode)) return true;
 
-	EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
-	if (magic) {
+    EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
+    if (magic) {
 		if (index >= 0 && index < magic->numCounters) {
-			*result = magic->numCounters-1;
-			UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
+            *result = magic->numCounters-1;
+            UInt32 * newCounters = (UInt32 *)FormHeap_Allocate((*result) * sizeof(UInt32));
 			for ( int i = 0; i < magic->numCounters; ++i ) {
 				if ( i < index )
 					newCounters[ i ] = magic->counterArray[i];
 				else if ( i > index )
 					newCounters[i-1] = magic->counterArray[i];
 			}
-			FormHeap_Free(magic->counterArray);
+            FormHeap_Free(magic->counterArray);
 			magic->counterArray = newCounters;
-			magic->numCounters = *result;
-		}
-	}
-	return true;
+            magic->numCounters = *result;
+        }
+    }
+    return true;
 }
 
 static bool Cmd_SetMagicEffectCounters_Execute(COMMAND_ARGS)
@@ -1824,20 +1819,20 @@ static bool Cmd_SetMagicEffectCounters_Execute(COMMAND_ARGS)
 	*result = 0;
 
 	ExpressionEvaluator eval(PASS_COMMAND_ARGS);
-	if ( eval.ExtractArgs() && eval.NumArgs() == 2 && eval.Arg(0)->CanConvertTo(kTokenType_Array) && eval.Arg(1)->CanConvertTo(kTokenType_Form))
+	if ( eval.ExtractArgs() && eval.NumArgs() == 2 && eval.Arg(0)->CanConvertTo(kTokenType_Array) && eval.Arg(1)->CanConvertTo(kTokenType_Form)) 
 	{
 		EffectSetting* magic = OBLIVION_CAST(eval.Arg(1)->GetTESForm(), TESForm, EffectSetting);
 
-		if (!magic)
+		if (!magic) 
 			return true;
 
 		 ArrayID arrayID = eval.Arg(0)->GetArray();
-		if ( g_ArrayMap.GetKeyType(arrayID) == kDataType_Numeric )
+		if ( g_ArrayMap.GetKeyType(arrayID) == kDataType_Numeric ) 
 		{
 			FormHeap_Free(magic->counterArray);
 			magic->numCounters = g_ArrayMap.SizeOf(arrayID);
 			magic->counterArray = (UInt32 *)FormHeap_Allocate((magic->numCounters) * sizeof(UInt32));
-			for (UInt32 i = 0; i < magic->numCounters; ++i)
+			for (UInt32 i = 0; i < magic->numCounters; ++i) 
 			{
 				double counterEffectCode = 0;
 				if ( g_ArrayMap.GetElementNumber(arrayID, i, &counterEffectCode) )
@@ -1854,19 +1849,19 @@ static bool Cmd_SetMagicEffectCountersC_Execute(COMMAND_ARGS)
 	*result = 0;
 
 	ExpressionEvaluator eval(PASS_COMMAND_ARGS);
-	if ( eval.ExtractArgs() && eval.NumArgs() == 2 && eval.Arg(0)->CanConvertTo(kTokenType_Array) && eval.Arg(1)->CanConvertTo(kTokenType_Number) )
+	if ( eval.ExtractArgs() && eval.NumArgs() == 2 && eval.Arg(0)->CanConvertTo(kTokenType_Array) && eval.Arg(1)->CanConvertTo(kTokenType_Number) ) 
 	{
 		EffectSetting* magic = EffectSetting::EffectSettingForC((UInt32)eval.Arg(1)->GetNumber());
-		if (!magic)
+		if (!magic) 
 			return true;
 
 		ArrayID arrayID = eval.Arg(0)->GetArray();
-		if ( g_ArrayMap.GetKeyType(arrayID) == kDataType_Numeric )
+		if ( g_ArrayMap.GetKeyType(arrayID) == kDataType_Numeric ) 
 		{
 			FormHeap_Free(magic->counterArray);
 			magic->numCounters = g_ArrayMap.SizeOf(arrayID);
 			magic->counterArray = (UInt32 *)FormHeap_Allocate((magic->numCounters) * sizeof(UInt32));
-			for (UInt32 i = 0; i < magic->numCounters; ++i)
+			for (UInt32 i = 0; i < magic->numCounters; ++i) 
 			{
 				double counterEffectCode = 0;
 				if ( g_ArrayMap.GetElementNumber(arrayID, i, &counterEffectCode) )
@@ -1884,7 +1879,7 @@ static bool Cmd_SetMagicEffectOtherActorValue_Execute(COMMAND_ARGS)
 
 	UInt32 actorVal = -1;
 	EffectSetting* magic = NULL;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &actorVal, &magic)) return true;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &actorVal, &magic)) return true;
 
 	if (magic) {
 		if ( actorVal >= kActorVal_Strength && actorVal < kActorVal_OblivionMax ) {
@@ -1901,9 +1896,9 @@ static bool Cmd_SetMagicEffectOtherActorValueC_Execute(COMMAND_ARGS)
 
 	UInt32 actorVal = -1;
 	UInt32 effectCode = 0;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &actorVal, &effectCode)) return true;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &actorVal, &effectCode)) return true;
 
-	EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
+    EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
 	if (magic) {
 		if ( actorVal >= kActorVal_Strength && actorVal < kActorVal_OblivionMax ) {
 			magic->data = actorVal;
@@ -1936,7 +1931,7 @@ static bool Cmd_SetMagicEffectUsedObjectC_Execute(COMMAND_ARGS)
 	UInt32 effectCode = 0;
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form, &effectCode)) form = form->TryGetREFRParent();
 
-	EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
+    EffectSetting* magic = EffectSetting::EffectSettingForC(effectCode);
 	if (magic && form) {
 		magic->data = form->refID;
 		*result = 1;
@@ -2040,7 +2035,7 @@ static bool Cmd_DumpMagicEffectUnknowns_Execute(COMMAND_ARGS)
 	*result = 0;
 
 	EffectSetting* magic = NULL;
-	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &magic)) return true;
+    if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &magic)) return true;
 
 	if (magic) {
 		std::string MEdump = "'";
@@ -2074,7 +2069,7 @@ static bool Cmd_DumpMagicEffectUnknowns_Execute(COMMAND_ARGS)
 
 #endif
 
-CommandInfo kCommandInfo_GetMagicEffectName =
+CommandInfo kCommandInfo_GetMagicEffectName = 
 {
 	"GetMagicEffectName",
 	"GetMEName",
@@ -2089,7 +2084,7 @@ CommandInfo kCommandInfo_GetMagicEffectName =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectNameC =
+CommandInfo kCommandInfo_GetMagicEffectNameC = 
 {
 	"GetMagicEffectNameC",
 	"GetMENameC",
@@ -2192,6 +2187,7 @@ CommandInfo kCommandInfo_GetMagicEffectBarterFactor =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_GetMagicEffectBaseCostC =
 {
@@ -2297,6 +2293,7 @@ CommandInfo kCommandInfo_IsMagicEffectHostileC =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_IsMagicEffectForSpellmaking =
 {
@@ -2417,6 +2414,7 @@ CommandInfo kCommandInfo_IsMagicEffectCanRecoverC =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_IsMagicEffectMagnitudePercent =
 {
@@ -2808,6 +2806,7 @@ CommandInfo kCommandInfo_MagicEffectUsesCreatureC =
 	0
 };
 
+
 CommandInfo kCommandInfo_MagicEffectUsesSkill =
 {
 	"MagicEffectUsesSkill",
@@ -2837,6 +2836,7 @@ CommandInfo kCommandInfo_MagicEffectUsesSkillC =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_MagicEffectUsesAttribute =
 {
@@ -2907,7 +2907,7 @@ CommandInfo kCommandInfo_GetMagicEffectOtherActorValue =
 	0,
 	1,
 	kParams_OneMagicEffect,
-	HANDLER(Cmd_GetMagicEffectOtherActorValue_Execute),
+	HANDLER(Cmd_MagicEffectUsesOtherActorValue_Execute),
 	Cmd_Default_Parse,
 	NULL,
 	0
@@ -2922,7 +2922,7 @@ CommandInfo kCommandInfo_GetMagicEffectOtherActorValueC =
 	0,
 	1,
 	kParams_OneInt,
-	HANDLER(Cmd_GetMagicEffectOtherActorValueC_Execute),
+	HANDLER(Cmd_MagicEffectUsesOtherActorValueC_Execute),
 	Cmd_Default_Parse,
 	NULL,
 	0
@@ -2958,7 +2958,7 @@ CommandInfo kCommandInfo_GetMagicEffectUsedObjectC =
 	0
 };
 
-static ParamInfo kParams_GetMagicEffectValue[2] =
+static ParamInfo kParams_GetMagicEffectValue[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"magic effect", kParamType_MagicEffect, 0 },
@@ -2979,7 +2979,7 @@ CommandInfo kCommandInfo_GetMagicEffectValue =
 	0
 };
 
-static ParamInfo kParams_GetMagicEffectCodeValue[2] =
+static ParamInfo kParams_GetMagicEffectCodeValue[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"effect code", kParamType_Integer, 0 },
@@ -3000,7 +3000,7 @@ CommandInfo kCommandInfo_GetMagicEffectCodeValue =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectHitShader =
+CommandInfo kCommandInfo_GetMagicEffectHitShader = 
 {
 	"GetMagicEffectHitShader",
 	"GetMEHitShader",
@@ -3015,7 +3015,7 @@ CommandInfo kCommandInfo_GetMagicEffectHitShader =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectHitShaderC =
+CommandInfo kCommandInfo_GetMagicEffectHitShaderC = 
 {
 	"GetMagicEffectHitShaderC",
 	"GetMEHitShaderC",
@@ -3030,7 +3030,7 @@ CommandInfo kCommandInfo_GetMagicEffectHitShaderC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectEnchantShader =
+CommandInfo kCommandInfo_GetMagicEffectEnchantShader = 
 {
 	"GetMagicEffectEnchantShader",
 	"GetMEEnchantShader",
@@ -3045,7 +3045,7 @@ CommandInfo kCommandInfo_GetMagicEffectEnchantShader =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectEnchantShaderC =
+CommandInfo kCommandInfo_GetMagicEffectEnchantShaderC = 
 {
 	"GetMagicEffectEnchantShaderC",
 	"GetMEEnchantShaderC",
@@ -3060,7 +3060,7 @@ CommandInfo kCommandInfo_GetMagicEffectEnchantShaderC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectLight =
+CommandInfo kCommandInfo_GetMagicEffectLight = 
 {
 	"GetMagicEffectLight",
 	"GetMELight",
@@ -3075,7 +3075,7 @@ CommandInfo kCommandInfo_GetMagicEffectLight =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectLightC =
+CommandInfo kCommandInfo_GetMagicEffectLightC = 
 {
 	"GetMagicEffectLightC",
 	"GetMELightC",
@@ -3090,7 +3090,7 @@ CommandInfo kCommandInfo_GetMagicEffectLightC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectCastingSound =
+CommandInfo kCommandInfo_GetMagicEffectCastingSound = 
 {
 	"GetMagicEffectCastingSound",
 	"GetMECastingSound",
@@ -3105,7 +3105,7 @@ CommandInfo kCommandInfo_GetMagicEffectCastingSound =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectCastingSoundC =
+CommandInfo kCommandInfo_GetMagicEffectCastingSoundC = 
 {
 	"GetMagicEffectCastingSoundC",
 	"GetMECastingSoundC",
@@ -3120,7 +3120,7 @@ CommandInfo kCommandInfo_GetMagicEffectCastingSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectBoltSound =
+CommandInfo kCommandInfo_GetMagicEffectBoltSound = 
 {
 	"GetMagicEffectBoltSound",
 	"GetMEBoltSound",
@@ -3135,7 +3135,7 @@ CommandInfo kCommandInfo_GetMagicEffectBoltSound =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectBoltSoundC =
+CommandInfo kCommandInfo_GetMagicEffectBoltSoundC = 
 {
 	"GetMagicEffectBoltSoundC",
 	"GetMEBoltSoundC",
@@ -3150,7 +3150,7 @@ CommandInfo kCommandInfo_GetMagicEffectBoltSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectHitSound =
+CommandInfo kCommandInfo_GetMagicEffectHitSound = 
 {
 	"GetMagicEffectHitSound",
 	"GetMEHitSound",
@@ -3165,7 +3165,7 @@ CommandInfo kCommandInfo_GetMagicEffectHitSound =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectHitSoundC =
+CommandInfo kCommandInfo_GetMagicEffectHitSoundC = 
 {
 	"GetMagicEffectHitSoundC",
 	"GetMEHitSoundC",
@@ -3180,7 +3180,7 @@ CommandInfo kCommandInfo_GetMagicEffectHitSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectAreaSound =
+CommandInfo kCommandInfo_GetMagicEffectAreaSound = 
 {
 	"GetMagicEffectAreaSound",
 	"GetMEAreaSound",
@@ -3195,7 +3195,7 @@ CommandInfo kCommandInfo_GetMagicEffectAreaSound =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectAreaSoundC =
+CommandInfo kCommandInfo_GetMagicEffectAreaSoundC = 
 {
 	"GetMagicEffectAreaSoundC",
 	"GetMEAreaSoundC",
@@ -3210,7 +3210,7 @@ CommandInfo kCommandInfo_GetMagicEffectAreaSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectNumCounters =
+CommandInfo kCommandInfo_GetMagicEffectNumCounters = 
 {
 	"GetMagicEffectNumCounters",
 	"GetMENumCounters",
@@ -3225,7 +3225,7 @@ CommandInfo kCommandInfo_GetMagicEffectNumCounters =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectNumCountersC =
+CommandInfo kCommandInfo_GetMagicEffectNumCountersC = 
 {
 	"GetMagicEffectNumCountersC",
 	"GetMENumCountersC",
@@ -3240,7 +3240,7 @@ CommandInfo kCommandInfo_GetMagicEffectNumCountersC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectResistValue =
+CommandInfo kCommandInfo_GetMagicEffectResistValue = 
 {
 	"GetMagicEffectResistValue",
 	"GetMEResistValue",
@@ -3255,7 +3255,7 @@ CommandInfo kCommandInfo_GetMagicEffectResistValue =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectResistValueC =
+CommandInfo kCommandInfo_GetMagicEffectResistValueC = 
 {
 	"GetMagicEffectResistValueC",
 	"GetMEResistValueC",
@@ -3270,13 +3270,13 @@ CommandInfo kCommandInfo_GetMagicEffectResistValueC =
 	0
 };
 
-static ParamInfo kParams_OneInt_OneMagicEffect[2] =
+static ParamInfo kParams_OneInt_OneMagicEffect[2] = 
 {
 	{	"int",			kParamType_Integer,		0	},
 	{	"magic effect",	kParamType_MagicEffect,	0	},
 };
 
-CommandInfo kCommandInfo_GetNthMagicEffectCounter =
+CommandInfo kCommandInfo_GetNthMagicEffectCounter = 
 {
 	"GetNthMagicEffectCounter",
 	"GetNthMECounter",
@@ -3291,7 +3291,7 @@ CommandInfo kCommandInfo_GetNthMagicEffectCounter =
 	0
 };
 
-CommandInfo kCommandInfo_GetNthMagicEffectCounterC =
+CommandInfo kCommandInfo_GetNthMagicEffectCounterC = 
 {
 	"GetNthMagicEffectCounterC",
 	"GetNthMECounterC",
@@ -3306,7 +3306,7 @@ CommandInfo kCommandInfo_GetNthMagicEffectCounterC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectCounters =
+CommandInfo kCommandInfo_GetMagicEffectCounters = 
 {
 	"GetMagicEffectCounters",
 	"GetMECounters",
@@ -3321,7 +3321,7 @@ CommandInfo kCommandInfo_GetMagicEffectCounters =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectCountersC =
+CommandInfo kCommandInfo_GetMagicEffectCountersC = 
 {
 	"GetMagicEffectCountersC",
 	"GetMECountersC",
@@ -3336,7 +3336,7 @@ CommandInfo kCommandInfo_GetMagicEffectCountersC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectIcon =
+CommandInfo kCommandInfo_GetMagicEffectIcon = 
 {
 	"GetMagicEffectIcon",
 	"GetMEIcon",
@@ -3351,7 +3351,7 @@ CommandInfo kCommandInfo_GetMagicEffectIcon =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectIconC =
+CommandInfo kCommandInfo_GetMagicEffectIconC = 
 {
 	"GetMagicEffectIconC",
 	"GetMEIconC",
@@ -3366,7 +3366,7 @@ CommandInfo kCommandInfo_GetMagicEffectIconC =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectModel =
+CommandInfo kCommandInfo_GetMagicEffectModel = 
 {
 	"GetMagicEffectModel",
 	"GetMEModel",
@@ -3381,7 +3381,7 @@ CommandInfo kCommandInfo_GetMagicEffectModel =
 	0
 };
 
-CommandInfo kCommandInfo_GetMagicEffectModelC =
+CommandInfo kCommandInfo_GetMagicEffectModelC = 
 {
 	"GetMagicEffectModelC",
 	"GetMEModelC",
@@ -3396,7 +3396,7 @@ CommandInfo kCommandInfo_GetMagicEffectModelC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIsHostile =
+CommandInfo kCommandInfo_SetMagicEffectIsHostile = 
 {
 	"SetMagicEffectIsHostile",
 	"SetMEIsHostile",
@@ -3411,7 +3411,7 @@ CommandInfo kCommandInfo_SetMagicEffectIsHostile =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIsHostileC =
+CommandInfo kCommandInfo_SetMagicEffectIsHostileC = 
 {
 	"SetMagicEffectIsHostileC",
 	"SetMEIsHostileC",
@@ -3426,7 +3426,7 @@ CommandInfo kCommandInfo_SetMagicEffectIsHostileC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCanRecover =
+CommandInfo kCommandInfo_SetMagicEffectCanRecover = 
 {
 	"SetMagicEffectCanRecover",
 	"SetMECanRecover",
@@ -3441,7 +3441,7 @@ CommandInfo kCommandInfo_SetMagicEffectCanRecover =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCanRecoverC =
+CommandInfo kCommandInfo_SetMagicEffectCanRecoverC = 
 {
 	"SetMagicEffectCanRecoverC",
 	"SetMECanRecoverC",
@@ -3456,7 +3456,7 @@ CommandInfo kCommandInfo_SetMagicEffectCanRecoverC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIsDetrimental =
+CommandInfo kCommandInfo_SetMagicEffectIsDetrimental = 
 {
 	"SetMagicEffectIsDetrimental",
 	"SetMEIsDetrimental",
@@ -3471,7 +3471,7 @@ CommandInfo kCommandInfo_SetMagicEffectIsDetrimental =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIsDetrimentalC =
+CommandInfo kCommandInfo_SetMagicEffectIsDetrimentalC = 
 {
 	"SetMagicEffectIsDetrimentalC",
 	"SetMEIsDetrimentalC",
@@ -3486,7 +3486,7 @@ CommandInfo kCommandInfo_SetMagicEffectIsDetrimentalC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectMagnitudePercent =
+CommandInfo kCommandInfo_SetMagicEffectMagnitudePercent = 
 {
 	"SetMagicEffectMagnitudePercent",
 	"SetMEMagnitudePercent",
@@ -3501,7 +3501,7 @@ CommandInfo kCommandInfo_SetMagicEffectMagnitudePercent =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectMagnitudePercentC =
+CommandInfo kCommandInfo_SetMagicEffectMagnitudePercentC = 
 {
 	"SetMagicEffectMagnitudePercentC",
 	"SetMEMagnitudePercentC",
@@ -3516,7 +3516,7 @@ CommandInfo kCommandInfo_SetMagicEffectMagnitudePercentC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowed =
+CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowed = 
 {
 	"SetMagicEffectOnSelfAllowed",
 	"SetMEOnSelfAllowed",
@@ -3531,7 +3531,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowed =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowedC =
+CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowedC = 
 {
 	"SetMagicEffectOnSelfAllowedC",
 	"SetMEOnSelfAllowedC",
@@ -3546,7 +3546,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnSelfAllowedC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowed =
+CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowed = 
 {
 	"SetMagicEffectOnTouchAllowed",
 	"SetMEOnTouchAllowed",
@@ -3561,7 +3561,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowed =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowedC =
+CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowedC = 
 {
 	"SetMagicEffectOnTouchAllowedC",
 	"SetMEOnTouchAllowedC",
@@ -3576,7 +3576,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnTouchAllowedC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowed =
+CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowed = 
 {
 	"SetMagicEffectOnTargetAllowed",
 	"SetMEOnTargetAllowed",
@@ -3591,7 +3591,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowed =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowedC =
+CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowedC = 
 {
 	"SetMagicEffectOnTargetAllowedC",
 	"SetMEOnTargetAllowedC",
@@ -3606,7 +3606,7 @@ CommandInfo kCommandInfo_SetMagicEffectOnTargetAllowedC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoDuration =
+CommandInfo kCommandInfo_SetMagicEffectNoDuration = 
 {
 	"SetMagicEffectNoDuration",
 	"SetMENoDuration",
@@ -3621,7 +3621,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoDuration =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoDurationC =
+CommandInfo kCommandInfo_SetMagicEffectNoDurationC = 
 {
 	"SetMagicEffectNoDurationC",
 	"SetMENoDurationC",
@@ -3636,7 +3636,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoDurationC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoMagnitude =
+CommandInfo kCommandInfo_SetMagicEffectNoMagnitude = 
 {
 	"SetMagicEffectNoMagnitude",
 	"SetMENoMagnitude",
@@ -3651,7 +3651,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoMagnitude =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoMagnitudeC =
+CommandInfo kCommandInfo_SetMagicEffectNoMagnitudeC = 
 {
 	"SetMagicEffectNoMagnitudeC",
 	"SetMENoMagnitudeC",
@@ -3666,7 +3666,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoMagnitudeC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoArea =
+CommandInfo kCommandInfo_SetMagicEffectNoArea = 
 {
 	"SetMagicEffectNoArea",
 	"SetMENoArea",
@@ -3681,7 +3681,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoArea =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoAreaC =
+CommandInfo kCommandInfo_SetMagicEffectNoAreaC = 
 {
 	"SetMagicEffectNoAreaC",
 	"SetMENoAreaC",
@@ -3696,7 +3696,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoAreaC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectFXPersists =
+CommandInfo kCommandInfo_SetMagicEffectFXPersists = 
 {
 	"SetMagicEffectFXPersists",
 	"SetMEFXPersists",
@@ -3711,7 +3711,7 @@ CommandInfo kCommandInfo_SetMagicEffectFXPersists =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectFXPersistsC =
+CommandInfo kCommandInfo_SetMagicEffectFXPersistsC = 
 {
 	"SetMagicEffectFXPersistsC",
 	"SetMEFXPersistsC",
@@ -3726,7 +3726,7 @@ CommandInfo kCommandInfo_SetMagicEffectFXPersistsC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectForSpellmaking =
+CommandInfo kCommandInfo_SetMagicEffectForSpellmaking = 
 {
 	"SetMagicEffectForSpellmaking",
 	"SetMEForSpellmaking",
@@ -3741,7 +3741,7 @@ CommandInfo kCommandInfo_SetMagicEffectForSpellmaking =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectForSpellmakingC =
+CommandInfo kCommandInfo_SetMagicEffectForSpellmakingC = 
 {
 	"SetMagicEffectForSpellmakingC",
 	"SetMEForSpellmakingC",
@@ -3756,7 +3756,7 @@ CommandInfo kCommandInfo_SetMagicEffectForSpellmakingC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectForEnchanting =
+CommandInfo kCommandInfo_SetMagicEffectForEnchanting = 
 {
 	"SetMagicEffectForEnchanting",
 	"SetMEForEnchant",
@@ -3771,7 +3771,7 @@ CommandInfo kCommandInfo_SetMagicEffectForEnchanting =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectForEnchantingC =
+CommandInfo kCommandInfo_SetMagicEffectForEnchantingC = 
 {
 	"SetMagicEffectForEnchantingC",
 	"SetMEForEnchantC",
@@ -3786,7 +3786,7 @@ CommandInfo kCommandInfo_SetMagicEffectForEnchantingC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoIngredient =
+CommandInfo kCommandInfo_SetMagicEffectNoIngredient = 
 {
 	"SetMagicEffectNoIngredient",
 	"SetMENoIngredient",
@@ -3801,7 +3801,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoIngredient =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoIngredientC =
+CommandInfo kCommandInfo_SetMagicEffectNoIngredientC = 
 {
 	"SetMagicEffectNoIngredientC",
 	"SetMENoIngredientC",
@@ -3816,7 +3816,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoIngredientC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesWeapon =
+CommandInfo kCommandInfo_SetMagicEffectUsesWeapon = 
 {
 	"SetMagicEffectUsesWeapon",
 	"SetMEUsesWeapon",
@@ -3831,7 +3831,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesWeapon =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesWeaponC =
+CommandInfo kCommandInfo_SetMagicEffectUsesWeaponC = 
 {
 	"SetMagicEffectUsesWeaponC",
 	"SetMEUsesWeaponC",
@@ -3846,7 +3846,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesWeaponC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesArmor =
+CommandInfo kCommandInfo_SetMagicEffectUsesArmor = 
 {
 	"SetMagicEffectUsesArmor",
 	"SetMEUsesArmor",
@@ -3861,7 +3861,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesArmor =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesArmorC =
+CommandInfo kCommandInfo_SetMagicEffectUsesArmorC = 
 {
 	"SetMagicEffectUsesArmorC",
 	"SetMEUsesArmorC",
@@ -3876,7 +3876,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesArmorC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesCreature =
+CommandInfo kCommandInfo_SetMagicEffectUsesCreature = 
 {
 	"SetMagicEffectUsesCreature",
 	"SetMEUsesCreature",
@@ -3891,7 +3891,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesCreature =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesCreatureC =
+CommandInfo kCommandInfo_SetMagicEffectUsesCreatureC = 
 {
 	"SetMagicEffectUsesCreatureC",
 	"SetMEUsesCreatureC",
@@ -3906,7 +3906,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesCreatureC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesSkill =
+CommandInfo kCommandInfo_SetMagicEffectUsesSkill = 
 {
 	"SetMagicEffectUsesSkill",
 	"SetMEUsesSkill",
@@ -3921,7 +3921,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesSkill =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesSkillC =
+CommandInfo kCommandInfo_SetMagicEffectUsesSkillC = 
 {
 	"SetMagicEffectUsesSkillC",
 	"SetMEUsesSkillC",
@@ -3936,7 +3936,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesSkillC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesAttribute =
+CommandInfo kCommandInfo_SetMagicEffectUsesAttribute = 
 {
 	"SetMagicEffectUsesAttribute",
 	"SetMEUsesAttribute",
@@ -3951,7 +3951,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesAttribute =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesAttributeC =
+CommandInfo kCommandInfo_SetMagicEffectUsesAttributeC = 
 {
 	"SetMagicEffectUsesAttributeC",
 	"SetMEUsesAttributeC",
@@ -3966,7 +3966,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesAttributeC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesActorValue =
+CommandInfo kCommandInfo_SetMagicEffectUsesActorValue = 
 {
 	"SetMagicEffectUseActorValue",
 	"SetMEUseActorValue",
@@ -3981,7 +3981,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesActorValue =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsesActorValueC =
+CommandInfo kCommandInfo_SetMagicEffectUsesActorValueC = 
 {
 	"SetMagicEffectUseActorValueC",
 	"SetMEUseActorValueC",
@@ -3996,7 +3996,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsesActorValueC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoHitEffect =
+CommandInfo kCommandInfo_SetMagicEffectNoHitEffect = 
 {
 	"SetMagicEffectNoHitEffect",
 	"SetMENoHitEffect",
@@ -4011,7 +4011,7 @@ CommandInfo kCommandInfo_SetMagicEffectNoHitEffect =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNoHitEffectC =
+CommandInfo kCommandInfo_SetMagicEffectNoHitEffectC = 
 {
 	"SetMagicEffectNoHitEffectC",
 	"SetMENoHitEffectC",
@@ -4026,13 +4026,13 @@ CommandInfo kCommandInfo_SetMagicEffectNoHitEffectC =
 	0
 };
 
-static ParamInfo kParams_OneString_OneMagicEffect[2] =
+static ParamInfo kParams_OneString_OneMagicEffect[2] = 
 {
 	{	"string",		kParamType_String,		0 },
 	{	"magic effect",	kParamType_MagicEffect,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectName =
+CommandInfo kCommandInfo_SetMagicEffectName = 
 {
 	"SetMagicEffectName",
 	"SetMEName",
@@ -4047,7 +4047,7 @@ CommandInfo kCommandInfo_SetMagicEffectName =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectNameC =
+CommandInfo kCommandInfo_SetMagicEffectNameC = 
 {
 	"SetMagicEffectNameC",
 	"SetMENameC",
@@ -4062,7 +4062,7 @@ CommandInfo kCommandInfo_SetMagicEffectNameC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIcon =
+CommandInfo kCommandInfo_SetMagicEffectIcon = 
 {
 	"SetMagicEffectIcon",
 	"SetMEIcon",
@@ -4077,7 +4077,7 @@ CommandInfo kCommandInfo_SetMagicEffectIcon =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectIconC =
+CommandInfo kCommandInfo_SetMagicEffectIconC = 
 {
 	"SetMagicEffectIconC",
 	"SetMEIconC",
@@ -4092,7 +4092,7 @@ CommandInfo kCommandInfo_SetMagicEffectIconC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectModel =
+CommandInfo kCommandInfo_SetMagicEffectModel = 
 {
 	"SetMagicEffectModel",
 	"SetMEModel",
@@ -4107,7 +4107,7 @@ CommandInfo kCommandInfo_SetMagicEffectModel =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectModelC =
+CommandInfo kCommandInfo_SetMagicEffectModelC = 
 {
 	"SetMagicEffectModelC",
 	"SetMEModelC",
@@ -4122,13 +4122,13 @@ CommandInfo kCommandInfo_SetMagicEffectModelC =
 	0
 };
 
-static ParamInfo kParams_OneFloat_OneMagicEffect[2] =
+static ParamInfo kParams_OneFloat_OneMagicEffect[2] = 
 {
 	{	"float",		kParamType_Float,		0 },
 	{	"magic effect",	kParamType_MagicEffect,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBaseCost =
+CommandInfo kCommandInfo_SetMagicEffectBaseCost = 
 {
 	"SetMagicEffectBaseCost",
 	"SetMEBaseCost",
@@ -4143,7 +4143,7 @@ CommandInfo kCommandInfo_SetMagicEffectBaseCost =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBaseCostC =
+CommandInfo kCommandInfo_SetMagicEffectBaseCostC = 
 {
 	"SetMagicEffectBaseCostC",
 	"SetMEBaseCostC",
@@ -4158,7 +4158,7 @@ CommandInfo kCommandInfo_SetMagicEffectBaseCostC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBarterFactor =
+CommandInfo kCommandInfo_SetMagicEffectBarterFactor = 
 {
 	"SetMagicEffectBarterFactor",
 	"SetMEBarterFactor",
@@ -4173,7 +4173,7 @@ CommandInfo kCommandInfo_SetMagicEffectBarterFactor =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBarterFactorC =
+CommandInfo kCommandInfo_SetMagicEffectBarterFactorC = 
 {
 	"SetMagicEffectBarterFactorC",
 	"SetMEBarterFactorC",
@@ -4188,7 +4188,7 @@ CommandInfo kCommandInfo_SetMagicEffectBarterFactorC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectEnchantFactor =
+CommandInfo kCommandInfo_SetMagicEffectEnchantFactor = 
 {
 	"SetMagicEffectEnchantFactor",
 	"SetMEEnchantFactor",
@@ -4203,7 +4203,7 @@ CommandInfo kCommandInfo_SetMagicEffectEnchantFactor =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectEnchantFactorC =
+CommandInfo kCommandInfo_SetMagicEffectEnchantFactorC = 
 {
 	"SetMagicEffectEnchantFactorC",
 	"SetMEEnchantFactorC",
@@ -4218,7 +4218,7 @@ CommandInfo kCommandInfo_SetMagicEffectEnchantFactorC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectProjectileSpeed =
+CommandInfo kCommandInfo_SetMagicEffectProjectileSpeed = 
 {
 	"SetMagicEffectProjectileSpeed",
 	"SetMEProjSpeed",
@@ -4233,7 +4233,7 @@ CommandInfo kCommandInfo_SetMagicEffectProjectileSpeed =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectProjectileSpeedC =
+CommandInfo kCommandInfo_SetMagicEffectProjectileSpeedC = 
 {
 	"SetMagicEffectProjectileSpeedC",
 	"SetMEProjSpeedC",
@@ -4248,7 +4248,7 @@ CommandInfo kCommandInfo_SetMagicEffectProjectileSpeedC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectSchool =
+CommandInfo kCommandInfo_SetMagicEffectSchool = 
 {
 	"SetMagicEffectSchool",
 	"SetMESchool",
@@ -4263,7 +4263,7 @@ CommandInfo kCommandInfo_SetMagicEffectSchool =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectSchoolC =
+CommandInfo kCommandInfo_SetMagicEffectSchoolC = 
 {
 	"SetMagicEffectSchoolC",
 	"SetMESchoolC",
@@ -4278,13 +4278,13 @@ CommandInfo kCommandInfo_SetMagicEffectSchoolC =
 	0
 };
 
-static ParamInfo kParams_OneActorValue_OneMagicEffect[2] =
+static ParamInfo kParams_OneActorValue_OneMagicEffect[2] = 
 {
 	{ "actor value",	kParamType_ActorValue,	0 },
 	{ "magic effect",	kParamType_MagicEffect,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectResistValue =
+CommandInfo kCommandInfo_SetMagicEffectResistValue = 
 {
 	"SetMagicEffectResistValue",
 	"SetMEResistValue",
@@ -4299,7 +4299,7 @@ CommandInfo kCommandInfo_SetMagicEffectResistValue =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectResistValueC =
+CommandInfo kCommandInfo_SetMagicEffectResistValueC = 
 {
 	"SetMagicEffectResistValueC",
 	"SetMEResistValueC",
@@ -4314,13 +4314,13 @@ CommandInfo kCommandInfo_SetMagicEffectResistValueC =
 	0
 };
 
-static ParamInfo kParams_OneInventoryObject_OneMagicEffect[2] =
+static ParamInfo kParams_OneInventoryObject_OneMagicEffect[2] = 
 {
 	{ "item",			kParamType_InventoryObject,	0 },
 	{ "magic effect",	kParamType_MagicEffect,		0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectLight =
+CommandInfo kCommandInfo_SetMagicEffectLight = 
 {
 	"SetMagicEffectLight",
 	"SetMELight",
@@ -4335,7 +4335,7 @@ CommandInfo kCommandInfo_SetMagicEffectLight =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectLightC =
+CommandInfo kCommandInfo_SetMagicEffectLightC = 
 {
 	"SetMagicEffectLightC",
 	"SetMELightC",
@@ -4350,13 +4350,13 @@ CommandInfo kCommandInfo_SetMagicEffectLightC =
 	0
 };
 
-static ParamInfo kParams_OneSound_OneMagicEffect[2] =
+static ParamInfo kParams_OneSound_OneMagicEffect[2] = 
 {
 	{	"sound",		kParamType_Sound,		0 },
 	{	"magic effect",	kParamType_MagicEffect,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCastingSound =
+CommandInfo kCommandInfo_SetMagicEffectCastingSound = 
 {
 	"SetMagicEffectCastingSound",
 	"SetMECastingSound",
@@ -4371,7 +4371,7 @@ CommandInfo kCommandInfo_SetMagicEffectCastingSound =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCastingSoundC =
+CommandInfo kCommandInfo_SetMagicEffectCastingSoundC = 
 {
 	"SetMagicEffectCastingSoundC",
 	"SetMECastingSoundC",
@@ -4386,7 +4386,7 @@ CommandInfo kCommandInfo_SetMagicEffectCastingSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBoltSound =
+CommandInfo kCommandInfo_SetMagicEffectBoltSound = 
 {
 	"SetMagicEffectBoltSound",
 	"SetMEBoltSound",
@@ -4401,7 +4401,7 @@ CommandInfo kCommandInfo_SetMagicEffectBoltSound =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectBoltSoundC =
+CommandInfo kCommandInfo_SetMagicEffectBoltSoundC = 
 {
 	"SetMagicEffectBoltSoundC",
 	"SetMEBoltSoundC",
@@ -4416,7 +4416,7 @@ CommandInfo kCommandInfo_SetMagicEffectBoltSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectHitSound =
+CommandInfo kCommandInfo_SetMagicEffectHitSound = 
 {
 	"SetMagicEffectHitSound",
 	"SetMEHitSound",
@@ -4431,7 +4431,7 @@ CommandInfo kCommandInfo_SetMagicEffectHitSound =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectHitSoundC =
+CommandInfo kCommandInfo_SetMagicEffectHitSoundC = 
 {
 	"SetMagicEffectHitSoundC",
 	"SetMEHitSoundC",
@@ -4446,7 +4446,7 @@ CommandInfo kCommandInfo_SetMagicEffectHitSoundC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectAreaSound =
+CommandInfo kCommandInfo_SetMagicEffectAreaSound = 
 {
 	"SetMagicEffectAreaSound",
 	"SetMEAreaSound",
@@ -4461,7 +4461,7 @@ CommandInfo kCommandInfo_SetMagicEffectAreaSound =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectAreaSoundC =
+CommandInfo kCommandInfo_SetMagicEffectAreaSoundC = 
 {
 	"SetMagicEffectAreaSoundC",
 	"SetMEAreaSoundC",
@@ -4476,13 +4476,13 @@ CommandInfo kCommandInfo_SetMagicEffectAreaSoundC =
 	0
 };
 
-static ParamInfo kParams_OneEffectShader_OneMagicEffect[2] =
+static ParamInfo kParams_OneEffectShader_OneMagicEffect[2] = 
 {
 	{	"effect shader",	kParamType_EffectShader,	0 },
 	{	"magic effect",		kParamType_MagicEffect,		0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectHitShader =
+CommandInfo kCommandInfo_SetMagicEffectHitShader = 
 {
 	"SetMagicEffectHitShader",
 	"SetMEHitShader",
@@ -4497,7 +4497,7 @@ CommandInfo kCommandInfo_SetMagicEffectHitShader =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectHitShaderC =
+CommandInfo kCommandInfo_SetMagicEffectHitShaderC = 
 {
 	"SetMagicEffectHitShaderC",
 	"SetMEHitShaderC",
@@ -4512,7 +4512,7 @@ CommandInfo kCommandInfo_SetMagicEffectHitShaderC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectEnchantShader =
+CommandInfo kCommandInfo_SetMagicEffectEnchantShader = 
 {
 	"SetMagicEffectEnchantShader",
 	"SetMEEnchantShader",
@@ -4527,7 +4527,7 @@ CommandInfo kCommandInfo_SetMagicEffectEnchantShader =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectEnchantShaderC =
+CommandInfo kCommandInfo_SetMagicEffectEnchantShaderC = 
 {
 	"SetMagicEffectEnchantShaderC",
 	"SetMEEnchantShaderC",
@@ -4548,7 +4548,7 @@ static ParamInfo kParams_TwoMagicEffects[2] =
 	{	"magic effect",	kParamType_MagicEffect,	0	},
 };
 
-CommandInfo kCommandInfo_AddMagicEffectCounter =
+CommandInfo kCommandInfo_AddMagicEffectCounter = 
 {
 	"AddMagicEffectCounter",
 	"AddMECounter",
@@ -4563,7 +4563,7 @@ CommandInfo kCommandInfo_AddMagicEffectCounter =
 	0
 };
 
-CommandInfo kCommandInfo_AddMagicEffectCounterC =
+CommandInfo kCommandInfo_AddMagicEffectCounterC = 
 {
 	"AddMagicEffectCounterC",
 	"AddMECounterC",
@@ -4578,7 +4578,7 @@ CommandInfo kCommandInfo_AddMagicEffectCounterC =
 	0
 };
 
-CommandInfo kCommandInfo_RemoveNthMagicEffectCounter =
+CommandInfo kCommandInfo_RemoveNthMagicEffectCounter = 
 {
 	"RemoveNthMagicEffectCounter",
 	"RemoveNthMECounter",
@@ -4593,7 +4593,7 @@ CommandInfo kCommandInfo_RemoveNthMagicEffectCounter =
 	0
 };
 
-CommandInfo kCommandInfo_RemoveNthMagicEffectCounterC =
+CommandInfo kCommandInfo_RemoveNthMagicEffectCounterC = 
 {
 	"RemoveNthMagicEffectCounterC",
 	"RemoveNthMECounterC",
@@ -4610,11 +4610,11 @@ CommandInfo kCommandInfo_RemoveNthMagicEffectCounterC =
 
 static ParamInfo kParams_OneArray_OneMagicEffect[2] =
 {
-	{ "array",			kOBSEParamType_Array,	0 },
-	{ "effect setting",	kOBSEParamType_Form,	0 },
+    { "array",			kOBSEParamType_Array,	0 },
+    { "effect setting",	kOBSEParamType_Form,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCounters =
+CommandInfo kCommandInfo_SetMagicEffectCounters = 
 {
 	"SetMagicEffectCounters",
 	"SetMECounters",
@@ -4629,13 +4629,13 @@ CommandInfo kCommandInfo_SetMagicEffectCounters =
 	0
 };
 
-static ParamInfo kParams_OneArray_OneInt[2] =
+static ParamInfo kParams_OneArray_OneInt[2] = 
 {
 	{ "array",	kOBSEParamType_Array,	0 },
 	{ "int",	kOBSEParamType_Number,	0 },
 };
 
-CommandInfo kCommandInfo_SetMagicEffectCountersC =
+CommandInfo kCommandInfo_SetMagicEffectCountersC = 
 {
 	"SetMagicEffectCountersC",
 	"SetMECountersC",
@@ -4650,7 +4650,7 @@ CommandInfo kCommandInfo_SetMagicEffectCountersC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOtherActorValue =
+CommandInfo kCommandInfo_SetMagicEffectOtherActorValue = 
 {
 	"SetMagicEffectOtherActorValue",
 	"SetMEOtherAV",
@@ -4665,7 +4665,7 @@ CommandInfo kCommandInfo_SetMagicEffectOtherActorValue =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectOtherActorValueC =
+CommandInfo kCommandInfo_SetMagicEffectOtherActorValueC = 
 {
 	"SetMagicEffectOtherActorValueC",
 	"SetMEOtherAVC",
@@ -4680,7 +4680,7 @@ CommandInfo kCommandInfo_SetMagicEffectOtherActorValueC =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsedObject =
+CommandInfo kCommandInfo_SetMagicEffectUsedObject = 
 {
 	"SetMagicEffectUsedObject",
 	"SetMEUsedObject",
@@ -4695,7 +4695,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsedObject =
 	0
 };
 
-CommandInfo kCommandInfo_SetMagicEffectUsedObjectC =
+CommandInfo kCommandInfo_SetMagicEffectUsedObjectC = 
 {
 	"SetMagicEffectUsedObjectC",
 	"SetMEUsedObjectC",
@@ -4710,7 +4710,7 @@ CommandInfo kCommandInfo_SetMagicEffectUsedObjectC =
 	0
 };
 
-CommandInfo kCommandInfo_DumpMagicEffectUnknowns =
+CommandInfo kCommandInfo_DumpMagicEffectUnknowns = 
 {
 	"DumpMagicEffectUnknowns",
 	"DumpMEUnknowns",

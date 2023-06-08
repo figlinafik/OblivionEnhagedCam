@@ -21,7 +21,6 @@ public:
 	bool	m_noSync;
 	bool	m_optionsOnly;
 	bool	m_waitForClose;
-	bool	m_oldInject;
 
 	std::string	m_altEXE;
 	std::string	m_altDLL;

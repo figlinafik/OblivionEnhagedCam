@@ -247,18 +247,6 @@ UInt32 ContainerMenu::GetQuantity()
 	return (quantity == -1) ? 1 : quantity;
 }
 
-void ContainerMenu::Update()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	typedef void (* _Func)();
-	static const _Func Func = (_Func)0x005992C0;
-#else
-#error unsupported Oblivion version
-#endif
-
-	Func();
-}
-
 UInt32 ContainerMenu::GetItemIndex()
 {
 	if (selectedItemTile) {
@@ -299,13 +287,4 @@ TESForm* MagicMenu::GetMagicItemForIndex(UInt32 idx)
 	}
 
 	return NULL;
-}
-
-void SpellPurchaseMenu::Update()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	ThisStdCall(0x005D90E0, this);
-#else
-#error unsupported Oblivion version
-#endif
 }

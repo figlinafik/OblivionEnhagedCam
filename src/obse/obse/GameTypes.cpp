@@ -25,9 +25,9 @@ NiTPointerList <TESForm>		* g_quickKeyList = (NiTPointerList <TESForm> *)0x00B3B
 #error unsupported version of oblivion
 #endif
 
-/*** BSStringT ***/
+/*** String ***/
 
-bool BSStringT::Set(const char * src)
+bool String::Set(const char * src)
 {
 	if (!src) {
 		FormHeap_Free(m_data);
@@ -36,7 +36,7 @@ bool BSStringT::Set(const char * src)
 		m_dataLen = 0;
 		return true;
 	}
-
+	
 	UInt32	srcLen = strlen(src);
 
 	// realloc if needed
@@ -60,7 +60,7 @@ bool BSStringT::Set(const char * src)
 	return m_data != NULL;
 }
 
-bool BSStringT::Includes(const char *toFind) const
+bool String::Includes(const char *toFind) const
 {
 	if (!m_data || !toFind)		//passing null ptr to std::string c'tor = CRASH
 		return false;
@@ -70,7 +70,7 @@ bool BSStringT::Includes(const char *toFind) const
 	return (std::search(curr.begin(), currEnd, str2.begin(), str2.end(), ci_equal) != currEnd);
 }
 
-bool BSStringT::Replace(const char *_toReplace, const char *_replaceWith)
+bool String::Replace(const char *_toReplace, const char *_replaceWith)
 {
 	if (!m_data || !_toReplace)
 		return false;
@@ -92,7 +92,7 @@ bool BSStringT::Replace(const char *_toReplace, const char *_replaceWith)
 	return false;
 }
 
-bool BSStringT::Append(const char* toAppend)
+bool String::Append(const char* toAppend)
 {
 	std::string curr("");
 	if (m_data)
@@ -103,7 +103,7 @@ bool BSStringT::Append(const char* toAppend)
 	return true;
 }
 
-double BSStringT::Compare(const BSStringT& compareTo, bool caseSensitive)
+double String::Compare(const String& compareTo, bool caseSensitive)
 {
 	if (!m_data)
 		return -2;		//signal value if comparison could not be made
@@ -122,10 +122,11 @@ double BSStringT::Compare(const BSStringT& compareTo, bool caseSensitive)
 		comp = -1;
 	else if (first > second)
 		comp = 1;
-
+	
 	return comp;
 }
 
-BSStringT::~BSStringT()
+String::~String()
 {
+
 }

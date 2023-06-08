@@ -12,8 +12,8 @@
 #include "ScriptUtils.h"
 #include "GameMagicEffects.h"
 #include "Utilities.h"
+#include <string>
 #include "Hooks_Gameplay.h"
-#include "EventManager.h"
 
 static bool Cmd_HasSpell_Execute(COMMAND_ARGS)
 {
@@ -56,7 +56,7 @@ static bool Cmd_HasSpell_Execute(COMMAND_ARGS)
 				return true;
 			}
 			curEntry = curEntry->next;
-		}
+		} 
 	}
 
 	return true;
@@ -75,7 +75,7 @@ static bool Cmd_GetSpellCount_Execute(COMMAND_ARGS)
 	while (curEntry && curEntry->type != NULL) {
 		++spellCount;
 		curEntry = curEntry->next;
-	}
+	} 
 	*result = spellCount;
 	return true;
 }
@@ -121,10 +121,6 @@ static bool Cmd_GetActorValueC_Execute(COMMAND_ARGS)
 	{
 		Actor	* actor = (Actor *)thisObj;
 		*result = actor->GetActorValue(type);
-
-		if (IsConsoleMode()) {
-			Console_Print("GetActorValueC >> %.2f", *result);
-		}
 	}
 
 	return true;
@@ -160,6 +156,7 @@ static bool Cmd_SetActorValueC_Execute(COMMAND_ARGS)
 
 	return true;
 }
+
 
 static bool Cmd_ModActorValue2_Execute(COMMAND_ARGS)
 {
@@ -227,6 +224,7 @@ static bool Cmd_GetActorLightAmount_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_GetMerchantContainer_Execute(COMMAND_ARGS)
 {
 	*result = 0;
@@ -256,7 +254,7 @@ static bool Cmd_SetMerchantContainer_Execute(COMMAND_ARGS)
 
 	TESNPC* npc = (TESNPC*)Oblivion_DynamicCast(thisObj, 0, RTTI_TESObjectREFR, RTTI_TESNPC, 0);
 	if (!npc) return true;
-
+	
 	if (objectRef->baseForm->typeID != kFormType_Container) return true;
 
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_MerchantContainer);
@@ -264,7 +262,7 @@ static bool Cmd_SetMerchantContainer_Execute(COMMAND_ARGS)
 		ExtraMerchantContainer* xContainer = (ExtraMerchantContainer*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraMerchantContainer, 0);
 		if (xContainer) {
 			*refResult = xContainer->containerRef->refID;
-			xContainer->containerRef = objectRef;
+			xContainer->containerRef = objectRef;			
 		}
 	}
 	return true;
@@ -278,6 +276,7 @@ static bool Cmd_IsUnderWater_Execute(COMMAND_ARGS)
 	if (!cell) return true;
 
 	if (!cell->HasWater()) return true;
+
 
 	float waterHeight = cell->GetWaterHeight();
 	float bottom = thisObj->posZ;
@@ -299,6 +298,7 @@ static bool Cmd_IsUnderWater_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_CopyEyes_Execute(COMMAND_ARGS)
 {
 	TESNPC* copyFrom = NULL;
@@ -312,7 +312,7 @@ static bool Cmd_CopyEyes_Execute(COMMAND_ARGS)
 		return true;
 
 	if (!copyTo)
-	{
+	{	
 		if (!thisObj)
 			return true;
 		copyTo = (TESNPC*)Oblivion_DynamicCast(thisObj->baseForm, 0, RTTI_TESForm, RTTI_TESNPC, 0);
@@ -341,7 +341,7 @@ static bool Cmd_SetEyes_Execute(COMMAND_ARGS)
 	if (!eyes)
 		return true;
 	else if (!npcF)
-	{
+	{	
 		if (!thisObj)
 			return true;
 		npcF = thisObj->baseForm;
@@ -372,7 +372,7 @@ static bool Cmd_SetHair_Execute(COMMAND_ARGS)
 	if (!hair)
 		return true;
 	else if (!npcF)
-	{
+	{	
 		if (!thisObj)
 			return true;
 		npcF = thisObj->baseForm;
@@ -401,7 +401,7 @@ static bool Cmd_CopyHair_Execute(COMMAND_ARGS)
 		return true;
 
 	if (!copyTo)
-	{
+	{	
 		if (!thisObj)
 			return true;
 		copyTo = (TESNPC*)Oblivion_DynamicCast(thisObj->baseForm, 0, RTTI_TESForm, RTTI_TESNPC, 0);
@@ -703,6 +703,7 @@ static bool Cmd_GetHorse_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_GetHair_Execute(COMMAND_ARGS)
 {
 	TESNPC* npc = 0;
@@ -739,6 +740,7 @@ static bool Cmd_GetEyes_Execute(COMMAND_ARGS)
 	{
 		if (thisObj && (thisObj->baseForm->typeID == kFormType_NPC))
 			npc = (TESNPC*)Oblivion_DynamicCast(thisObj->baseForm, 0, RTTI_TESForm, RTTI_TESNPC, 0);
+
 	}
 
 	if (npc && npc->eyes)
@@ -789,33 +791,6 @@ static bool Cmd_GetRace_Execute(COMMAND_ARGS)
 	return true;
 }
 
-// this command can have unpredictable results if used on an actor reference whose base form is not unique
-// It copies the race from another NPC rather than accepting a race directly, because it needs to change the skeleton path
-static bool Cmd_CopyRace_Execute(COMMAND_ARGS)
-{
-	TESNPC* npc = NULL;
-	TESForm* fromArg = NULL;
-
-	if (thisObj)
-		npc = (TESNPC*)Oblivion_DynamicCast(thisObj->baseForm, 0, RTTI_TESForm, RTTI_TESNPC, 0);
-
-	if (!npc)
-		return true;
-
-	if(!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &fromArg))
-		return true;
-
-	TESNPC* fromNPC = (TESNPC*)Oblivion_DynamicCast(fromArg, 0, RTTI_TESForm, RTTI_TESNPC, 0);
-	if (!fromNPC)
-		return true;
-
-	npc->race.race = fromNPC->race.race;
-	npc->model.SetModelPath (fromNPC->model.GetModelPath ());
-	thisObj->Update3D ();
-
-	return true;
-}
-
 static bool Cmd_GetEquippedItems_Execute(COMMAND_ARGS)
 {
 	if (!ExpressionEvaluator::Active())
@@ -841,6 +816,7 @@ static bool Cmd_GetEquippedItems_Execute(COMMAND_ARGS)
 
 	return true;
 }
+
 
 static bool Cmd_GetActorAlpha_Execute(COMMAND_ARGS)
 {
@@ -876,7 +852,8 @@ public:
 
 		return true;
 	}
-
+		
+		
 	UInt32 Val()  { return m_fixedActorValue; }
 };
 
@@ -979,11 +956,12 @@ static bool Cmd_GetSpecialAnims_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_CanCastPower_Execute(COMMAND_ARGS)
 {
 	*result = 0;
 	SpellItem* power = NULL;
-
+	
 	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
 	if (ExtractArgs(EXTRACT_ARGS, &power) && actor)
 	{
@@ -1133,7 +1111,7 @@ static bool GetCombatControllerData_Execute(COMMAND_ARGS, UInt32 type)
 						i++;
 					}
 				}
-				break;
+				break;					
 		}
 	}
 
@@ -1167,7 +1145,7 @@ static bool Cmd_PlayIdle_Execute(COMMAND_ARGS)
 	TESForm* idleForm = NULL;
 	*result = 0;
 
-	if (!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &idleForm, &bForceIdle))
+	if (!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &idleForm, &bForceIdle))		
 		return true;
 
 	switch (thisObj->typeID)
@@ -1179,7 +1157,7 @@ static bool Cmd_PlayIdle_Execute(COMMAND_ARGS)
 	default:
 		return true;
 	}
-
+	
 	if (callingActor->process)
 	{
 		TESIdleForm* idle = OBLIVION_CAST(idleForm, TESForm, TESIdleForm);
@@ -1187,15 +1165,15 @@ static bool Cmd_PlayIdle_Execute(COMMAND_ARGS)
 		if (idle && idle->animModel.nifPath.m_data)
 		{
 			std::string str(idle->animModel.nifPath.m_data);
-			if (str.find(".kf") != std::string::npos)
+			if (str.find(".kf") != std::string::npos) 
 			{
 				ActorAnimData* animData = (ActorAnimData*)ThisVirtualStdCall(0x00A6E074, 0x164, callingActor);
 				if (animData)
 				{						// ### TODO expose the gunk that follows
-					if (!animData->unkC8[2] || (UInt32)animData->niNodes24[0] != (UInt32)idle)
+					if (!animData->unkC8[2] || (UInt32)animData->niNodes24[0] != (UInt32)idle)			
 					{
-						UInt32 unk01 = animData->unkC8[1], unk02 = unk01 + 0x10, unk03 = ThisStdCall(0x00472EA0, animData);
-
+						UInt32 unk01 = animData->unkC8[1], unk02 = unk01 + 0x10, unk03 = ThisStdCall(0x00472EA0, animData);	
+										
 						if (bForceIdle || !unk03 || (unk01 && (*((UInt32*)unk01 + 4) != 3 || (*((UInt32*)unk02) && !((UInt32*)unk02 + 0x24)))))
 						{
 							ThisStdCall(0x00477DB0, animData, idle, callingActor, (idle->animFlags & 0x7F), 3); // ActorAnimData::QueueIdle (probably)
@@ -1204,6 +1182,7 @@ static bool Cmd_PlayIdle_Execute(COMMAND_ARGS)
 							}
 							*result = 1;
 						}
+
 					}
 				}
 			}
@@ -1239,12 +1218,6 @@ static bool Cmd_GetMiddleHighActors_Execute(COMMAND_ARGS)
 	return Cmd_GetActors(&g_actorProcessManager->middleHighActors.head, scriptObj, result);
 }
 
-static bool Cmd_GetLowActors_Execute(COMMAND_ARGS)
-{
-	return Cmd_GetActors(&g_actorProcessManager->lowActors18.head, scriptObj, result);
-}
-
-
 static bool Cmd_ToggleSkillPerk_Execute(COMMAND_ARGS)
 {
 	UInt32 actorVal = 0;
@@ -1257,115 +1230,6 @@ static bool Cmd_ToggleSkillPerk_Execute(COMMAND_ARGS)
 			*result = 1.0;
 		}
 	}
-
-	return true;
-}
-
-static bool Cmd_GetFactions_Execute(COMMAND_ARGS)
-{
-	class Counter {
-	public:
-		Counter(ArrayID arrID) : m_arrID(arrID), m_curIndex(0) { }
-
-		bool Accept(const TESActorBaseData::FactionListData* entry) {
-			if (entry == NULL)
-				return false;
-
-			g_ArrayMap.SetElementFormID(m_arrID, m_curIndex++, entry->faction->refID);
-			return true;
-		}
-	private:
-		ArrayID m_arrID;
-		UInt32	m_curIndex;
-	};
-
-	TESActorBase* actor = NULL;
-	ArrayID arr = g_ArrayMap.Create(kDataType_Numeric, true, scriptObj->GetModIndex());
-	*result = arr;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &actor)) {
-		if (actor == NULL && thisObj && (thisObj->baseForm->typeID == kFormType_Creature || thisObj->baseForm->typeID == kFormType_NPC))
-			actor = OBLIVION_CAST(thisObj->baseForm, TESForm, TESActorBase);
-		
-		if (actor)	{
-			FactionListVisitor(&actor->actorBaseData.factionList).Visit(Counter(arr));
-		}
-	}
-
-	return true;
-}
-
-static bool Cmd_GetActorSwimBreath_Execute(COMMAND_ARGS)
-{
-	*result = 0;
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (!actor)
-		return true;
-
-	HighProcess* highProcess = OBLIVION_CAST(actor->process, BaseProcess, HighProcess);
-	if ( highProcess )
-		*result = highProcess->swimBreath;
-
-	return true;
-}
-static bool Cmd_SetActorSwimBreath_Execute(COMMAND_ARGS)
-{
-	float nuBreath = 0;
-	if (!ExtractArgs(PASS_EXTRACT_ARGS, &nuBreath))
-		return true;
-
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (!actor)
-		return true;
-
-	HighProcess* highProcess = OBLIVION_CAST(actor->process, BaseProcess, HighProcess);
-	if ( highProcess )
-		highProcess->swimBreath = nuBreath;
-
-	return true;
-}
-static bool Cmd_GetActorMaxSwimBreath_Execute(COMMAND_ARGS)
-{
-	*result = 0;
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (!actor)
-		return true;
-
-	HighProcess* highProcess = OBLIVION_CAST(actor->process, BaseProcess, HighProcess);
-	if ( highProcess )
-		*result = EventManager::GetActorMaxSwimBreath(actor);
-
-	return true;
-}
-static bool Cmd_SetActorMaxSwimBreath_Execute(COMMAND_ARGS)
-{
-	float nuMax = 0;
-	if (!ExtractArgs(PASS_EXTRACT_ARGS, &nuMax))
-		return true;
-
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (!actor)
-		return true;
-
-	HighProcess* highProcess = OBLIVION_CAST(actor->process, BaseProcess, HighProcess);
-	if ( highProcess )
-		EventManager::SetActorMaxSwimBreath(actor, nuMax);
-
-	return true;
-}
-static bool Cmd_OverrideActorSwimBreath_Execute(COMMAND_ARGS)
-{
-	UInt32 state = 0;
-	if (!ExtractArgs(PASS_EXTRACT_ARGS, &state))
-		return true;
-
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (!actor)
-		return true;
-
-	HighProcess* highProcess = OBLIVION_CAST(actor->process, BaseProcess, HighProcess);
-	if ( highProcess )
-		EventManager::SetActorSwimBreathOverride(actor, state);
 
 	return true;
 }
@@ -1407,9 +1271,9 @@ CommandInfo kCommandInfo_GetMerchantContainer =
 	0
 };
 
-static ParamInfo kParams_ModActorValue2[2] =
+static ParamInfo kParams_ModActorValue2[2] = 
 {
-	{	"actor value", kParamType_ActorValue, 0 },
+	{	"actor value", kParamType_ActorValue, 0 }, 
 	{	"amount", kParamType_Integer, 0 },
 };
 
@@ -1418,7 +1282,7 @@ CommandInfo kCommandInfo_ModActorValue2 =
 	"ModActorValue2", "ModAV2",
 	0,
 	"Modify an actor's value in a non-permanent fashion. [player.modabv luck, -10]",
-	1, 2, kParams_ModActorValue2,
+	1, 2, kParams_ModActorValue2, 
 	HANDLER(Cmd_ModActorValue2_Execute),
 	Cmd_Default_Parse,
 	NULL,
@@ -1430,7 +1294,7 @@ CommandInfo kCommandInfo_GetActorValueC =
 	"GetActorValueC", "GetAVC",
 	0,
 	"Return an actor's value by code",
-	1, 1, kParams_OneInt,
+	1, 1, kParams_OneInt, 
 	HANDLER(Cmd_GetActorValueC_Execute),
 	Cmd_Default_Parse,
 	NULL,
@@ -1442,7 +1306,7 @@ CommandInfo kCommandInfo_GetBaseActorValueC =
 	"GetBaseActorValueC", "GetBAVC",
 	0,
 	"Return an actor's base value by code",
-	1, 1, kParams_OneInt,
+	1, 1, kParams_OneInt, 
 	HANDLER(Cmd_GetBaseActorValueC_Execute),
 	Cmd_Default_Parse,
 	NULL,
@@ -1454,16 +1318,17 @@ CommandInfo kCommandInfo_GetBaseAVC =
 	"GetBaseAVC", "",
 	0,
 	"Return an actor's base value by code",
-	1, 1, kParams_OneInt,
+	1, 1, kParams_OneInt, 
 	HANDLER(Cmd_GetBaseActorValueC_Execute),
 	Cmd_Default_Parse,
 	NULL,
 	0
 };
 
-static ParamInfo kParams_SetModActorValueC[2] =
+
+static ParamInfo kParams_SetModActorValueC[2] = 
 {
-	{	"actor value", kParamType_Integer, 0 },
+	{	"actor value", kParamType_Integer, 0 }, 
 	{	"amount", kParamType_Integer, 0 },
 };
 
@@ -1472,7 +1337,7 @@ CommandInfo kCommandInfo_SetActorValueC =
 	"SetActorValueC", "SetAVC",
 	0,
 	"Set an actor's value by code. ",
-	1, 2, kParams_SetModActorValueC,
+	1, 2, kParams_SetModActorValueC, 
 	HANDLER(Cmd_SetActorValueC_Execute),
 	Cmd_Default_Parse,
 	NULL,
@@ -1484,12 +1349,13 @@ CommandInfo kCommandInfo_ModActorValueC =
 	"ModActorValueC", "ModAVC",
 	0,
 	"Modify an actor's value in a non-permanent fashion.",
-	1, 2, kParams_SetModActorValueC,
+	1, 2, kParams_SetModActorValueC, 
 	HANDLER(Cmd_ModActorValue2_Execute),
 	Cmd_Default_Parse,
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_IsRefEssential =
 {
@@ -1566,7 +1432,7 @@ CommandInfo kCommandInfo_IsUnderWater =
 	0
 };
 
-static ParamInfo kParams_CopyNPCBodyData[2] =
+static ParamInfo kParams_CopyNPCBodyData[2] = 
 {
 	{	"copy from",	kParamType_NPC,		0	},
 	{	"copy to",		kParamType_NPC,		1	},
@@ -1586,6 +1452,7 @@ CommandInfo kCommandInfo_CopyHair =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_CopyEyes =
 {
@@ -2098,21 +1965,3 @@ static ParamInfo kParams_ToggleSkillPerk[3] =
 };
 
 DEFINE_COMMAND(ToggleSkillPerk, toggles a skill perk on or off, 0, 3, kParams_ToggleSkillPerk);
-
-DEFINE_COMMAND(CopyRace, sets the race of the calling npc, 1, 1, kParams_OneNPC);
-
-static ParamInfo kParams_GetFactions[1] =
-{
-	{	"actor", kParamType_ActorBase, 1}
-};
-
-DEFINE_COMMAND(GetFactions, gets the factions of the calling actor, 0, 1, kParams_GetFactions);
-DEFINE_COMMAND(GetLowActors, returns all low process actors, 0, 0, NULL);
-
-DEFINE_COMMAND(GetActorSwimBreath, returns an actors breath left in seconds, 1, 0, NULL);
-DEFINE_COMMAND(SetActorSwimBreath, sets an actors breath left in seconds, 1, 1, kParams_OneFloat);
-
-DEFINE_COMMAND(GetActorMaxSwimBreath, returns an actors maximum breath in seconds, 1, 0, NULL);
-DEFINE_COMMAND(SetActorMaxSwimBreath, sets an actors maximum breath in seconds, 1, 1, kParams_OneFloat);
-
-DEFINE_COMMAND(OverrideActorSwimBreath, overrides breath behaviour with a few possible options, 1, 1, kParams_OneInt);

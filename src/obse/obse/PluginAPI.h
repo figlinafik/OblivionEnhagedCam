@@ -1,6 +1,12 @@
 #pragma once
 
+#include <vector>
 #include "obse\CommandTable.h"
+#include "obse\Utilities.h"
+
+#if OBLIVION
+#include "GameAPI.h"
+#endif
 
 struct CommandInfo;
 struct ParamInfo;
@@ -64,12 +70,6 @@ struct OBSEInterface
 	bool	(* RegisterTypedCommand)(CommandInfo * info, CommandReturnType retnType);
 	// returns a full path the the Oblivion directory
 	const char* (* GetOblivionDirectory)();
-
-	// added v0021
-	// returns true if a plugin with the given name is loaded
-	bool	(* GetPluginLoaded)(const char* pluginName);
-	// returns the version number of the plugin, or zero if it isn't loaded
-	UInt32	(* GetPluginVersion)(const char* pluginName);
 };
 
 struct OBSEConsoleInterface
@@ -299,23 +299,53 @@ struct OBSEMessagingInterface
 
 #if OBLIVION
 
-struct OBSEArrayElement;
-
-/* #define PLUGIN_API_NO_ARRAYS in order to prevent inclusion of the following two headers
- * doing so makes OBSEArrayVarInterface unavailable, and makes OBSEScriptInterface::CallFunction()
- * unusable
- */
-#ifndef PLUGIN_API_NO_ARRAYS
-
-#include "obse\Utilities.h"
-#include "obse\GameAPI.h"
-
 struct OBSEArrayVarInterface
 {
 	struct Array;
 
-	// definition moved out of interface; inner declaration retained for backward-compatibility
-	typedef OBSEArrayElement Element;
+	struct Element
+	{
+	protected:
+		union
+		{
+			char	* str;
+			Array		* arr;
+			TESForm		* form;
+			double		num;
+		};
+		UInt8		type;
+
+		friend class PluginAPI::ArrayAPI;
+		void Reset() { if (type == kType_String) { FormHeap_Free(str); type = kType_Invalid; str = NULL; } }
+	public:
+		enum
+		{
+			kType_Invalid,
+
+			kType_Numeric,
+			kType_Form,
+			kType_String,
+			kType_Array,
+		};
+
+		~Element() { Reset(); }
+
+		Element() : type(kType_Invalid) { }
+		Element(const char* _str) : type(kType_String) { str = CopyCString(_str); }
+		Element(double _num) : num(_num), type(kType_Numeric) { }
+		Element(TESForm* _form) : form(_form), type(kType_Form) { }
+		Element(Array* _array) : arr(_array), type(kType_Array) { }
+		Element(const Element& rhs) { if (rhs.type == kType_String) { str = CopyCString(rhs.str); } else { num = rhs.num; } type = rhs.type; }
+		Element& operator=(const Element& rhs) { if (this != &rhs) { Reset(); if (rhs.type == kType_String) str = CopyCString(rhs.str); else num = rhs.num; type = rhs.type; } return *this; }
+
+		bool IsValid() const { return type != kType_Invalid; }
+		UInt8 GetType() const { return type; }
+
+		const char* String() { return type == kType_String ? str : NULL; }
+		Array * Array() { return type == kType_Array ? arr : NULL; }
+		TESForm * Form() { return type == kType_Form ? form : NULL; }
+		double Number() { return type == kType_Numeric ? num : 0.0; }
+	};
 
 	Array* (* CreateArray)(const Element* data, UInt32 size, Script* callingScript);
 	Array* (* CreateStringMap)(const char** keys, const OBSEArrayVarInterface::Element* values, UInt32 size, Script* callingScript);
@@ -331,52 +361,6 @@ struct OBSEArrayVarInterface
 	bool	(* GetElement)(Array* arr, const Element& key, Element& outElement);
 	bool	(* GetElements)(Array* arr, Element* elements, Element* keys);
 };
-
-struct OBSEArrayElement
-{
-protected:
-	union
-	{
-		char	* str;
-		OBSEArrayVarInterface::Array		* arr;
-		TESForm		* form;
-		double		num;
-	};
-	UInt8		type;
-
-	friend class PluginAPI::ArrayAPI;
-	void Reset() { if (type == kType_String) { FormHeap_Free(str); type = kType_Invalid; str = NULL; } }
-public:
-	enum
-	{
-		kType_Invalid,
-
-		kType_Numeric,
-		kType_Form,
-		kType_String,
-		kType_Array,
-	};
-
-	~OBSEArrayElement() { Reset(); }
-
-	OBSEArrayElement() : type(kType_Invalid) { }
-	OBSEArrayElement(const char* _str) : type(kType_String) { str = CopyCString(_str); }
-	OBSEArrayElement(double _num) : num(_num), type(kType_Numeric) { }
-	OBSEArrayElement(TESForm* _form) : form(_form), type(kType_Form) { }
-	OBSEArrayElement(OBSEArrayVarInterface::Array* _array) : arr(_array), type(kType_Array) { }
-	OBSEArrayElement(const OBSEArrayElement& rhs) { if (rhs.type == kType_String) { str = CopyCString(rhs.str); } else { num = rhs.num; } type = rhs.type; }
-	OBSEArrayElement& operator=(const OBSEArrayElement& rhs) { if (this != &rhs) { Reset(); if (rhs.type == kType_String) str = CopyCString(rhs.str); else num = rhs.num; type = rhs.type; } return *this; }
-
-	bool IsValid() const { return type != kType_Invalid; }
-	UInt8 GetType() const { return type; }
-
-	const char* String() { return type == kType_String ? str : NULL; }
-	OBSEArrayVarInterface::Array * Array() { return type == kType_Array ? arr : NULL; }
-	TESForm * Form() { return type == kType_Form ? form : NULL; }
-	double Number() { return type == kType_Numeric ? num : 0.0; }
-};
-
-#endif
 
 #endif
 		
@@ -450,7 +434,7 @@ struct OBSECommandTableInterface
 struct OBSEScriptInterface
 {
 	bool	(* CallFunction)(Script* funcScript, TESObjectREFR* callingObj, TESObjectREFR* container,
-		OBSEArrayElement * result, UInt8 numArgs, ...);
+		OBSEArrayVarInterface::Element * result, UInt8 numArgs, ...);
 
 	// added 0020
 	UInt32	(* GetFunctionParams)(Script* funcScript, UInt8* paramTypesOut);
@@ -458,9 +442,6 @@ struct OBSEScriptInterface
 		ScriptEventList * eventList, ...);
 	bool	(* ExtractFormatStringArgs)(UInt32 fmtStringPos, char* buffer, ParamInfo * paramInfo, void * scriptDataIn, 
 		UInt32 * scriptDataOffset, Script * scriptObj, ScriptEventList * eventList, UInt32 maxParams, ...);
-
-	// added 0021
-	bool	(* IsUserFunction)(Script* scriptObj);
 };
 
 #endif
@@ -569,10 +550,6 @@ struct OBSESerializationInterface
 
 	// added v0019
 	void	(* SetPreloadCallback)(PluginHandle plugin, EventCallback callback);
-
-	// added v0021
-	// functions the same as GetNextRecordInfo except it doesn't flush the current chunk
-	bool	(* PeekNextRecordInfo)(UInt32 * type, UInt32 * version, UInt32 * length);
 };
 
 struct PluginInfo

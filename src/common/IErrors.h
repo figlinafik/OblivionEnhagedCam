@@ -1,8 +1,10 @@
 #pragma once
 
-void _AssertionFailed(const char * file, unsigned long line, const char * desc);
-void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char * desc, unsigned long long code);
-void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char * desc, const char * code);
+#include "common/ITypes.h"
+
+void _AssertionFailed(const char * file, UInt32 line, const char * desc);
+void _AssertionFailed_ErrCode(const char * file, UInt32 line, const char * desc, UInt64 code);
+void _AssertionFailed_ErrCode(const char * file, UInt32 line, const char * desc, const char * code);
 
 //! Exit the program if the condition is not true
 #define ASSERT(a)					do { if(!(a)) _AssertionFailed(__FILE__, __LINE__, #a); } while(0)
@@ -17,6 +19,10 @@ void _AssertionFailed_ErrCode(const char * file, unsigned long line, const char 
 //! Exit the program with and error code and message
 #define HALT_CODE(a, b)				do { _AssertionFailed_ErrCode(__FILE__, __LINE__, a, b); } while(0)
 
+#define THROW_EXCEPTION(type, desc)		do { throw type##(__FILE__, __LINE__, desc); } while(0)
+#define EXCEPTION_DEF_CONSTRUCTOR(type)	type##(char * inFile, int inLine, char * inError) : IException(inFile, inLine, inError) { }
+#define DEF_EXCEPTION(type)				class type : public IException { public: EXCEPTION_DEF_CONSTRUCTOR(type) virtual ~##type##() { } }
+
 // based on the boost implementation of static asserts
 template <bool x> struct StaticAssertFailure;
 template <> struct StaticAssertFailure <true> { enum { a = 1 }; };
@@ -30,3 +36,18 @@ template <int x> struct static_assert_test { };
 #define __LOC__						__FILE__ "("__PREPRO_TOKEN_STR__(__LINE__)") : "
 
 #define STATIC_ASSERT(a)	typedef static_assert_test <sizeof(StaticAssertFailure<(bool)(a)>)> __MACRO_JOIN__(static_assert_typedef_, __COUNTER__)
+
+/**
+ *	The base exception class
+ */
+class IException
+{
+	public:
+		IException(char * inFile, int inLine, char * inError)	{ file = inFile; line = inLine; error = inError; }
+		virtual ~IException()									{ }
+
+	protected:
+		char	* file;
+		int		line;
+		char	* error;
+};

@@ -8,17 +8,17 @@
 #include <vector>
 
 /*** class hierarchy
- *
+ *	
  *	this information comes from the RTTI information embedded in the exe
  *	so no, I don't have magical inside information
- *
+ *	
  *	sadly bethesda decided to use /lots/ of multiple inheritance, so this is
  *	going to be very difficult to access externally.
- *
+ *	
  *	it'll probably be best to expose all of the rtti structs and the dynamic cast interface I guess
- *
+ *	
  *	TESObjectREFR can be directly cast to Character
- *
+ *	
  *													total vtbl size
  *	BaseFormComponent
  *		TESForm										0x37
@@ -94,37 +94,37 @@
  *		TESRaceForm
  *			TESObject
  *		TESGlobal
- *
+ *	
  *	TESMemContextForm
  *		TESObjectREFR
  *			...
- *
+ *	
  *	TESChildCell
  *		MobileObject
  *			...
- *
+ *	
  *	MagicCaster
  *		Actor
  *			...
  *		NonActorMagicCaster
  *			BSExtraData
- *
+ *	
  *	MagicTarget
  *		Character
  *			...
  *		NonActorMagicTarget
  *			BSExtraData
- *
+ *	
  *	BaseProcess
  *		LowProcess
  *			MiddleLowProcess
  *				MiddleHighProcess
  *					HighProcess
- *
+ *	
  *	IOTask
  *		LipTask
  *		SkyTask
- *
+ *	
  *	NiRefObject
  *		NiObject
  *			NiTimeController
@@ -171,11 +171,11 @@
  *		BSFaceGenMorphDataHair
  *			BSFaceGenMorphDataHead
  *		BSFaceGenModel
- *
+ *	
  *	BSFaceGenMorph
  *		BSFaceGenMorphStatistical
  *		BSFaceGenMorphDifferential
- *
+ *	
  *	Menu
  *		VideoDisplayMenu
  *		TrainingMenu
@@ -224,7 +224,7 @@
  *		VideoMenu
  *		TextEditMenu
  *		ControlsMenu
- *
+ *	
  *	Tile
  *		TileWindow
  *		TileRect
@@ -232,26 +232,26 @@
  *		Tile3D
  *		TileText
  *		TileImage
- *
+ *	
  *	BackgroundLoader
  *		BSFaceGenManager
- *
+ *	
  *	BSFaceGenKeyframe
  *		BSFaceGenKeyframeMultiple	14
- *
+ *	
  *	SkyObject
  *		Sun
  *		Stars
  *		Moon
  *		Clouds
  *		Atmosphere
- *
+ *	
  *	Sky
- *
+ *	
  *	PathLow
  *		PathMiddleHigh
  *			PathHigh
- *
+ *	
  *	ActiveEffect
  *		ValueModifierEffect
  *			AbsorbEffect
@@ -285,15 +285,15 @@
  *		SunDamageEffect
  *		TurnUndeadEffect
  *		VampirismEffect
- *
+ *	
  *	[ havok stuff ]
  *		bhkCharacterListenerArrow
- *
+ *	
  *	Menu vtbl + 0x0C = event handler
- *
+ *	
  ***/
 
-//
+// 
 enum
 {
 	kFormID_DoorMarker			= 0x00000001,
@@ -335,6 +335,7 @@ class BoltShaderProperty;
 class TESTopic;
 class SpellItem;
 
+
 // 00C
 class MagicCaster
 {
@@ -352,7 +353,7 @@ public:
 
 	// looks like returns true if can use magicItem, filling out type (and arg1 is magicka cost?)
 	virtual bool	Unk_07(MagicItem* magicItem, float* arg1, UInt32* outMagicItemType, UInt32 arg3);
-	virtual TESObjectREFR*	GetParentRefr(void);
+	virtual void	Unk_08(void);
 	virtual NiNode	* GetMagicNode(void);	// looks up "magicnode" node in caster's NiNode
 	virtual void	Unk_0A(void);
 	virtual float	GetSpellEffectiveness(float arg0, float arg1);	// seen (0, 0)
@@ -474,7 +475,7 @@ public:
 				kChanged_IsEmpty =		0x00010000,
 					// CHANGE_OBJECT_EMPTY
 					// no data?
-
+		
 		kChanged_Inventory =			0x08000000,
 			// CHANGE_REFR_INVENTORY
 			// ### todo: see 0048BA40
@@ -482,7 +483,7 @@ public:
 		//	if((changed & ((version < 0x43) ? 0x177577F0 : 0x177577E0))) || IsActor())
 		//	{
 		//		// this is all part of its own function
-		//
+		//		
 		//	}
 
 		//	if(!IsActor())
@@ -516,7 +517,7 @@ public:
 		kChanged_DoorOpenState =		0x00080000,
 			// CHANGE_DOOR_OPEN_STATE
 			// no data
-
+		
 		kChanged_DoorExtraTeleport =	0x00100000,
 			// CHANGE_DOOR_EXTRA_TELEPORT
 
@@ -550,7 +551,7 @@ public:
 	virtual void	GetStartingPos(float * pos) = 0;
 	virtual void	Unk_3E(void) = 0;
 	virtual void	Unk_3F(void) = 0;
-	virtual void	RemoveItem(TESForm* toRemove, BaseExtraList* extraList, UInt32 unk2, UInt32 unk3, UInt32 unk4, TESObjectREFR* destRef,
+	virtual void	RemoveItem(TESForm* toRemove, BaseExtraList* extraList, UInt32 unk2, UInt32 unk3, UInt32 unk4, TESObjectREFR* destRef, 
 		UInt32 unk6, UInt32 unk7, UInt32 unk8, UInt8 unk9) = 0;	// 40 unk2 quantity?
 	virtual void	Unk_41(void) = 0;
 	virtual void	Unk_42(void) = 0;
@@ -586,10 +587,10 @@ public:
 	virtual void	Unk_60(void) = 0;	// 60
 	virtual void	Unk_61(void) = 0;
 	virtual void	Unk_62(void) = 0;
-	virtual UInt8	GetSleepState(void) = 0;
+	virtual void	Unk_63(void) = 0;
 	virtual bool	IsActor(void) = 0;
 	virtual void	ChangeCell(TESObjectCELL * newCell) = 0;
-	virtual bool	IsDead(bool arg0) = 0;
+	virtual bool	IsDead(void) = 0;
 	virtual void	Unk_67(void) = 0;
 	virtual void	Unk_68(void) = 0;
 	virtual void	Unk_69(void) = 0;
@@ -599,14 +600,14 @@ public:
 										// U8(typeInfo + 4) == 0x23 is true if the object is a character
 	float	rotX, rotY, rotZ;		// 020 - either public or accessed via simple inline accessor common to all child classes
 	float	posX, posY, posZ;		// 02C - seems to be private
-	float	scale;					// 038
+	float	scale;					// 038 
 	NiNode	* niNode;				// 03C
 	TESObjectCELL	* parentCell;	// 040
 	BaseExtraList	baseExtraList;	// 044
 
 	ScriptEventList* GetEventList() const;
 	bool IsTaken() const		{	return ((flags & kFlags_Taken) == kFlags_Taken) ? true : false;	}
-	bool IsDeleted() const;
+	bool IsDeleted() const;	
 	void SetTaken(bool bTaken) {
 		flags = (bTaken) ? (flags | kFlags_Taken) : (flags & ~kFlags_Taken);
 	}
@@ -621,14 +622,11 @@ public:
 	void Enable();
 	bool RunScripts();		// runs magic effect and object scripts plus any scripts on items in inventory
 
-	bool GetTeleportCellName(BSStringT* outName);
+	bool GetTeleportCellName(String* outName);
 	bool Update3D();
 
 	TESContainer* GetContainer();
 	bool IsMapMarker();
-	float GetDistance(TESObjectREFR* other, bool bIncludeDisabled);
-
-	ExtraTeleport::Data* GetExtraTeleportData();
 
 	static TESObjectREFR* Create(bool bTemp = false);
 };
@@ -713,7 +711,7 @@ public:
 	virtual void	Unk_95(void) = 0;
 	virtual void	Unk_96(void) = 0;
 	virtual void	Unk_97(void) = 0;
-	virtual bool	HasVampireFed(void) = 0;
+	virtual bool	HasVampireFed(void) = 0;			
 	virtual void	SetVampireHasFed(bool bFed) = 0;
 	virtual void	Unk_9A(void) = 0;
 	virtual void	Unk_9B(void) = 0;
@@ -722,7 +720,7 @@ public:
 	virtual void	Unk_9E(void) = 0;
 	virtual void	Unk_9F(void) = 0;
 	virtual void	Unk_A0(void) = 0;	// A0
-	virtual SInt32	GetActorValue(UInt32 avCode) = 0;								// current, cumulative value
+	virtual UInt32	GetActorValue(UInt32 avCode) = 0;								// current, cumulative value
 	virtual float	GetAV_F(UInt32 avCode) = 0;
 	virtual void	SetAV_F(UInt32 avCode, float val) = 0;							// base value
 	virtual void	SetActorValue(UInt32 avCode, UInt32 val) = 0;
@@ -732,7 +730,7 @@ public:
 	virtual void	ApplyScriptAVMod(UInt32 avCode, SInt32 amt, Actor* arg2) = 0;
 	virtual void	DamageAV_F(UInt32 avCode, float amt, Actor* arg2) = 0;			// modifier <= 0, console ModAV cmd, damage health, etc
 	virtual void	DamageAV(UInt32 value, UInt32 amount, UInt32 unk) = 0;
-	virtual void	ModBaseAV_F(UInt32 avCode, float amt) = 0;
+	virtual void	ModBaseAV_F(UInt32 avCode, float amt) = 0;							
 	virtual void	ModBaseAV(UInt32 avCode, SInt32 amt) = 0;
 	virtual void	Unk_AD(void) = 0;
 	virtual void	Unk_AE(void) = 0;
@@ -811,7 +809,6 @@ public:
 	ExtraContainerDataList	GetEquippedEntryDataList();
 	bool				CanCastGreaterPower(SpellItem* power);
 	void				SetCanUseGreaterPower(SpellItem* power, bool bAllowUse, float timer = -1);
-	void				UnequipAllItems();
 
 	// 8
 	struct PowerListData {
@@ -858,7 +855,7 @@ public:
 	TESObjectREFR	* unk0CC;						// 0CC
 	UInt32			unk0D0;							// 0D0
 	Actor			* horseOrRider;					// 0D4 - For Character, currently ridden horse
-														 //- For horse (Creature), currently riding Character
+														 //- For horse (Creature), currently riding Character	
 	UInt32			unk0D8[(0x0E4 - 0x0D8) >> 2];	// 0D8
 	Actor			* unk0E4;						// 0E4
 	UInt32			unk0E8[(0x104 - 0x0E8) >> 2];	// 0E8
@@ -868,10 +865,6 @@ public:
 	bool IsObjectEquipped(TESForm* object);
 	float GetAVModifier(eAVModifier mod, UInt32 avCode);
 	float GetCalculatedBaseAV(UInt32 avCode);
-	bool IsAlerted();
-	void SetAlerted(bool bAlerted);
-	void EvaluatePackage();
-	bool IsTalking();
 };
 
 #if OBLIVION
@@ -946,23 +939,23 @@ public:
 	// +784 = NiTMapBase
 
 	// [ objects ]
-	// +01C TESNPC *
-	// +03C BSFadeNode *
-	// +040 TESObjectCELL *
-	// +048 ExtraContainerChanges *
-	// +058 HighProcess *
-	// +1F4 hkAllCdPointCollector *
-	// +570 TESObjectREFR *
-	// +5E4 TESTopic *
-	// +5F4 TESQuest *
-	// +614    float amountFenced
-	// +624 SpellItem *
-	// +644 BirthSign *
-	// +650 TESClass *
-	// +6E8 TESRegion *
-	// +700 TESObjectREFR *
-	// +728 TESWorldSpace *
-	// +740 TESWorldSpace *
+    // +01C TESNPC *
+    // +03C BSFadeNode *
+    // +040 TESObjectCELL *
+    // +048 ExtraContainerChanges *
+    // +058 HighProcess *
+    // +1F4 hkAllCdPointCollector *
+    // +570 TESObjectREFR *
+    // +5E4 TESTopic *
+    // +5F4 TESQuest *
+    // +614    float amountFenced
+    // +624 SpellItem *
+    // +644 BirthSign *
+    // +650 TESClass *
+    // +6E8 TESRegion *
+    // +700 TESObjectREFR *
+    // +728 TESWorldSpace *
+    // +740 TESWorldSpace *
 
 	// [ data ]
 	// +11C haggle amount?
@@ -1007,10 +1000,10 @@ public:
 	UInt32		unk5E0;							// 5E0
 	TESTopic	* unk5E4;						// 5E4
 	UInt32		unk5E8;							// 5E8
-	tList<QuestStageItem> knownQuestStageItems;	// 5EC
+	UInt32		unk5EC;							// 5EC
+	UInt32		unk5F0;							// 5F0
 	TESQuest	* activeQuest;					// 5F4
-	tList<TESObjectREFR*> activeQuestTargets;	// 5F8 targets whose conditions evaluate to true, updated each frame by HUDMainMenu::Update()
-	UInt32		unk600[(0x610 - 0x600) >> 2];	// 600
+	UInt32		unk5F8[(0x610 - 0x5F8) >> 2];	// 5F8
 	UInt8		unk610;							// 610
 	UInt8		isAMurderer;					// 611
 	UInt8		pad612[2];						// 612
@@ -1155,7 +1148,7 @@ public:
 	float				unk078;				//078
 	UInt32				unk07C;				//07C
 	UInt32				unk080;				//080 - looks like flags - (1 in flight, 2 hit target?)
-	float				unk084;				//084 - value changes after projectile hits something
+	float				unk084;				//084 - value changes after projectile hits something 
 	UInt32				unk088;				//088
 	UInt32				unk08C;				//08C
 };

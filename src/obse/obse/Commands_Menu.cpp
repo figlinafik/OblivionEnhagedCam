@@ -13,6 +13,7 @@
 #include "StringVar.h"
 #include "Hooks_Gameplay.h"
 #include "GameData.h"
+#include <algorithm>
 
 typedef void (* _CloseAllMenus)(void);
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_1
@@ -354,20 +355,6 @@ static bool GetActiveMenuElement(COMMAND_ARGS, eMenuValue whichValue, MenuInfo* 
 			}
 		}
 		break;
-	case kMenuType_Recharge:
-		{
-			RechargeMenu* menu = (RechargeMenu*)activeMenu;
-			switch (whichValue)
-			{
-			case kMenu_Ref:
-				out->form = menu->recharger;
-				gotValue = true;
-				break;
-			default:
-				break;
-			}
-		}
-		break;
 	default:
 		break;
 	}
@@ -469,7 +456,7 @@ static bool Cmd_GetAlchMenuIngredient_Execute(COMMAND_ARGS)
 	MenuInfo info;
 	if (GetActiveMenuElement(PASS_COMMAND_ARGS, kMenu_Ingredient, &info, kMenuType_Alchemy) && info.form)
 		*refResult = info.form->refID;
-
+	
 	return true;
 }
 
@@ -518,6 +505,7 @@ static bool Cmd_CloseAllMenus_Execute(COMMAND_ARGS)
 	return true;
 }
 
+
 static bool Cmd_GetContainerMenuView_Execute(COMMAND_ARGS)
 {
 	*result = -1;
@@ -544,7 +532,7 @@ static bool GetSetMenuValue_Execute(COMMAND_ARGS, UInt32 mode)
 	UInt32 menuType = 0;
 	float newFloatVal = 0;
 	char* newStringVal = NULL;
-
+	
 	char* componentPath = stringArg;
 
 	bool bExtracted = false;
@@ -1172,7 +1160,7 @@ static bool Cmd_GetClassMenuHighlightedClass_Execute(COMMAND_ARGS)
 {
 	UInt32* refResult = (UInt32*)result;
 	*refResult = 0;
-
+	
 	// make sure the user is actually doing class selection
 	ClassMenu* theMenu = (ClassMenu*)GetMenuByType(kMenuType_Class);
 	if (!theMenu){
@@ -1218,12 +1206,11 @@ static bool Cmd_GetClassMenuHighlightedClass_Execute(COMMAND_ARGS)
 	theMenu->tile->GetFloatValue(kTileValue_user17, &skills[6]);
 
 	// iterate over all classes in the game to find one that matches
-	for (tList<TESClass>::Iterator Itr = (*g_dataHandler)->classes.Begin(); !Itr.End() && Itr.Get(); ++Itr)
-	{
-		TESClass* theClass = Itr.Get();
-
-		if(theClass->IsPlayable())
-		{
+	DataHandler::Node<TESClass> *classNode = &(*g_dataHandler)->classes;
+	TESClass* theClass = NULL;
+	while(classNode && classNode->data){
+		theClass = classNode->data;
+		if(theClass->IsPlayable()){
 			if(!strcmp(theClass->GetFullName()->name.m_data, className)){
 				if(theClass->specialization == (UInt32)specialization){
 					if(theClass->attributes[0] == (UInt32)attributes[0] && theClass->attributes[1] == (UInt32)attributes[1]){
@@ -1242,6 +1229,7 @@ static bool Cmd_GetClassMenuHighlightedClass_Execute(COMMAND_ARGS)
 				}
 			}
 		}
+		classNode = classNode->next;
 	}
 
 	if(IsConsoleMode())
@@ -1289,7 +1277,7 @@ static bool Cmd_GetMapMarkers_Execute(COMMAND_ARGS)
 				if ((inclHidden == 0 && isVisible && canTravel) || (inclHidden == 1 && isVisible) || inclHidden == 2){
 					//It seems that disabled mapmarkers are considered visible so an extra check is needed
 					if(!cur->mapMarker->IsDisabled() || inclHidden == 2){
-						vec.push_back(cur->mapMarker);
+						vec.push_back(cur->mapMarker);	
 					}
 				}
 			}
@@ -1299,32 +1287,15 @@ static bool Cmd_GetMapMarkers_Execute(COMMAND_ARGS)
 		for (UInt32 i = 0; i < vec.size(); i++) {
 			g_ArrayMap.SetElementFormID(arr, (double)i, vec[i]->refID);
 		}
-	}
-
-	return true;
-}
-
-static bool Cmd_UpdateContainerMenu_Execute(COMMAND_ARGS)
-{
-	// we could check if the container menu is actually open, but Update() will do nothing if it isn't
-	ContainerMenu::Update();
-	*result = 1.0;
-	return true;
-}
-
-static bool Cmd_UpdateSpellPurchaseMenu_Execute(COMMAND_ARGS)
-{
-	SpellPurchaseMenu* menu = OBLIVION_CAST(GetMenuByType(kMenuType_SpellPurchase), Menu, SpellPurchaseMenu);
-	if (menu) {
-		menu->Update();
-		*result = 1.0;
-	}
+	} 
 
 	return true;
 }
 
 static bool Cmd_scrwtf_Execute(COMMAND_ARGS)
 {
+	HUDInfoMenu* menu = *g_HUDInfoMenu;
+	Console_Print("unk058 >> %08X", menu->unk058);
 	return true;
 }
 
@@ -1571,7 +1542,7 @@ DEFINE_COMMAND(GetEnchMenuBaseItem, returns the unenchanted item the player has 
 DEFINE_COMMAND(PrintActiveTileInfo, a debug command for printing the attributes and children of the current active tile,
 			   0, 0, NULL);
 
-static ParamInfo kParams_TwoOptionalInts[2] =
+static ParamInfo kParams_TwoOptionalInts[2] = 
 {
 	{	"int",	kParamType_Integer,	1	},
 	{	"int",	kParamType_Integer,	1	},
@@ -1579,7 +1550,4 @@ static ParamInfo kParams_TwoOptionalInts[2] =
 
 DEFINE_COMMAND(GetMapMarkers, returns an array of mapmarkers for the current world, 0, 2, kParams_TwoOptionalInts);
 
-DEFINE_COMMAND(scrwtf, testing, 0, 1, kParams_OneQuest);
-
-DEFINE_COMMAND(UpdateContainerMenu, updates list of items displayed in the container menu, 0, 0, NULL);
-DEFINE_COMMAND(UpdateSpellPurchaseMenu, updates list of spells displayed in spell purchase menu, 0, 0, NULL);
+DEFINE_COMMAND(scrwtf, testing, 0, 0, NULL);

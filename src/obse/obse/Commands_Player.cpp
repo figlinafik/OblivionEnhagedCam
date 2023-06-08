@@ -2,6 +2,7 @@
 #include "ParamInfos.h"
 #include "Script.h"
 
+
 #if OBLIVION
 
 #include "InternalSerialization.h"
@@ -11,6 +12,8 @@
 #include "GameForms.h"
 #include "GameProcess.h"
 #include "Hooks_Gameplay.h"
+#include <set>
+#include <map>
 #include "ArrayVar.h"
 #include "ScriptUtils.h"
 #include "GameData.h"
@@ -38,13 +41,20 @@ static const _Cmd_Execute Cmd_GetBaseAV_Execute = (_Cmd_Execute)0x00501A00;
 
 #endif
 
+//class TESMagicTargetForm : public TESForm
+//{
+//	UInt32 unk[20];
+//};
+
 static bool Cmd_GetActiveSpell_Execute(COMMAND_ARGS)
 {
+
+
 	UInt32			* refResult = (UInt32 *)result;
 	MagicItem		* activeMagicItem = (*g_thePlayer)->GetActiveMagicItem();
 
 	*refResult = 0;
-
+	
 	if(activeMagicItem)
 	{
 		TESForm	* activeMagicItemForm = (TESForm *)Oblivion_DynamicCast(activeMagicItem, 0, RTTI_MagicItem, RTTI_TESForm, 0);
@@ -87,7 +97,7 @@ static bool Cmd_IsThirdPerson_Execute(COMMAND_ARGS)
 static bool Cmd_IncrementPlayerSkillUse_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	UInt32 valSkill = 0;
 	UInt32 whichUse = 0;
 	float howManyTimes = 1.0;
@@ -106,7 +116,7 @@ static bool Cmd_IncrementPlayerSkillUse_Execute(COMMAND_ARGS)
 static bool Cmd_TriggerPlayerSkillUse_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	UInt32 valSkill = 0;
 	UInt32 whichUse = 0;
 	float howManyTimes = 1.0;
@@ -117,7 +127,7 @@ static bool Cmd_TriggerPlayerSkillUse_Execute(COMMAND_ARGS)
 
 	(*g_thePlayer)->ChangeExperience(valSkill, whichUse, howManyTimes);
 	*result = (*g_thePlayer)->skillExp[valSkill-kActorVal_Armorer];
-
+	
 	return true;
 }
 
@@ -125,7 +135,7 @@ static bool Cmd_TriggerPlayerSkillUse_Execute(COMMAND_ARGS)
 static bool Cmd_ModPlayerSkillExp_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	UInt32 valSkill = 0;
 	float expChange = 0.0;
 
@@ -135,9 +145,10 @@ static bool Cmd_ModPlayerSkillExp_Execute(COMMAND_ARGS)
 
 	(*g_thePlayer)->ChangeExperience(valSkill, expChange);
 	*result = (*g_thePlayer)->skillExp[valSkill-kActorVal_Armorer];
-
+	
 	return true;
 }
+
 
 // (expValue:float) GetPlayerSkillUse skill:actor value
 static bool Cmd_GetPlayerSkillUse_Execute(COMMAND_ARGS)
@@ -161,7 +172,7 @@ static bool Cmd_GetPlayerSkillAdvances_Execute(COMMAND_ARGS)
 	if (!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &valSkill))
 		return true;
 	if (!IsSkill(valSkill)) return true;
-
+	
 	*result = (*g_thePlayer)->GetSkillAdvanceCount(valSkill);
 	return true;
 }
@@ -169,7 +180,7 @@ static bool Cmd_GetPlayerSkillAdvances_Execute(COMMAND_ARGS)
 static bool Cmd_SetPlayerSkillAdvances_Execute(COMMAND_ARGS)
 {
 	*result = 0;
-
+	
 	UInt32 valSkill = 0;
 	SInt32 advCount = 0;
 
@@ -181,6 +192,7 @@ static bool Cmd_SetPlayerSkillAdvances_Execute(COMMAND_ARGS)
 
 	return true;
 }
+
 
 static bool Cmd_SetPCAMurderer_Execute(COMMAND_ARGS)
 {
@@ -245,6 +257,29 @@ static bool Cmd_GetPlayersLastActivatedLoadDoor_Execute(COMMAND_ARGS)
 	return true;
 }
 
+//WIP
+static bool Cmd_SetRace_Execute(COMMAND_ARGS)
+{
+	TESNPC* npc = NULL;
+	TESForm* raceArg = NULL;
+
+	if(!ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &raceArg, &npc))
+		return true;
+
+	if (!npc)
+		if (thisObj)
+			npc = (TESNPC*)Oblivion_DynamicCast(thisObj->baseForm, 0, RTTI_TESForm, RTTI_TESNPC, 0);
+
+	TESRace* newRace = (TESRace*)Oblivion_DynamicCast(raceArg, 0, RTTI_TESForm, RTTI_TESRace, 0);
+	if (newRace && npc)
+	{
+		npc->race.race = newRace;
+		Console_Print("Changed Race");
+	}
+
+	return true;
+}
+
 static bool Cmd_AddSpellNS_Execute(COMMAND_ARGS)
 {
 	ToggleUIMessages(false);
@@ -286,7 +321,7 @@ static bool Cmd_SetPCMajorSkillUps_Execute(COMMAND_ARGS)
 		{
 			float advPts = nuValue / setting->i;
 			pc->bCanLevelUp = (advPts >= 1.0) ? 1 : 0;
-
+			
 			// HUD LevelUp icon updates automatically
 		}
 
@@ -348,9 +383,8 @@ static bool Cmd_GetSpellEffectiveness_Execute(COMMAND_ARGS)
 static bool Cmd_ModPCSpellEffectiveness_Execute(COMMAND_ARGS)
 {
 	float modBy = 0;
-	UInt32 bPersist = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &modBy, &bPersist))
-		ModPlayerSpellEffectiveness(modBy, bPersist ? true : false);
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &modBy))
+		ModPlayerSpellEffectiveness(modBy);
 
 	return true;
 }
@@ -364,10 +398,8 @@ static bool Cmd_GetPCSpellEffectivenessModifier_Execute(COMMAND_ARGS)
 static bool Cmd_ModPCMovementSpeed_Execute(COMMAND_ARGS)
 {
 	float modBy = 0;
-	UInt32 bPersist = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &modBy, &bPersist))
-		ModPlayerMovementSpeed(modBy, bPersist ? true : false);
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &modBy))
+		ModPlayerMovementSpeed(modBy);
 
 	return true;
 }
@@ -493,6 +525,7 @@ static __declspec(naked)void PCDeathHook(void)
 #include "GameMenus.h"
 static bool Cmd_Debug_Execute(COMMAND_ARGS)
 {
+
 	if (!InterfaceManager::GetSingleton())
 		_MESSAGE("interface manager singleton is NULL");
 
@@ -508,6 +541,8 @@ static bool Cmd_Debug_Execute(COMMAND_ARGS)
 
 	DoLoadGameMenu();
 	return true;
+
+
 
 	EquippedItemsList itemList = (*g_thePlayer)->GetEquippedItems();
 	for (UInt32 i = 0; i < itemList.size(); i++)
@@ -567,6 +602,103 @@ static bool Cmd_SetPlayerSkeletonPath_Execute(COMMAND_ARGS)
 	return true;
 }
 
+static bool Cmd_GetActiveQuest_Execute(COMMAND_ARGS)
+{
+	UInt32* refResult = (UInt32*)result;
+	*refResult = 0;
+
+	if (*g_thePlayer && (*g_thePlayer)->activeQuest)
+		*refResult = (*g_thePlayer)->activeQuest->refID;
+
+	return true;
+}
+
+static bool Cmd_SetActiveQuest_Execute(COMMAND_ARGS)
+{
+	TESQuest* quest = NULL;
+	if (*g_thePlayer && ExtractArgs(PASS_EXTRACT_ARGS, &quest) && quest)
+		(*g_thePlayer)->activeQuest = quest;
+
+	return true;
+}
+
+static bool Cmd_ClearActiveQuest_Execute(COMMAND_ARGS)
+{
+	if (*g_thePlayer) {
+		(*g_thePlayer)->activeQuest = NULL;
+	}
+	return true;
+}
+
+class QuestPredicate
+{
+public:
+	virtual bool Accept(TESQuest* quest) const = 0;
+};
+
+class QuestStatePredicate : public QuestPredicate
+{
+public:
+	QuestStatePredicate(UInt32 state) : m_state (state) { }
+	virtual bool Accept(TESQuest* quest) const { return ((quest->questFlags & m_state) == m_state); }
+private:
+	UInt32	m_state;
+};
+
+static ArrayID GetQuestList_Execute(const QuestPredicate& pred, Script* scriptObj)
+{
+	ArrayID arr = g_ArrayMap.Create(kDataType_Numeric, true, scriptObj->GetModIndex());
+
+	double idx = 0.0;
+	for (DataHandler::Node<TESQuest>* cur = &(*g_dataHandler)->quests; cur && cur->data; cur = cur->next) {
+		if (pred.Accept(cur->data)) {
+			g_ArrayMap.SetElementFormID(arr, idx, cur->data->refID);
+			idx += 1.0;
+		}
+	}
+
+	return arr;
+}
+
+static bool Cmd_GetCurrentQuests_Execute(COMMAND_ARGS)
+{
+	*result = GetQuestList_Execute(QuestStatePredicate(TESQuest::kQuestFlag_Active), scriptObj);
+	return true;
+}
+
+static bool Cmd_GetCompletedQuests_Execute(COMMAND_ARGS)
+{
+	*result = GetQuestList_Execute(QuestStatePredicate(TESQuest::kQuestFlag_Completed), scriptObj);
+	return true;
+}
+	
+
+static bool Cmd_UncompleteQuest_Execute(COMMAND_ARGS)
+{
+	*result = 0;
+	TESQuest* quest = NULL;
+	if (ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &quest) && quest) {
+		quest->SetCompleted(false);
+		*result = 1;
+	}
+
+	return true;
+}
+
+static bool Cmd_IsQuestCompleted_Execute(COMMAND_ARGS)
+{
+	*result = 0;
+	TESQuest* quest = NULL;
+	if (ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &quest) && quest) {
+		*result = quest->IsCompleted() ? 1.0 : 0.0;
+	}
+
+	if(IsConsoleMode())
+		Console_Print("IsQuestCompleted >> %.0f", *result);
+
+	return true;
+}
+
 static bool Cmd_GetTransactionInfo_Execute(COMMAND_ARGS)
 {
 	char type[0x100] = { 0 };
@@ -606,21 +738,8 @@ static bool Cmd_GetRequiredSkillExp_Execute(COMMAND_ARGS)
 	return true;
 }
 
-PlayerCharacter* pc = *g_thePlayer;
 
-static bool Cmd_SetFlyCameraSpeedMult_Execute(COMMAND_ARGS)
-{
-	static const float kOriginalValue = 10.0f;
-
-	float multiplier = 10.0;
-	*result = 0;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &multiplier)) {
-		g_PlayerFlyCamSpeed = kOriginalValue * multiplier;
-	}
-
-	return true;
-}
+	PlayerCharacter* pc = *g_thePlayer;
 
 #endif
 
@@ -771,12 +890,15 @@ CommandInfo kCommandInfo_SetPlayerSkillAdvancesC =
 	0
 };
 
+
+
 static ParamInfo kParams_IncrementPlayerSkillUse[3] =
 {
 	{	"skill", kParamType_ActorValue, 0 },
 	{	"index", kParamType_Integer, 1 },
 	{	"howManyTimes", kParamType_Float, 1},
 };
+
 
 CommandInfo kCommandInfo_IncrementPlayerSkillUse =
 {
@@ -807,6 +929,7 @@ CommandInfo kCommandInfo_TriggerPlayerSkillUse =
 	NULL,
 	0
 };
+
 
 static ParamInfo kParams_IncrementPlayerSkillUseC[3] =
 {
@@ -887,6 +1010,8 @@ CommandInfo kCommandInfo_ModPlayerSkillExpC =
 	0
 };
 
+
+
 CommandInfo kCommandInfo_SetPCAMurderer =
 {
 	"SetPCAMurderer",
@@ -933,6 +1058,27 @@ CommandInfo kCommandInfo_GetPlayersLastActivatedLoadDoor =
 static ParamInfo kParams_OneNPC[1] =
 {
 	{	"NPC",	kParamType_NPC,	1	},
+};
+
+static ParamInfo kParams_SetRace[2] =
+{
+	{	"race",	kParamType_InventoryObject,	0	},
+	{	"NPC",	kParamType_NPC,				1	},
+};
+
+CommandInfo kCommandInfo_SetRace =
+{
+	"SetRace",
+	"",
+	0,
+	"sets the race of the specified NPC",
+	0,
+	2,
+	kParams_SetRace,
+	HANDLER(Cmd_SetRace_Execute),
+	Cmd_Default_Parse,
+	NULL,
+	0
 };
 
 CommandInfo kCommandInfo_AddSpellNS =
@@ -983,9 +1129,9 @@ DEFINE_COMMAND(SetPCMajorSkillUps,
 			   1,
 			   kParams_OneInt);
 
-static ParamInfo kParams_ModActorValue2[2] =
+static ParamInfo kParams_ModActorValue2[2] = 
 {
-	{	"actor value", kParamType_ActorValue, 0 },
+	{	"actor value", kParamType_ActorValue, 0 }, 
 	{	"amount", kParamType_Integer, 0 },
 };
 
@@ -1025,17 +1171,11 @@ DEFINE_COMMAND(GetSpellEffectiveness,
 			   0,
 			   NULL);
 
-static ParamInfo kParams_OneFloat_OneOptionalInt[2] =
-{
-	{ "float",	kParamType_Float,	0	},
-	{ "int",	kParamType_Integer,	1	}
-};
-
 DEFINE_COMMAND(ModPCSpellEffectiveness,
 			   modifies the player spell effectiveness,
 			   0,
-			   2,
-			   kParams_OneFloat_OneOptionalInt);
+			   1,
+			   kParams_OneFloat);
 
 DEFINE_COMMAND(GetPCSpellEffectivenessModifier,
 			   returns the modifier on player spell effectiveness,
@@ -1043,7 +1183,7 @@ DEFINE_COMMAND(GetPCSpellEffectivenessModifier,
 			   0,
 			   NULL);
 
-DEFINE_COMMAND(ModPCMovementSpeed, modifies the players movement speed, 0, 2, kParams_OneFloat_OneOptionalInt);
+DEFINE_COMMAND(ModPCMovementSpeed, modifies the players movement speed, 0, 1, kParams_OneFloat);
 DEFINE_COMMAND(GetPCMovementSpeedModifier, returns the modifier on the players movement speed, 0, 0, NULL);
 
 DEFINE_COMMAND(ToggleFirstPerson,
@@ -1065,7 +1205,7 @@ static bool Cmd_Parse_Test(UInt32 arg0, UInt32 arg1, UInt32 arg2, UInt32 arg3)
 		return true;
 }
 
-CommandInfo kCommandInfo_GetPCTrainingSessionsUsed =
+CommandInfo kCommandInfo_GetPCTrainingSessionsUsed = 
 {
 	"GetPCTrainingSessionsUsed",
 	"",
@@ -1116,41 +1256,23 @@ static ParamInfo kParams_OneBirthSign[1] =
 DEFINE_COMMAND(SetPlayerBirthSign, changes the players birthsign, 0, 1, kParams_OneBirthSign);
 DEFINE_COMMAND(SetPlayerSkeletonPath, changes the skeleton used by the player, 0, 1, kParams_OneString);
 
+DEFINE_COMMAND(GetActiveQuest, "returns the player's active quest, if any", 0, 0, NULL);
+DEFINE_COMMAND(SetActiveQuest, sets the players active quest, 0, 1, kParams_OneQuest);
+
+DEFINE_COMMAND(GetCurrentQuests, returns a list of all currently active (uncompleted) quests. Note that this list includes quests which do not appear in the journal,
+			   0, 0, NULL);
+DEFINE_COMMAND(GetCompletedQuests, returns a list of all completed quests, 0, 0, NULL);
+
+DEFINE_COMMAND(IsQuestCompleted, returns 1 if the specified quest has been completed, 0, 1, kParams_OneQuest);
+DEFINE_COMMAND(UncompleteQuest, marks a quest as not having been completed, 0, 1, kParams_OneQuest);
+
+DEFINE_COMMAND(ClearActiveQuest, clears the players active quest, 0, 0, NULL);
+
 DEFINE_COMMAND(GetTransactionInfo, returns info about the last barter transaction,
 			   0, 1, kParams_OneString);
 
 DEFINE_COMMAND(GetRequiredSkillExp, returns the amount of experience needed to increase the skill, 0, 1, kParams_OneActorValue);
-CommandInfo kCommandInfo_GetRequiredSkillExpC =
-{
-	"GetRequiredSkillExpC",
-	"",
-	0,
-	"returns the amount of experience needed to increase the skill",
-	0,
-	1,
-	kParams_OneInt,
-	HANDLER(Cmd_GetRequiredSkillExp_Execute),
-	Cmd_Default_Parse,
-	NULL,
-	0
-};
 
 DEFINE_COMMAND(SetPlayersLastRiddenHorse, sets the horse last ridden by the player, 0, 1, kParams_OneObjectRef);
 DEFINE_COMMAND(ClearPlayersLastRiddenHorse, marks the player as having no last ridden horse,
 			   0, 0, NULL);
-
-CommandInfo kCommandInfo_SetFlyCameraSpeedMult =
-{
-	"SetFlyCameraSpeedMult",
-	"SFCSM",
-	0,
-	"changes the speed multiplier of the fly camera",
-	0,
-	1,
-	kParams_OneFloat,
-	HANDLER(Cmd_SetFlyCameraSpeedMult_Execute),
-	Cmd_Default_Parse,
-	NULL,
-	0
-};
-

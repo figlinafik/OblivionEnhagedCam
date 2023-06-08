@@ -21,8 +21,8 @@ protected:
 	public:
 		VarCache() : varID(0), var(NULL) { }
 
-		~VarCache() {
-			Reset();
+		~VarCache() { 
+			Reset(); 
 		}
 
 		void Insert(UInt32 id, Var* v) {
@@ -90,7 +90,7 @@ protected:
 					return it->second;
 				}
 			}
-
+			
 			return NULL;
 		}
 
@@ -214,7 +214,7 @@ public:
 		m_state = new State();
 	}
 
-	void PostLoad(bool bLoadSucceeded)
+	void PostLoad(bool bLoadSucceeded) 
 	{
 		// there is a possibility loading a saved game will fail. If so, restore vars to previous state.
 		if (bLoadSucceeded) {
@@ -230,10 +230,6 @@ public:
 			delete m_state;
 			m_state = m_backupState;
 			m_backupState = NULL;
-
-			// if the loading operation failed right after game init (at the main menu), make sure the map is operable
-			if (m_state == NULL)
-				Preload();
 		}
 	}
 

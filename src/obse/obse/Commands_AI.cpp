@@ -23,7 +23,7 @@ static bool Cmd_GetNumFollowers_Execute(COMMAND_ARGS)
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_Follower);
 	if (!xData)
 		return true;
-
+	
 	ExtraFollower* xFollower = (ExtraFollower*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraFollower, 0);
 	if (xFollower)
 		*result = ExtraFollowerVisitor(xFollower->followers).Count();
@@ -46,7 +46,7 @@ static bool Cmd_GetNthFollower_Execute(COMMAND_ARGS)
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_Follower);
 	if (!xData)
 		return true;
-
+	
 	ExtraFollower* xFollowers = (ExtraFollower*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraFollower, 0);
 	if (xFollowers)
 	{
@@ -158,7 +158,7 @@ public:
 	{
 		if (data->actor && data->actor->refID == m_actorToFind->refID)
 			return true;
-
+	
 		return false;
 	}
 };
@@ -843,7 +843,7 @@ static bool Cmd_SetPackageTarget_Execute(COMMAND_ARGS)
 	}
 
 	return true;
-}
+}		
 
 static bool GetPackageFlagFunc_Eval(COMMAND_ARGS_EVAL, UInt32 flag)
 {
@@ -855,7 +855,7 @@ static bool GetPackageFlagFunc_Eval(COMMAND_ARGS_EVAL, UInt32 flag)
 		Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
 		if (actor)
 		{
-			// try to locate an ExtraPackage first
+			// try to locate an ExtraPackage first 
 			// (during dialog/combat editor package overridden by dynamic package and stored in ExtraPackage)
 			ExtraPackage* xPack = (ExtraPackage*)actor->baseExtraList.GetByType(kExtraData_Package);
 			if (xPack && xPack->package)
@@ -892,7 +892,7 @@ static bool SetPackageFlagFunc_Execute(COMMAND_ARGS, UInt32 flag)
 			Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
 			if (actor)
 			{
-				// try to locate an ExtraPackage first
+				// try to locate an ExtraPackage first 
 				// (during dialog/combat editor package overridden by dynamic package and stored in ExtraPackage)
 				ExtraPackage* xPack = (ExtraPackage*)actor->baseExtraList.GetByType(kExtraData_Package);
 				if (xPack && xPack->package)
@@ -902,7 +902,7 @@ static bool SetPackageFlagFunc_Execute(COMMAND_ARGS, UInt32 flag)
 			}
 		}
 
-		if (pkg)
+		if (pkg)	
 			pkg->SetFlag(flag, bSetFlag ? true : false);
 	}
 
@@ -988,7 +988,7 @@ static bool GetCurrentPackage_Execute(COMMAND_ARGS, bool bGetEditorPackage)
 				if (xPack && xPack->package)
 					pkg = xPack->package;
 			}
-
+			
 			if (!pkg)
 				pkg = actor->GetCurrentPackage();
 
@@ -1125,7 +1125,7 @@ static bool Cmd_GetPackageTargetData_Execute(COMMAND_ARGS)
 {
 	TESPackage* pkg = NULL;
 	*result = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &pkg) && pkg)
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &pkg) && pkg) 
 		*result = TargetForPackage(pkg, scriptObj);
 	return true;
 }
@@ -1134,7 +1134,7 @@ static bool Cmd_GetPackageLocationData_Execute(COMMAND_ARGS)
 {
 	TESPackage* pkg = NULL;
 	*result = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &pkg) && pkg)
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &pkg) && pkg) 
 		*result = LocationForPackage(pkg, scriptObj);
 	return true;
 }
@@ -1184,7 +1184,7 @@ static bool SetPackageLocationData(TESPackage* pkg, ArrayID src)
 	// first make sure we've got a valid set of values
 	if (!g_ArrayMap.GetElementString(src, "type", str))
 		return false;
-
+	
 	UInt8 type = TESPackage::LocationData::LocationCodeForString(str.c_str());
 	if (!TESPackage::LocationData::IsValidLocationType(type))
 		return false;
@@ -1253,7 +1253,7 @@ static bool SetPackageTargetData(TESPackage* pkg, ArrayID src)
 	// make sure passed data is consistent
 	if (!g_ArrayMap.GetElementString(src, "type", str))
 		return false;
-
+	
 	UInt8 type = TESPackage::TargetData::TargetCodeForString(str.c_str());
 	if (!TESPackage::TargetData::IsValidTargetCode(type))
 		return false;
@@ -1393,31 +1393,9 @@ static bool Cmd_GetCurrentPackageProcedure_Execute(COMMAND_ARGS)
 
 	return true;
 }
-
-static bool Cmd_GetGroundSurfaceMaterial_Execute(COMMAND_ARGS)
-{
-	*result = -1;
-
-	Actor* actor = OBLIVION_CAST(thisObj, TESObjectREFR, Actor);
-	if (actor && actor->process)
-	{
-		MiddleHighProcess* midHigProcess = OBLIVION_CAST(actor->process, BaseProcess, MiddleHighProcess);
-		if (midHigProcess)
-		{
-			bhkCharacterController* hkController = midHigProcess->GetCharacterController();
-			if (hkController)
-			{
-				*result = hkController->listener.groundSurfaceMaterial;
-				if (IsConsoleMode())
-					Console_Print("GetGroundSurfaceMaterial >> %d", hkController->listener.groundSurfaceMaterial);
-			}
-		}
-	}
-
-	return true;
-}
-
+	
 #endif
+
 
 static ParamInfo kParams_OneNPC[1] =
 {
@@ -2340,7 +2318,7 @@ DEFINE_COMMAND(IsAnimGroupPlaying,
 			   1,
 			   kParams_OneAnimGroup);
 
-DEFINE_COMMAND(AnimPathIncludes,
+DEFINE_COMMAND(AnimPathIncludes, 
 			   returns true if the actor is playing an anim containing the substring,
 			   1,
 			   1,
@@ -2527,4 +2505,3 @@ CommandInfo kCommandInfo_SetPackageLocationData =
 DEFINE_COMMAND(GetPackageType, returns the type of a package as a string, 0, 1, kParams_OnePackage);
 
 DEFINE_COMMAND(GetCurrentPackageProcedure, returns the actors current package procedure as a string, 1, 0, NULL);
-DEFINE_COMMAND(GetGroundSurfaceMaterial, returns the surface type the actor is currently standing on, 1, 0, NULL);

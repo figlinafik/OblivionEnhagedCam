@@ -11,7 +11,6 @@
 
 #if OBSE_CORE
 #include "Hooks_Script.h"
-#include "ScriptUtils.h"
 #endif
 
 #include <float.h>
@@ -20,7 +19,7 @@
 
 /***
  *	opcodes
- *
+ *	
  *	tokens
  *	0010	begin
  *	0011	end
@@ -38,7 +37,7 @@
  *	001D	scriptname	scn
  *	001E	return
  *	001F	reference	ref
- *
+ *	
  ***/
 
 static OBSEStringVarInterface* s_StringVarInterface = NULL;
@@ -128,7 +127,6 @@ const bool * g_bConsoleMode = (bool*)0x00AF3F24;
 const _IsGodMode IsGodMode = (_IsGodMode)0x00649840;
 const bool * g_bIsConsoleOpen = (bool*)0x00AEAD39;
 const _ScancodeToChar ScancodeToChar = (_ScancodeToChar)0x00403110;
-static const UInt32 g_IniSettingCollection = 0x00AF1898;
 
 #elif OBLIVION_VERSION == OBLIVION_VERSION_1_2
 
@@ -151,7 +149,6 @@ const bool * g_bConsoleMode = (bool*)0x00B361AC;
 const _IsGodMode IsGodMode = (_IsGodMode)0x0065D2D0;
 const bool * g_bIsConsoleOpen = (bool*)0x00B33415;
 const _ScancodeToChar ScancodeToChar = (_ScancodeToChar)0x00403D00;
-static const UInt32 g_IniSettingCollection = 0x00B07BF0;
 
 #elif OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 
@@ -178,7 +175,6 @@ const _IsMenuMode IsMenuMode = (_IsMenuMode)0x00578F60;
 Script** g_ExecutingScript = (Script**)0x00B361B0;
 ScriptEventList** g_ExecutingEventList = (ScriptEventList**)0x00B361B4;
 const _MarkBaseExtraListScriptEvent MarkBaseExtraListScriptEvent = (_MarkBaseExtraListScriptEvent)0x004FBF90;
-static const UInt32 g_IniSettingCollection = 0x00B07BF0;
 
 typedef FontManager* (* _FontManager_GetSingleton)(void);
 const _FontManager_GetSingleton FontManager_GetSingleton = (_FontManager_GetSingleton)0x00576A30;
@@ -218,7 +214,7 @@ __declspec(naked) UInt32 __cdecl ThisCall(UInt32 function, void * _this, ...)
 		pop ecx		// ecx = _this
 
 		mov g_ThisCall_returnAddr, eax
-
+		
 		//// new stack
 		// ...
 		// args <- esp
@@ -407,7 +403,7 @@ static bool ExtractFloat(double& out, UInt8* &scriptData, Script* scriptObj, Scr
 		eventList = ResolveExternalVar(eventList, scriptObj, scriptData);
 		if (!eventList)			//couldn't resolve script ref
 			return false;
-	}
+	}	
 
 	switch (*scriptData)
 	{
@@ -543,7 +539,7 @@ static bool v_ExtractArgsEx(SInt16 numArgs, ParamInfo * paramInfo, UInt8* &scrip
 	{
 		ParamInfo	* info = &paramInfo[i];
 
-		//DEBUG_PRINT("ParamType: %d Type: %d Param: %s scriptData: %08x", info->typeID, *scriptData, info->typeStr, scriptData);
+		//DEBUG_PRINT("ParamType: %d Type: %d Param: %s scriptData: %08x", info->typeID, *scriptData, info->typeStr, scriptData);	
 
 		switch(info->typeID)
 		{
@@ -582,7 +578,7 @@ static bool v_ExtractArgsEx(SInt16 numArgs, ParamInfo * paramInfo, UInt8* &scrip
 					case 0x7A: // "z"
 						*out = *((double *)++scriptData);
 						scriptData += sizeof(double);
-						break;
+						break;					
 					case 0x66: // "f"
 					case 0x72: // "r"
 					case 0x73: // "s"
@@ -624,7 +620,7 @@ static bool v_ExtractArgsEx(SInt16 numArgs, ParamInfo * paramInfo, UInt8* &scrip
 							*out = data;
 						else
 							return false;
-
+						
 						break;
 					}
 
@@ -702,14 +698,14 @@ const char* GetActorValueString(UInt32 actorValue)
 		name = *g_baseActorValueNames[actorValue];
 	else if (actorValue < kActorVal_OblivionMax)
 		name = g_extraActorValueNames[actorValue - kActorVal_MagickaMultiplier];
-
+	
 	if (!name)
 		name = "unknown";
 
 	return name;
 }
 
-UInt32 GetActorValueForScript(const char* avStr)
+UInt32 GetActorValueForScript(const char* avStr) 
 {
 	for (UInt32 i = 0; i < kActorVal_OblivionMax; i++) {
 		if (!_stricmp(avStr, g_scriptActorValueNames[i])) {
@@ -750,7 +746,7 @@ UInt32 SafeModUInt32(UInt32 originalVal, float modBy) {
 	val += modBy;
 	if (val > ULONG_MAX)	{return ULONG_MAX;}
 	else if (val < 0)		{return 0;}
-	else					{return (UInt32) val;}
+	else					{return (UInt32) val;}					
 }
 
 float SafeChangeFloat(float originalVal, float changeVal, bool bMod, bool bNegativeAllowed) {
@@ -785,11 +781,6 @@ SettingInfo::EType SettingInfo::Type() const
 bool GetGameSetting(char* settingName, SettingInfo** setting)
 {
 	return (NiTPointerMap_Lookup(g_gameSettingsTable, settingName, (void **)setting) != 0);
-}
-
-IniSettingCollection* IniSettingCollection::GetSingleton ()
-{
-	return (IniSettingCollection*)g_IniSettingCollection;
 }
 
 InterfaceManager * InterfaceManager::GetSingleton(void)
@@ -903,7 +894,7 @@ bool ExtractFormattedString(FormatStringArgs& args, char* buffer)
 		case 'b':										// toggle blue text off, console only
 			fmtString.erase(strIdx, 2);
 			fmtString.insert(strIdx, "\3");
-			break;
+			break;			
 		case 'a':
 		case 'A':										//character specified by ASCII code
 			{
@@ -939,7 +930,7 @@ bool ExtractFormattedString(FormatStringArgs& args, char* buffer)
 				else if (!form)
 					fmtString.insert(strIdx, "00000000");
 				else
-				{
+				{			
 					char formID[9];
 					sprintf_s(formID, 9, "%08X", form->refID);
 					fmtString.insert(strIdx, formID);
@@ -1033,6 +1024,7 @@ bool ExtractFormattedString(FormatStringArgs& args, char* buffer)
 
 				const char* desc = GetDXDescription(keycode);
 				fmtString.insert(strIdx, desc);
+
 			}
 			break;
 		case 'v':
@@ -1069,7 +1061,7 @@ bool ExtractFormattedString(FormatStringArgs& args, char* buffer)
 				if (!form)
 					fmtString.insert(strIdx, "NULL");
 				else
-				{
+				{			
 					TESObjectREFR* refr = (TESObjectREFR*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESObjectREFR, 0);
 					if (refr)
 						form = refr->baseForm;
@@ -1229,7 +1221,7 @@ bool ExtractFormatStringArgs(UInt32 fmtStringPos, char* buffer, ParamInfo * para
 		}
 		return bResult;
 	}
-
+	
 	numArgs -= fmtStringPos + 1;
 
 	bool bExtracted = false;
@@ -1261,7 +1253,7 @@ bool ExtractFormatStringArgs(UInt32 fmtStringPos, char* buffer, ParamInfo * para
 
 static bool s_bConsoleOutputEnabled = true;
 
-bool IsConsoleMode()
+bool IsConsoleMode()	
 {
 	return *g_bConsoleMode;
 }
@@ -1368,7 +1360,7 @@ bool ExtractSetStatementVar(Script* script, ScriptEventList* eventList, void* sc
 		}
 		break;
 	default:
-		ShowRuntimeError(script, "Function must be used within a Set statement");
+		SCRIPT_ASSERT(false, script, "Function must be used within a Set statement");
 	}
 
 	return bExtracted;
@@ -1487,11 +1479,8 @@ bool ScriptFormatStringArgs::SkipArgs(UInt32 numToSkip)
 
 bool ScriptFormatStringArgs::Arg(FormatStringArgs::argType asType, void * outResult)
 {
-	if (numArgs == 0)
-	{
-		ShowRuntimeError(scriptObj, "Too few args for format specifier");
+	if (!SCRIPT_ASSERT((numArgs > 0), scriptObj, "Too few args for format specifier"))
 		return false;
-	}
 
 	numArgs--;
 
@@ -1572,16 +1561,6 @@ bool InterfaceManager::IsGameMode()
 	return !IsMenuMode();
 }
 
-void InterfaceManager::ToggleDebugText()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	typedef void (* _fn)();
-	((_fn)0x0057C200)();
-#else
-#error unsupported Oblivion version
-#endif
-}
-
 Script* GetCurrentExecutingScript(void)
 {
 	return *g_ExecutingScript;
@@ -1594,6 +1573,7 @@ ScriptEventList* GetCurrentExecutingScriptEventList(void)
 
 void ShowCompilerError(ScriptLineBuffer* lineBuf, const char * fmt, ...)
 {
+
 	char errorHeader[0x400];
 	UInt32 offset = sprintf_s(errorHeader, 0x400, "Error on line %d\n\n", lineBuf->lineNumber);
 

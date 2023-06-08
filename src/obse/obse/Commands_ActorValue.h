@@ -26,8 +26,3 @@ extern CommandInfo kCommandInfo_GetMaxAV;
 extern CommandInfo kCommandInfo_GetMaxAVC;
 extern CommandInfo kCommandInfo_GetAVForBaseActor;
 extern CommandInfo kCommandInfo_GetAVForBaseActorC;
-
-extern CommandInfo kCommandInfo_GetLuckModifiedSkill;
-
-extern CommandInfo kCommandInfo_GetAVSkillMasteryLevel;
-extern CommandInfo kCommandInfo_GetAVSkillMasteryLevelC;

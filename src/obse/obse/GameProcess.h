@@ -717,10 +717,10 @@ public:
 	virtual void	Unk_38(UInt32 arg0) = 0;
 	virtual UInt32	Unk_39(UInt32 arg0) = 0;
 	virtual UInt32	Unk_3A(UInt32 arg0) = 0;
-	virtual UInt32	Unk_3B(UInt32 arg0) = 0;
 	virtual ExtraContainerChanges::EntryData* GetEquippedWeaponData(bool arg0) = 0;
-	virtual UInt32	Unk_3D(UInt32 arg0) = 0;
+	virtual UInt32	Unk_3C(UInt32 arg0) = 0;
 	virtual ExtraContainerChanges::EntryData* GetEquippedAmmoData(bool arg0) = 0;
+	virtual UInt32	Unk_3E(void) = 0;
 	virtual void	Unk_3F(UInt32 arg0) = 0;
 	virtual bool	Unk_40(UInt32 arg0, UInt32 arg1) = 0;
 	virtual bool	Unk_41(UInt32 arg0) = 0;
@@ -762,8 +762,8 @@ public:
 	virtual void	Unk_65(void) = 0;
 	virtual void	Unk_66(void) = 0;
 	virtual void	Unk_67(void) = 0;
-	virtual void	SayTopic(Character* speaker, TESTopic* topic, bool bForceSubtitles, UInt32 unk3, UInt32 unk4) = 0; // unks: 0, 0
-	virtual void	Unk_69(void) = 0;	
+	virtual void	Unk_68(void) = 0;
+	virtual void	Unk_69(void) = 0;
 	virtual void	Unk_6A(void) = 0;
 	virtual void	Unk_6B(void) = 0;
 	virtual void	Unk_6C(void) = 0;
@@ -845,7 +845,7 @@ public:
 	virtual UInt16	SetCurrentAction(UInt16 action, BSAnimGroupSequence* sequence) = 0;
 	virtual void	Unk_B7(void) = 0;
 	virtual void	Unk_B8(void) = 0;
-	virtual UInt8	GetKnockedState(void) = 0;
+	virtual void	Unk_B9(void) = 0;
 	virtual void	Unk_BA(void) = 0;
 	virtual void	Unk_BB(void) = 0;
 
@@ -881,7 +881,7 @@ public:
 	virtual void	Unk_D8(void) = 0;
 	virtual void	Unk_D9(void) = 0;
 	virtual void	Unk_DA(void) = 0;
-	virtual UInt8	GetSleepState(void) = 0;
+	virtual void	Unk_DB(void) = 0;
 	virtual void	Unk_DC(void) = 0;
 	virtual void	Unk_DD(void) = 0;
 	virtual void	Unk_DE(void) = 0;
@@ -968,9 +968,7 @@ public:
 	virtual void	Unk_12F(void) = 0;
 	virtual void	Unk_130(void) = 0;
 	virtual void	Unk_131(void) = 0;
-
-	// action type is one of HighProcess::kActionType_XXX
-	virtual TESObjectREFR* GetActionTarget(UInt32 actionType) = 0;	
+	virtual void	Unk_132(void) = 0;
 	virtual void	Unk_133(void) = 0;
 	virtual const char *	Unk_134(void) = 0;
 	virtual void	Unk_135(void) = 0;
@@ -1183,8 +1181,8 @@ public:
 	UInt8				unk115;		// 115
 	UInt8				pad116[2];	// 116
 	bhkCharacterProxy	* charProxy;	// 118 - seen bhkCharacterProxy
-	SInt8				knockedState;	// 11C
-	UInt8				sleepState;		// 11D
+	SInt8				unk11C;		// 11C
+	UInt8				unk11D;		// 11D
 	UInt8				pad11E;		// 11E
 	UInt8				pad11F;		// 11F
 	TESObjectREFR		* unk120;	// 120 Furniture ref NPC is sitting on (may be used for other things)
@@ -1388,7 +1386,7 @@ public:
 	float	unk22C;		// 22C
 	float	unk230;		// 230 - initialized to ((rand() % 5000) * .001) + 10
 	UInt32	unk234;		// 234 - not initialized
-	float	swimBreath;		// 238 - initialized to 0x41A00000
+	float	unk238;		// 238 - initialized to 0x41A00000
 	UInt8	unk23C;		// 23C
 	UInt8	unk23D[3];	// 23D
 	UInt32	unk240;		// 240
@@ -1456,25 +1454,3 @@ public:
 
 STATIC_ASSERT(sizeof(HighProcess) == 0x2EC);
 
-// 14
-class AStarWorldNode
-{
-public:
-	AStarWorldNode();
-	~AStarWorldNode();
-
-	UInt32			id;					// 00
-	TESObjectREFR	* fromDoorRef;		// 04
-	TESForm			* from;				// 08 TESObjectCELL, TESWorldSpace, TESSubspace refr
-	TESObjectREFR	* toDoorRef;		// 0C
-	TESForm			* to;				// 10 as with from
-
-	typedef tList<AStarWorldNode>	List;
-};
-
-// A "low" path is one that traverses a graph where each node is a cell, worldspace, or subspace, with edges defined by load doors
-// Used whenever an actor's destination is outside of its current cell/space, regardless of actor's process level
-typedef NiTPointerMap <AStarWorldNode::List>	AStarCellNodeMap;		// key is TESForm* (cell, worldspace, subspace)
-typedef NiTPointerMap <AStarCellNodeMap>		LowPathWorld;			// key is TESForm* (cell, worldspace, subspace)
-
-typedef NiTListBase<AStarWorldNode>	AStarWorldNodeList;

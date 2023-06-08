@@ -1,7 +1,6 @@
 #include "FunctionScripts.h"
 #include "ScriptTokens.h"
 #include "ThreadLocal.h"
-#include "PluginAPI.h"
 
 /*******************************************
 	UserFunctionManager
@@ -552,14 +551,9 @@ bool InternalFunctionCaller::PopulateArgs(ScriptEventList* eventList, FunctionIn
 				var->data = g_StringMap.Add(info->GetScript()->GetModIndex(), (const char*)m_args[i], true);
 				break;
 			case Script::eVarType_Array:
-				{
-					ArrayID arrID = (ArrayID)m_args[i];
-					if (g_ArrayMap.Exists (arrID))
-						g_ArrayMap.AddReference (&var->data, arrID, info->GetScript()->GetModIndex());
-					else
-						var->data = 0;
-				}
-				break;
+				// ###TODO
+				ShowRuntimeError(m_script, "Param type Array not implemented for internal function calls");
+				return false;
 			default:
 				// wtf?
 				ShowRuntimeError(m_script, "Unexpected param type %02X in internal function call", param->varType);
@@ -630,28 +624,5 @@ namespace PluginAPI {
 		}
 
 		return success;
-	}
-
-	bool IsUserFunction( Script* script )
-	{
-		if (script == NULL || script->data == NULL || script->info.dataLength < 15)
-			return false;
-
-		UInt8* data = (UInt8*)script->data;
-		if (*(data + 8) != 7)		// not a 'Begin Function' block
-			return false;
-
-		data += 14;
-
-		switch (*data++)
-		{
-		case 0:
-		case 1:
-			break;
-		default:	// unknown version
-			return false;
-		}
-
-		return true;
 	}
 }

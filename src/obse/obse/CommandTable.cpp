@@ -31,16 +31,16 @@
 #include "Commands_InventoryRef.h"
 #include "Commands_PathGrid.h"
 #include "Commands_Physics.h"
-#include "Commands_Sound.h"
-#include "Commands_Quest.h"
 
 #include "ParamInfos.h"
 #include "PluginManager.h"
 #include "Hooks_Memory.h"
 #include "obse_common/SafeWrite.h"
 #include "obse_common/obse_version.h"
+#include <string>
 #include "Utilities.h"
 #include "Script.h"
+#include <fstream>
 
 /*
 
@@ -56,14 +56,14 @@
 bool Command_GetPos(unk arg0, unk arg1, unk arg2, unk arg3, unk arg4, unk arg5, unk arg6, unk opcodeOffsetPtr)
 {
 	bool	result = false;
-
+	
 	char	axis;
-
+	
 	if(ExtractArgs(arg0, arg1, opcodeOffsetPtr, arg2, arg3, arg4, arg5, &axis))
 	{
 		result = HandleGetPos(arg2, axis, 0, arg6);
 	}
-
+	
 	return result;
 }
 
@@ -283,6 +283,7 @@ bool Cmd_Test_Execute(COMMAND_ARGS)
 	InterfaceManager	* interfaceManager = InterfaceManager::GetSingleton();
 	if(interfaceManager && interfaceManager->menuRoot)
 	{
+
 #if 0
 		Tile	* textEditTile = interfaceManager->menuRoot->ReadXML("data\\menus\\options\\load_menu.xml");
 		if(textEditTile)
@@ -299,7 +300,7 @@ bool Cmd_Test_Execute(COMMAND_ARGS)
 					if (textEdit) {
 						UInt32 x = 0;
 					};
-					*/
+					*/	
 					if(textEditMenu)
 					{
 						textEditMenu->RegisterTile(textEditMenuTile);
@@ -459,6 +460,8 @@ bool Cmd_Default_Eval(COMMAND_ARGS_EVAL)
 {
 	return true;
 }
+
+
 
 // called from 004F90A5
 bool Cmd_Default_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer* lineBuf, ScriptBuffer* scriptBuf)
@@ -683,7 +686,7 @@ static CommandInfo kCommandInfo_PurgeCellBuffers =
 	NULL
 };
 
-//0000116C 0000 SetPlayerInSEWorld SPInSE
+//0000116C 0000 SetPlayerInSEWorld SPInSE 
 //	00000001 00000000 Integer
 static CommandInfo kCommandInfo_SetPlayerInSEWorld =
 {
@@ -699,7 +702,8 @@ static CommandInfo kCommandInfo_SetPlayerInSEWorld =
 	NULL
 };
 
-//0000116D 0000 GetPlayerInSEWorld gpInSE
+
+//0000116D 0000 GetPlayerInSEWorld gpInSE 
 static CommandInfo kCommandInfo_GetPlayerInSEWorld =
 {
 	"GetPlayerInSEWorld", "gpInSE",
@@ -715,7 +719,7 @@ static CommandInfo kCommandInfo_GetPlayerInSEWorld =
 	NULL
 };
 
-//0000116E 0001 PushActorAway
+//0000116E 0001 PushActorAway  
 //	00000004 00000000 ObjectReferenceID
 //	00000001 00000000 Integer
 static ParamInfo kParams_PushActorAway[2] =
@@ -739,7 +743,7 @@ static CommandInfo kCommandInfo_PushActorAway =
 	NULL
 };
 
-//0000116F 0001 SetActorsAI
+//0000116F 0001 SetActorsAI  
 //	00000001 00000000 Integer
 static CommandInfo kCommandInfo_SetActorsAI =
 {
@@ -879,7 +883,7 @@ static const PatchLocation kPatch_ScriptCommands_Start[] =
 	// 0056B150
 	{	0x0056B16C + 3,	0x12 },
 	{	0x0056B178 + 2,	0x14 },
-
+	
 	// 0056B1A0
 	{	0x0056B1C1 + 4,	0x12 },
 	{	0x0056B1CF + 2,	0x14 },
@@ -983,7 +987,7 @@ static const PatchLocation kPatch_ScriptCommands_Start[] =
 	// 0056B1D0
 	{	0x0056B1EC + 3,	0x12 },
 	{	0x0056B1F8 + 2,	0x14 },
-
+	
 	// 0056B220
 	{	0x0056B241 + 4,	0x12 },
 	{	0x0056B24F + 2,	0x14 },
@@ -1602,7 +1606,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_GetSpellMasteryLevel);
 	g_scriptCommands.Add(&kCommandInfo_GetEnchantmentType);
 	g_scriptCommands.Add(&kCommandInfo_GetEnchantmentCharge);
-	g_scriptCommands.Add(&kCommandInfo_GetEnchantmentCost);
+	g_scriptCommands.Add(&kCommandInfo_GetEnchantmentCost);	
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectCode);
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectBaseCost);
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectSchool);
@@ -2033,6 +2037,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_HasName);
 	g_scriptCommands.Add(&kCommandInfo_HasBeenPickedUp);
 
+
 	// v0015
 	g_scriptCommands.RecordReleaseVersion();
 
@@ -2266,7 +2271,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_GetPCSpellEffectivenessModifier);
 
 	g_scriptCommands.Add(&kCommandInfo_GetCurrentFrameIndex);		// for haama (undocumented)
-
+	
 	g_scriptCommands.Add(&kCommandInfo_GetNthModName, kRetnType_String);
 	g_scriptCommands.Add(&kCommandInfo_GetName, kRetnType_String);
 	g_scriptCommands.Add(&kCommandInfo_GetStringGameSetting, kRetnType_String);
@@ -2408,7 +2413,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectNumCountersC);
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectResistValue);
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectResistValueC);
-
+	
 	g_scriptCommands.Add(&kCommandInfo_GetNthMagicEffectCounter);
 	g_scriptCommands.Add(&kCommandInfo_GetNthMagicEffectCounterC);
 	g_scriptCommands.Add(&kCommandInfo_GetMagicEffectCounters, kRetnType_Array);
@@ -2648,7 +2653,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_GetTileTraits, kRetnType_Array);
 	g_scriptCommands.Add(&kCommandInfo_GetTileChildren, kRetnType_Array);
 	g_scriptCommands.Add(&kCommandInfo_PrintTileInfo);
-
+	
 	g_scriptCommands.Add(&kCommandInfo_ar_First, kRetnType_ArrayIndex);
 	g_scriptCommands.Add(&kCommandInfo_ar_Last, kRetnType_ArrayIndex);
 	g_scriptCommands.Add(&kCommandInfo_ar_Next, kRetnType_ArrayIndex);
@@ -2772,16 +2777,16 @@ void CommandTable::Init(void)
 
 	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleIgnoreAlliesInArea);
 	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleWillYield);
-	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleRejectsYields);
-	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleFleeingDisabled);
-	g_scriptCommands.Add(&kCommandInfo_GetCombatStylePrefersRanged);
-	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleMeleeAlertOK);
+	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleRejectsYields); 
+	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleFleeingDisabled); 
+	g_scriptCommands.Add(&kCommandInfo_GetCombatStylePrefersRanged); 
+	g_scriptCommands.Add(&kCommandInfo_GetCombatStyleMeleeAlertOK); 
 
-	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleIgnoreAlliesInArea);
-	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleWillYield);
-	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleRejectsYields);
+	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleIgnoreAlliesInArea); 
+	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleWillYield); 
+	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleRejectsYields); 
 	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleFleeingDisabled);
-	g_scriptCommands.Add(&kCommandInfo_SetCombatStylePrefersRanged);
+	g_scriptCommands.Add(&kCommandInfo_SetCombatStylePrefersRanged); 
 	g_scriptCommands.Add(&kCommandInfo_SetCombatStyleMeleeAlertOK);
 
 	g_scriptCommands.Add(&kCommandInfo_GetGameDifficulty);
@@ -3126,7 +3131,7 @@ void CommandTable::Init(void)
 
 	ADD_CMD(SetVelocity);
 	ADD_CMD(SetLocalGravityVector);
-
+	
 	ADD_CMD(GetLocalGravity);
 	ADD_CMD(GetVelocity);
 
@@ -3137,58 +3142,6 @@ void CommandTable::Init(void)
 	ADD_CMD(SetRaceWeight);
 
 	ADD_CMD(ToggleSkillPerk);
-
-	// 0021
-	g_scriptCommands.RecordReleaseVersion();
-
-	ADD_CMD(SetCombatStylePowerAttackFatigueModMult);
-	ADD_CMD(HasTail);
-	ADD_CMD(GetLuckModifiedSkill);
-	ADD_CMD(SetCellMusicType);
-	ADD_CMD(GetSoundAttenuation);
-	ADD_CMD(SetSoundAttenuation);
-
-	ADD_CMD_RET(GetStageIDs, kRetnType_Array);
-	ADD_CMD_RET(GetStageEntries, kRetnType_Array);
-	ADD_CMD(SetStageText);
-	ADD_CMD(UnsetStageText);
-	ADD_CMD(SetStageDate);
-
-	ADD_CMD_RET(GetTailModelPath, kRetnType_String);
-	ADD_CMD(UpdateContainerMenu);
-	ADD_CMD(UpdateSpellPurchaseMenu);
-
-	ADD_CMD(ToggleDebugText2);
-
-	ADD_CMD_RET (GetModAlias, kRetnType_String);
-	ADD_CMD (SetModAlias);
-
-	ADD_CMD (LinkToDoor);
-
-	ADD_CMD_RET (sv_ToUpper, kRetnType_String);
-	ADD_CMD_RET (sv_ToLower, kRetnType_String);
-	ADD_CMD (CopyRace);
-	ADD_CMD (SetCreatureType);
-	ADD_CMD (DispatchEvent);
-	ADD_CMD (GetGroundSurfaceMaterial);
-	ADD_CMD (GetSkillSpecializationC);
-	ADD_CMD (SetSkillSpecializationC);
-	ADD_CMD (GetRequiredSkillExpC);
-	ADD_CMD (GetAVSkillMasteryLevel);
-	ADD_CMD (GetAVSkillMasteryLevelC);
-	ADD_CMD_RET(GetFactions, kRetnType_Array);
-	ADD_CMD_RET(GetLowActors, kRetnType_Array);
-	ADD_CMD_RET (GetLevCreatureTemplate, kRetnType_Form);
-	ADD_CMD (SetLevCreatureTemplate);
-	ADD_CMD (SetCalcAllLevels);
-
-	ADD_CMD (GetActorSwimBreath);
-	ADD_CMD (SetActorSwimBreath);
-	ADD_CMD (GetActorMaxSwimBreath);
-	ADD_CMD (SetActorMaxSwimBreath);
-	ADD_CMD (OverrideActorSwimBreath);
-	ADD_CMD (SetFlyCameraSpeedMult);
-
 
 	/* to add later if problems can be solved
 	g_scriptCommands.Add(&kCommandInfo_SetCurrentClimate); // too many problems
@@ -3221,6 +3174,7 @@ void CommandTable::Init(void)
 	g_scriptCommands.Add(&kCommandInfo_scrwtf);				// scruggsy test cmd
 	g_scriptCommands.Add(&kCommandInfo_DumpDocs);
 	g_scriptCommands.Add(&kCommandInfo_DumpXmlDocs);
+
 
 #ifdef OBLIVION
 	g_scriptCommands.Add(&kCommandInfo_DebugMemDump);
@@ -3316,7 +3270,7 @@ void CommandTable::PadTo(UInt32 id, CommandInfo * info)
 		info->opcode = m_baseID + m_commands.size();
 		m_commands.push_back(*info);
 	}
-
+	
 	m_curID = id;
 }
 
@@ -3546,7 +3500,7 @@ const char* StringForParamType(UInt32 paramType)
 
 bool IsParamOptionalCallingRef(UInt32 paramType)
 {
-	switch(paramType)
+	switch(paramType) 
 	{
 		case kParamType_InventoryObject:
 		case kParamType_ObjectRef:
@@ -3627,7 +3581,7 @@ void CommandInfo::DumpDocs() const
 	_MESSAGE("</a> - %s<br />", helpText);
 
 	_MESSAGE("<code class=\"s\">(%s) ", retnTypes[g_scriptCommands.GetReturnType(this)]);
-
+	
 	if (needsParent) {
 		_MESSAGE("reference.");
 	}
@@ -3667,6 +3621,7 @@ void CommandInfo::DumpDocs() const
 	}
 	_MESSAGE("<br><b>Return Type:</b> FixMe<br><b>Opcode:</b> %#4x (%d)<br><b>Condition Function:</b> %s<br><b>Description:</b> %s</p>", opcode, opcode, eval ? "Yes" : "No",helpText);
 #endif
+
 }
 
 void CommandInfo::DumpXML(std::ofstream& out)

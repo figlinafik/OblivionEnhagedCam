@@ -28,29 +28,6 @@ static bool Cmd_GetCellMusicType_Execute(COMMAND_ARGS)
 	return true;
 }
 
-static bool Cmd_SetCellMusicType_Execute(COMMAND_ARGS)
-{
-	TESObjectCELL* cell = NULL;
-	UInt32 musicType = -1;
-
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &cell, &musicType)) {
-		if (cell && musicType < ExtraCellMusicType::kMusicType_MAX) {
-			ExtraCellMusicType* xMusic = OBLIVION_CAST(cell->extraData.GetByType(kExtraData_CellMusicType), BSExtraData, ExtraCellMusicType);
-			if (xMusic) {
-				xMusic->musicType = musicType;
-			}
-			else {
-				xMusic = ExtraCellMusicType::Create(musicType);
-				cell->extraData.Add(xMusic);
-			}
-
-			*result = 1.0;
-		}
-	}
-
-	return true;
-}
-
 static bool Cmd_SetCellWaterHeight_Execute(COMMAND_ARGS)
 {
 	*result = 0;
@@ -635,5 +612,3 @@ static ParamInfo kParams_OneCell_OneInventoryObject[2] =
 
 DEFINE_COMMAND(SetCellWaterType, sets the cell water type, 0, 2, kParams_OneCell_OneInventoryObject);
 DEFINE_COMMAND(GetCellNorthRotation, returns the rotation of the north marker for the specified cell, 0, 1, kParams_OneCell);
-
-DEFINE_COMMAND(SetCellMusicType, sets the music type for a cell, 0, 2, kParams_OneCellOneInt);

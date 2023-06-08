@@ -12,7 +12,6 @@ Options::Options()
 ,m_noSync(false)
 ,m_optionsOnly(false)
 ,m_waitForClose(false)
-,m_oldInject(false)
 {
 	//
 }
@@ -148,10 +147,6 @@ bool Options::Read(int argc, char ** argv)
 				{
 					m_waitForClose = true;
 				}
-				else if(!_stricmp(arg, "oldinject"))
-				{
-					m_oldInject = true;
-				}
 				else
 				{
 					_ERROR("unknown switch (%s)", arg);
@@ -204,7 +199,6 @@ void Options::PrintUsage(void)
 	_MESSAGE("            this is only intended as a compatibility hack for WINE");
 	_MESSAGE("  -waitforclose - wait for the launched program to close");
 	_MESSAGE("                  designed for use with AlacrityPC and similar");
-	_MESSAGE("  -oldinject - use the original injection method for the editor");
 }
 
 bool Options::Verify(void)

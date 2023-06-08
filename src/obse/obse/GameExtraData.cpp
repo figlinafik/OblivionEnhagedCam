@@ -547,17 +547,3 @@ ExtraCellWaterType* ExtraCellWaterType::Create(TESWaterForm* water)
 	xWater->waterType = water;
 	return xWater;
 }
-
-ExtraCellMusicType* ExtraCellMusicType::Create(UInt32 _musicType)
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	static const UInt32 s_ctrAddr = 0x0041D960;
-#else
-#error unsupported Oblivion version
-#endif
-
-	ASSERT(_musicType < kMusicType_MAX);
-	ExtraCellMusicType* xMusic = (ExtraCellMusicType*)FormHeap_Allocate(sizeof(ExtraCellMusicType));
-	ThisStdCall(s_ctrAddr, xMusic, _musicType);
-	return xMusic;
-}

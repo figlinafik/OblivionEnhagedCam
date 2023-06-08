@@ -29,6 +29,3 @@ extern CommandInfo kCommandInfo_GetRaceVoice;
 
 extern CommandInfo kCommandInfo_SetRaceScale;
 extern CommandInfo kCommandInfo_SetRaceWeight;
-
-extern CommandInfo kCommandInfo_HasTail;
-extern CommandInfo kCommandInfo_GetTailModelPath;

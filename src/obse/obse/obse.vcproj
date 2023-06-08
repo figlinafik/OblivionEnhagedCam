@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="shift_jis"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9,00"
 	Name="obse"
 	ProjectGUID="{01B76B21-F851-436E-ACEA-64FA03BE8C59}"
 	RootNamespace="obse"
-	SccProjectName="Perforce Project"
-	SccLocalPath="..\.."
-	SccProvider="MSSCCI:Perforce SCM"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -75,6 +73,8 @@
 				SubSystem="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -95,9 +95,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -158,6 +155,8 @@
 				EnableCOMDATFolding="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -178,9 +177,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -245,6 +241,8 @@
 				SubSystem="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -265,9 +263,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -328,6 +323,8 @@
 				EnableCOMDATFolding="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -348,9 +345,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -415,6 +409,8 @@
 				SubSystem="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -435,9 +431,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -498,6 +491,8 @@
 				EnableCOMDATFolding="2"
 				EntryPointSymbol=""
 				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary="$(OutDir)/obse.lib"
 				TargetMachine="1"
 			/>
@@ -518,9 +513,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -1104,14 +1096,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Commands_Quest.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Quest.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Commands_Race.cpp"
 				>
 			</File>
@@ -1125,14 +1109,6 @@
 			</File>
 			<File
 				RelativePath=".\Commands_Script.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Sound.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Sound.h"
 				>
 			</File>
 			<File
@@ -1348,14 +1324,6 @@
 			</File>
 			<File
 				RelativePath=".\Loops.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ModTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ModTable.h"
 				>
 			</File>
 			<File

@@ -41,7 +41,7 @@ static void DoModScriptWindow(HWND wnd)
 	{
 		LOGFONT		newFontInfo = fontInfo;
 		CHOOSEFONT	chooseInfo = { sizeof(chooseInfo) };
-
+		
 		chooseInfo.lpLogFont = &newFontInfo;
 		chooseInfo.Flags = CF_INITTOLOGFONTSTRUCT | CF_NOVERTFONTS | CF_SCREENFONTS;
 
@@ -208,6 +208,7 @@ static void PatchConditionalCommands(void)
 #else
 #error unsupported CS version
 #endif
+
 }
 
 #if CS_VERSION == CS_VERSION_1_2
@@ -247,6 +248,7 @@ void PatchIsAlpha()
 }
 
 extern "C" {
+
 void OBSE_Initialize(void)
 {
 	__try {
@@ -296,24 +298,5 @@ void OBSE_DeInitialize(void)
 
 	_MESSAGE("OBSE: deinitialize");
 }
+
 };
-
-BOOL WINAPI DllMain(
-	HANDLE  hDllHandle,
-	DWORD   dwReason,
-	LPVOID  lpreserved
-	)
-{
-	switch(dwReason)
-	{
-	case DLL_PROCESS_ATTACH:
-		OBSE_Initialize();
-		break;
-
-	case DLL_PROCESS_DETACH:
-		OBSE_DeInitialize();
-		break;
-	};
-
-	return TRUE;
-}

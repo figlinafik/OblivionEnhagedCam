@@ -100,14 +100,12 @@ static void Clear2GBAware(UInt8 * buf, UInt32 bufLen)
 		buf[0x13E] &= ~0x20;
 }
 
-bool TestChecksum(const char * procName, std::string * dllSuffix, ProcHookInfo * hookInfo)
+bool TestChecksum(const char * procName, std::string * dllSuffix, bool * steamVersion)
 {
 	bool		result = false;
 	IFileStream	src;
 
-	hookInfo->hookCallAddr = 0;
-	hookInfo->loadLibAddr = 0;
-	hookInfo->steamVersion = false;
+	*steamVersion = false;
 
 	if(src.Open(procName))
 	{
@@ -133,8 +131,6 @@ bool TestChecksum(const char * procName, std::string * dllSuffix, ProcHookInfo *
 			{
 				case 0x96ED4409:	// 1.0.0.303
 					*dllSuffix = "1_0";
-					hookInfo->hookCallAddr = 0x008AE5CB;
-					hookInfo->loadLibAddr = 0x0091C108;
 					result = true;
 					break;
 
@@ -142,10 +138,7 @@ bool TestChecksum(const char * procName, std::string * dllSuffix, ProcHookInfo *
 				case 0xE380C3AF:	// 1.2.0.0 - second release (almost binary-identical)
 				case 0x2F9AC10C:	// 1.2.0.404 - third release, again almost binary-identical
 				case 0x6D1A8291:	// 1.2.0.404 - japanese unofficial translation
-				case 0x5BF7D114:	// 1.2.0.404 - modified to enable visual styles, bundled with CSE plugin
 					*dllSuffix = "1_2";
-					hookInfo->hookCallAddr = 0x00892BDE;
-					hookInfo->loadLibAddr = 0x00924158;
 					result = true;
 					break;
 
@@ -285,7 +278,7 @@ bool TestChecksum(const char * procName, std::string * dllSuffix, ProcHookInfo *
 				case 0xA2408F04:	// 1.2.0.416 steam version with steamworks compatibility mode (effectively the same as retail)
 					*dllSuffix = "1_2_416";
 					result = true;
-					hookInfo->steamVersion = true;
+					*steamVersion = true;
 					break;
 
 				default:	// unknown checksum

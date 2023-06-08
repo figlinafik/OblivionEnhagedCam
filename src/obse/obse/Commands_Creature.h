@@ -30,5 +30,3 @@ extern CommandInfo kCommandInfo_GetCreatureModelPaths;
 extern CommandInfo kCommandInfo_SetCreatureSoundBase;
 
 extern CommandInfo kCommandInfo_SetCreatureSkill;
-
-extern CommandInfo kCommandInfo_SetCreatureType;

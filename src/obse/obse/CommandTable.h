@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 enum ParamType
 {
 	kParamType_String =				0x00,
@@ -190,6 +192,7 @@ bool Cmd_Default_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer*
 
 typedef bool (* Cmd_Eval)(TESObjectREFR * thisObj, void * arg1, void * arg2, double * result);
 bool Cmd_Default_Eval(COMMAND_ARGS_EVAL);
+
 
 #ifdef OBLIVION
 #define HANDLER(x)	x

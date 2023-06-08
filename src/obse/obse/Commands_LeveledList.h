@@ -26,8 +26,4 @@ extern CommandInfo kCommandInfo_DumpLevList;	// debug only
 
 extern CommandInfo kCommandInfo_SetChanceNone;
 
-
 extern CommandInfo kCommandInfo_CalcLevItems;
-extern CommandInfo kCommandInfo_GetLevCreatureTemplate;
-extern CommandInfo kCommandInfo_SetLevCreatureTemplate;
-extern CommandInfo kCommandInfo_SetCalcAllLevels;

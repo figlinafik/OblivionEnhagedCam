@@ -81,13 +81,3 @@ extern CommandInfo kCommandInfo_GetMiddleHighActors;
 extern CommandInfo kCommandInfo_GetActorBaseLevel;
 
 extern CommandInfo kCommandInfo_ToggleSkillPerk;
-extern CommandInfo kCommandInfo_CopyRace;
-extern CommandInfo kCommandInfo_GetFactions;
-extern CommandInfo kCommandInfo_GetLowActors;
-
-extern CommandInfo kCommandInfo_GetActorSwimBreath;
-extern CommandInfo kCommandInfo_SetActorSwimBreath;
-extern CommandInfo kCommandInfo_GetActorMaxSwimBreath;
-extern CommandInfo kCommandInfo_SetActorMaxSwimBreath;
-extern CommandInfo kCommandInfo_OverrideActorSwimBreath;
-

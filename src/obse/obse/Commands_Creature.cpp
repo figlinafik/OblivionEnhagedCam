@@ -11,7 +11,6 @@
 #include "GameForms.h"
 #include "GameProcess.h"
 #include "ArrayVar.h"
-#include "NiObjects.h"
 
 class PrintAnimation
 {
@@ -192,37 +191,6 @@ static bool GetCreatureValue(COMMAND_ARGS, UInt32 whichVal)
 static bool Cmd_GetCreatureType_Execute(COMMAND_ARGS)
 {
 	return GetCreatureValue(PASS_COMMAND_ARGS, kCreature_Type);
-}
-
-static bool Cmd_SetCreatureType_Execute(COMMAND_ARGS)
-{
-	// cmd is a little flaky and probably doesn't do what 90% of users would want it to (make non-horse creatures ridable), but works for the purpose it was requested for
-	// problems can arise with mountable creatures: if we set type to something other than horse while creature is ridden, rider can't dismount
-	// if we set type to horse for a creature without an ActorParent node, weirdness occurs if actor tries to mount
-	// both mostly addressed below
-	UInt32 newType;
-	Creature* creatureRef = OBLIVION_CAST(thisObj, TESObjectREFR, Creature);
-	if (creatureRef && ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &newType) && newType < TESCreature::eCreatureType_MAX)
-	{
-		TESCreature* creatureBase = (TESCreature*)Oblivion_DynamicCast(creatureRef->baseForm, 0, RTTI_TESForm, RTTI_TESCreature, 0);
-		if (!creatureBase)
-			return true;
-
-		// don't change creature type while creature is being ridden
-		if (creatureRef->horseOrRider)
-			return true;
-
-		// don't change to horse-type unless it is ridable
-		if (newType == TESCreature::eCreatureType_Horse && NULL == creatureRef->niNode->GetObject ("ActorParent"))
-			return true;
-
-		// what we *can't* feasibly check is if another reference to this base object exists in the world and is currently being ridden by an actor.
-		// So ideally this cmd should only be used on a mountable creature if the creature is unique
-		creatureBase->type = newType;
-		*result = 1.0;
-	}
-
-	return true;
 }
 
 static bool Cmd_GetCreatureCombatSkill_Execute(COMMAND_ARGS)
@@ -875,5 +843,3 @@ static ParamInfo kParams_SetCreatureSkill[3] =
 };
 
 DEFINE_COMMAND(SetCreatureSkill, sets the skill level for a creatures skill, 0, 3, kParams_SetCreatureSkill);
-
-DEFINE_COMMAND(SetCreatureType, sets the type of the creature, 1, 1, kParams_OneInt);

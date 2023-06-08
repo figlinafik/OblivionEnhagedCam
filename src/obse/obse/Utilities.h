@@ -42,7 +42,7 @@ class Visitor
 		static UInt32 numFreed = 0;
 		static Node* lastNode = NULL;
 		static bool bRemovedNext = false;
-
+		
 		UInt32 returnCount;
 
 		if (node->Next())
@@ -109,7 +109,7 @@ class Visitor
 	};
 public:
 	Visitor(const Node* pHead) : m_pHead(pHead) { }
-
+	
 	UInt32 Count() const {
 		UInt32 count = 0;
 		const Node* pCur = m_pHead;
@@ -143,7 +143,7 @@ public:
 	}
 
 	template <class Op>
-	const Node* Find(Op& op, const Node* prev = NULL) const
+	const Node* Find(Op& op, const Node* prev = NULL) const 
 	{
 		const Node* pCur;
 		if (!prev)
@@ -251,6 +251,7 @@ const char * GetDXDescription(UInt32 keycode);
 
 namespace MersenneTwister
 {
+
 /* initializes mt[N] with a seed */
 void init_genrand(unsigned long s);
 
@@ -274,6 +275,7 @@ double genrand_real3(void);
 
 /* generates a random number on [0,1) with 53-bit resolution*/
 double genrand_res53(void);
+
 };
 
 #if OBLIVION
@@ -317,7 +319,6 @@ bool ci_less(const char* lh, const char* rh);
 void MakeUpper(std::string& str);
 void MakeUpper(char* str);
 void MakeLower(std::string& str);
-void MakeLower(char* str);
 
 // this copies the string onto the FormHeap - used to work around alloc/dealloc mismatch when passing
 // data between obse and plugins
@@ -337,23 +338,9 @@ public:
 
 	struct Message
 	{
-		enum {
-			kFlag_CanDisable		= 1 << 0,
-			kFlag_Disabled			= 1 << 1,
-			kFlag_TreatAsWarning	= 1 << 2,	// only show message if 'warn' command line switch used
-		};
-
-		std::string		fmt;
-		UInt32			flags;
-
-		Message (const char* msg, bool canDisable=false, bool treatAsWarning=false)
-			: fmt (msg),
-			flags (0 | (canDisable ? kFlag_CanDisable : 0) | (treatAsWarning ? kFlag_TreatAsWarning : 0)) { ; }
-
-		bool CanDisable () const { return (flags & kFlag_CanDisable) != 0; }
-		bool IsDisabled () const { return (flags & kFlag_Disabled) != 0; }
-		bool IsTreatAsWarning () const { return (flags & kFlag_TreatAsWarning) != 0; }
-		void SetDisabled () { flags |= kFlag_Disabled; }
+		const char*		fmt;
+		bool			bCanDisable;
+		bool			bDisabled;
 	};
 
 	void Show(Message& msg, ...);
@@ -414,50 +401,50 @@ void Console_Print_Long(const std::string& str);
 
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(); } u = { _f };
-	return ((T*)_t->*u.m)();
+    class T {}; union { UInt32 x; UInt32 (T::*m)(); } u = { _f };
+    return ((T*)_t->*u.m)();
 }
 
 template <typename T1>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1); } u = { _f };
-	return ((T*)_t->*u.m)(a1);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1); } u = { _f };
+    return ((T*)_t->*u.m)(a1);
 }
 
 template <typename T1,typename T2>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2); } u = { _f };
-	return ((T*)_t->*u.m)(a1,a2);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2); } u = { _f };
+    return ((T*)_t->*u.m)(a1,a2);
 }
 
 template <typename T1,typename T2,typename T3>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2,T3 a3)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3); } u = { _f };
-	return ((T*)_t->*u.m)(a1,a2,a3);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3); } u = { _f };
+    return ((T*)_t->*u.m)(a1,a2,a3);
 }
 
 template <typename T1,typename T2,typename T3,typename T4>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2,T3 a3,T4 a4)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4); } u = { _f };
-	return ((T*)_t->*u.m)(a1,a2,a3,a4);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4); } u = { _f };
+    return ((T*)_t->*u.m)(a1,a2,a3,a4);
 }
 
 template <typename T1,typename T2,typename T3,typename T4,typename T5>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2,T3 a3,T4 a4,T5 a5)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4,T5); } u = { _f };
-	return ((T*)_t->*u.m)(a1,a2,a3,a4,a5);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4,T5); } u = { _f };
+    return ((T*)_t->*u.m)(a1,a2,a3,a4,a5);
 }
 
 template <typename T1,typename T2,typename T3,typename T4,typename T5,typename T6>
 __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2,T3 a3,T4 a4,T5 a5, T6 a6)
 {
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4,T5,T6); } u = { _f };
-	return ((T*)_t->*u.m)(a1,a2,a3,a4,a5,a6);
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1,T2,T3,T4,T5,T6); } u = { _f };
+    return ((T*)_t->*u.m)(a1,a2,a3,a4,a5,a6);
 }
 
 // thread safe version of virtual ThisStdCall()
@@ -465,45 +452,46 @@ __forceinline UInt32 ThisStdCall(UInt32 _f,void* _t,T1 a1,T2 a2,T3 a3,T4 a4,T5 a
 template <typename Tthis>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)();
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)();
 }
 template <typename Tthis, typename T1>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this, T1 arg1)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)(arg1);
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)(arg1);
 }
 template <typename Tthis, typename T1, typename T2>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this, T1 arg1, T2 arg2)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)(arg1, arg2);
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)(arg1, arg2);
 }
 template <typename Tthis, typename T1, typename T2, typename T3>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this, T1 arg1, T2 arg2, T3 arg3)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)(arg1, arg2, arg3);
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)(arg1, arg2, arg3);
 }
 template <typename Tthis, typename T1, typename T2, typename T3, typename T4>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3, T4); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)(arg1, arg2, arg3, arg4);
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3, T4); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)(arg1, arg2, arg3, arg4);
 }
 template <typename Tthis, typename T1, typename T2, typename T3, typename T4, typename T5>
 __forceinline UInt32 ThisVirtualStdCall(UInt32 vtbl, UInt32 offset, Tthis _this, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
 {
-	if (!vtbl) return 0;
-	class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3, T4, T5); } u = {*(UInt32*)(vtbl + offset)};
-	return ((T*)_this->*u.m)(arg1, arg2, arg3, arg6, arg5);
+	if (!vtbl) return 0; 
+    class T {}; union { UInt32 x; UInt32 (T::*m)(T1, T2, T3, T4, T5); } u = {*(UInt32*)(vtbl + offset)};
+    return ((T*)_this->*u.m)(arg1, arg2, arg3, arg6, arg5);
 }
+
 
 // conversions between game units and metric units
 // havok uses metric, game uses 7 game units per centimeter. (see 0x00A39088)
@@ -512,15 +500,3 @@ const float kCentimetersPerGameUnit = 1.0 / kGameUnitsPerCentimeter;
 
 inline float GameUnitsToCM(float gu) { return gu * kCentimetersPerGameUnit; }
 inline float CMToGameUnits(float cm) { return cm * kGameUnitsPerCentimeter; }
-
-const std::string & GetConfigPath(void);
-std::string GetConfigOption(const char * section, const char * key);
-bool GetConfigOption_UInt32(const char * section, const char * key, UInt32 * dataOut);
-
-extern LPTOP_LEVEL_EXCEPTION_FILTER g_OriginalTopLevelExceptionFilter;
-
-LONG WINAPI OBSEUnhandledExceptionFilter(__in  struct _EXCEPTION_POINTERS *ExceptionInfo);
-bool CreateExceptionMiniDump( _EXCEPTION_POINTERS *ExceptionInfo);
-
-#define INI_SECTION_RUNTIME		"Runtime"
-#define INI_RUNTIME_CRASHDUMP	"bCreateCrashDump"

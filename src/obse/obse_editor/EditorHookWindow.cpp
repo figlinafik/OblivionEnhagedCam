@@ -150,7 +150,7 @@ LRESULT EditorHookWindow::_WindowProc(HWND window, UINT msg, WPARAM wParam, LPAR
 }
 
 typedef void * (* _LookupFormByID)(UInt32 id);
-const _LookupFormByID LookupFormByID = (_LookupFormByID)0x00495EF0;
+const _LookupFormByID LookupFormByID = (_LookupFormByID)0x0048DB80;
 
 #if 0
 #pragma warning (push)

@@ -45,7 +45,7 @@ enum {
 
 	kSlot_None = 0,
 };
-
+	 
 bool TESForm::IsQuestItem() const
 {
 	return (flags & kFormFlags_QuestItem) != 0;
@@ -100,6 +100,7 @@ bool TESForm::SupportsSimpleModel() const
 		default:
 			return false;
 	}
+
 }
 
 TESForm * TESForm::TryGetREFRParent(void)
@@ -210,7 +211,7 @@ void TESBipedModelForm::SetPlayable(bool bPlayable)
 
 void  TESBipedModelForm::SetPath(const char* newPath, UInt32 whichPath, bool bFemalePath)
 {
-	BSStringT* toSet = NULL;
+	String* toSet = NULL;
 
 	switch (whichPath)
 	{
@@ -231,7 +232,7 @@ void  TESBipedModelForm::SetPath(const char* newPath, UInt32 whichPath, bool bFe
 
 const char* TESBipedModelForm::GetPath(UInt32 whichPath, bool bFemalePath)
 {
-	BSStringT* pathStr = NULL;
+	String* pathStr = NULL;
 
 	switch (whichPath)
 	{
@@ -258,6 +259,7 @@ bool TESObjectARMO::IsHeavyArmor() const
 }
 
 void TESObjectARMO::SetHeavyArmor(bool bHeavyArmor) {
+	
 	if (bHeavyArmor) {
 		bipedModel.flags |= kBit_HeavyArmor;
 	} else {
@@ -265,7 +267,7 @@ void TESObjectARMO::SetHeavyArmor(bool bHeavyArmor) {
 	}
 }
 
-MagicItem::EType MagicItem::Type() const
+MagicItem::EType MagicItem::Type() const 
 {
 	void* pVoid = (void*)this;
 	if (Oblivion_DynamicCast(pVoid, 0, RTTI_MagicItem, RTTI_SpellItem, 0)) {
@@ -328,11 +330,12 @@ bool EnchantmentItem::MatchesType(TESForm* form)
 				}
 			}
 			break;
+
 	}
 	return false;
 }
 
-bool EnchantmentItem::IsAutoCalc() const
+bool EnchantmentItem::IsAutoCalc() const 
 {
 	return (flags040 & kEnchant_NoAutoCalc) == 0;
 }
@@ -345,7 +348,7 @@ void EnchantmentItem::SetAutoCalc(bool bAutoCalc) {
 	}
 }
 
-bool SpellItem::IsAutoCalc() const
+bool SpellItem::IsAutoCalc() const 
 {
 	return (spellFlags & kFlag_NoAutoCalc) == 0;
 }
@@ -475,19 +478,15 @@ TESFullName* TESForm::GetFullName()
 	TESObjectREFR* refr = OBLIVION_CAST(form, TESForm, TESObjectREFR);
 	if (refr)
 	{
-		// deleted references will have a NULL base form, so check for that
-		if (refr->baseForm)
+		// is it a mapmarker?
+		if (refr->baseForm->typeID == kFormType_Stat)
 		{
-			// is it a mapmarker?
-			if (refr->baseForm->typeID == kFormType_Stat)
-			{
-				ExtraMapMarker* mapMarker = (ExtraMapMarker*)refr->baseExtraList.GetByType(kExtraData_MapMarker);
-				if (mapMarker && mapMarker->data)
-					fullName = &mapMarker->data->fullName;
-			}
-			else		// use base form
-				form = refr->baseForm;
+			ExtraMapMarker* mapMarker = (ExtraMapMarker*)refr->baseExtraList.GetByType(kExtraData_MapMarker);
+			if (mapMarker && mapMarker->data)
+				fullName = &mapMarker->data->fullName;
 		}
+		else		// use base form
+			form = refr->baseForm;
 	}
 	else if (typeID == kFormType_Cell)	// some exterior cells inherit name of parent worldspace
 	{
@@ -503,6 +502,7 @@ TESFullName* TESForm::GetFullName()
 	return fullName;
 }
 
+	
 const char* TESForm::GetEditorID()
 {
 	TESQuest* quest = OBLIVION_CAST(this, TESForm, TESQuest);
@@ -750,7 +750,7 @@ bool EffectItem::IsValidActorValue(UInt32 actorValue) const
 	if (setting->UseAttribute()) {
 		return actorValue <= kActorVal_Luck;
 	} else if (setting->UseSkill()) {
-		return actorValue >= kActorVal_Armorer && actorValue <= kActorVal_Speechcraft;
+		return actorValue >= kActorVal_Armorer && actorValue <= kActorVal_Speechcraft; 
 	} else return false;
 }
 
@@ -911,7 +911,7 @@ void InitProxy(UInt32 effectCode, UInt32 magnitude, UInt32 area, UInt32 duration
 	}
 }
 
-void InitProxyMap()
+void InitProxyMap() 
 {
 //	InitProxy(Swap32('Code'),	Mag,Area,Dur,Range,	AVorOther,	Unk1);	// RestoreHealth
 
@@ -920,16 +920,16 @@ void InitProxyMap()
 	InitProxy(Swap32('ABHE'),	0, 0, 0,	EffectItem::kRange_Touch, kActorVal_Health, -1);	//  Absorb Health
 	InitProxy(Swap32('ABSK'),	0, 0, 0,	EffectItem::kRange_Touch, kActorVal_Acrobatics, -1);	//  Absorb Skill
 	InitProxy(Swap32('ABSP'),	0, 0, 0,	EffectItem::kRange_Touch, kActorVal_Magicka, -1);	//  Absorb Spell Points
-	InitProxy(Swap32('BA01'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA02'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA03'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA04'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA05'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA06'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA07'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA08'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA09'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BA10'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
+	InitProxy(Swap32('BA01'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA02'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA03'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA04'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA05'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA06'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA07'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA08'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA09'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BA10'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
 	InitProxy(Swap32('BABO'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Boots
 	InitProxy(Swap32('BACU'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Cuirass
 	InitProxy(Swap32('BAGA'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Gauntlets
@@ -937,14 +937,14 @@ void InitProxyMap()
 	InitProxy(Swap32('BAHE'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Helmet
 	InitProxy(Swap32('BASH'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Shield
 	InitProxy(Swap32('BRDN'),	0, 0, 0,	EffectItem::kRange_Touch, kActorVal_Encumbrance, -1);	//  Burden
-	InitProxy(Swap32('BW01'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW02'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW03'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW04'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW05'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW06'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW07'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('BW08'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
+	InitProxy(Swap32('BW01'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW02'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW03'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW04'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW05'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW06'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW07'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('BW08'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
 	InitProxy(Swap32('BWAX'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Axe
 	InitProxy(Swap32('BWBO'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Bow
 	InitProxy(Swap32('BWDA'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Bound Dagger
@@ -1038,21 +1038,21 @@ void InitProxyMap()
 	InitProxy(Swap32('Z003'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Extra Summon 03
 	InitProxy(Swap32('Z004'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Extra Summon 04
 	InitProxy(Swap32('Z005'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Bear (Extra Summon 05)
-	InitProxy(Swap32('Z006'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z007'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z008'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z009'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z010'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z011'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z012'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z013'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z014'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z015'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z016'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z017'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z018'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z019'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
-	InitProxy(Swap32('Z020'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//
+	InitProxy(Swap32('Z006'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z007'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z008'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z009'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z010'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z011'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z012'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z013'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z014'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z015'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z016'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z017'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z018'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z019'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
+	InitProxy(Swap32('Z020'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  
 	InitProxy(Swap32('ZCLA'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Clannfear
 	InitProxy(Swap32('ZDAE'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Daedroth
 	InitProxy(Swap32('ZDRE'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Dremora
@@ -1072,12 +1072,13 @@ void InitProxyMap()
 	InitProxy(Swap32('ZWRA'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Wraith
 	InitProxy(Swap32('ZWRL'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Wraith Lord
 	InitProxy(Swap32('ZXIV'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Xivilai
-	InitProxy(Swap32('ZZOM'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Zombie
+	InitProxy(Swap32('ZZOM'),	0, 0, 0,	EffectItem::kRange_Self, 0x8, -1);	//  Summon Zombie		
 
 	//Currently unavailable magic effects
-	//InitProxy(Swap32('MODB'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//
-	//InitProxy(Swap32('MODL'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//
-	//InitProxy(Swap32('MODT'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//
+	//InitProxy(Swap32('MODB'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//  
+	//InitProxy(Swap32('MODL'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//  
+	//InitProxy(Swap32('MODT'), 0, 0, 0, EffectItem::kRange_Self, 0x8, -1);	//  
+
 }
 
 EffectItem* EffectItem::ProxyEffectItemFor(UInt32 effectCode) {
@@ -1193,7 +1194,7 @@ static float RangeFactor(UInt32 range) {
 static float SkillFactor(TESForm* actorCasting, UInt32 school)
 {
 	if (!actorCasting) return 1.0;
-
+	
 	float skillFactor = 1.0;
 	UInt8 skillLevel = 0;
 	UInt8 luck = 0;
@@ -1234,7 +1235,7 @@ static float SkillFactor(TESForm* actorCasting, UInt32 school)
 	if (GetGameSetting("fMagicCasterSkillCostMult", &setting)) {
 		fMagicCasterSkillCostMult = setting->f;
 	}
-
+	
 	if (GetGameSetting("fActorLuckSkillMult", &setting)) {
 		fActorLuckSkillMult = setting->f;
 	}
@@ -1358,9 +1359,9 @@ class HostileItemCounter {
 	bool m_bFindHostile;
 	bool m_bStopAtFirst;
 public:
-	HostileItemCounter(bool bFindHostile, bool bStopAtFirst) :
+	HostileItemCounter(bool bFindHostile, bool bStopAtFirst) : 
 		m_count(0), m_bFindHostile(bFindHostile), m_bStopAtFirst(bStopAtFirst) { }
-
+	
 	bool Accept(EffectItem* pEffectItem) {
 		if (pEffectItem && pEffectItem->IsHostile() == m_bFindHostile) {
 			m_count++;
@@ -1491,7 +1492,7 @@ UInt32 EffectItemList::CopyItemFrom(EffectItemList& fromList, UInt32 whichEffect
 	UInt32 nuIndex = -1;
 	EffectItem* effectItem = fromList.ItemAt(whichEffect);
 	if (effectItem) {
-		nuIndex = AddItemCopy(effectItem);
+		nuIndex = AddItemCopy(effectItem);		
 	}
 	return nuIndex;
 }
@@ -1635,7 +1636,7 @@ UInt32 TESRace::GetSkillBonus(UInt32 skill) const
 		const BonusSkillInfo& skillInfo = bonusSkills[ix];
 		if (skillInfo.skill == skill) {
 			return skillInfo.bonus;
-		}
+		}	
 	}
 	return 0;
 }
@@ -1671,7 +1672,7 @@ UInt8 TESClimate::GetPhaseLength() const
 	return moonInfo & kClimate_PhaseLengthMask;
 }
 
-void TESClimate::SetPhaseLength(UInt8 nuVal)
+void TESClimate::SetPhaseLength(UInt8 nuVal) 
 {
 	moonInfo = (moonInfo & ~kClimate_PhaseLengthMask) | (nuVal & kClimate_PhaseLengthMask);
 }
@@ -1708,7 +1709,7 @@ void TESClimate::SetSunriseEnd(UInt8 nuVal)
 	}
 }
 
-void TESClimate::SetSunsetBegin(UInt8 nuVal)
+void TESClimate::SetSunsetBegin(UInt8 nuVal) 
 {
 	if (nuVal > sunriseEnd && nuVal < sunsetEnd) {
 		sunsetBegin = nuVal;
@@ -1741,7 +1742,7 @@ float TESObjectCELL::GetWaterHeight() const
 			ExtraWaterHeight* xHeight = (ExtraWaterHeight*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraWaterHeight, 0);
 			if (xHeight) {
 				waterHeight = xHeight->waterHeight;
-			}
+			}	
 		}
 	}
 	return waterHeight;
@@ -1776,7 +1777,7 @@ bool TESObjectCELL::SetWaterHeight(float newHeight)
 				xHeight = ExtraWaterHeight::Create(newHeight);
 				extraData.Add(xHeight);
 			}
-
+			
 			return true;
 		}
 		else {
@@ -1789,7 +1790,7 @@ bool TESObjectCELL::SetWaterHeight(float newHeight)
 			else {
 				xHeight->waterHeight = newHeight;
 			}
-
+			
 			return true;
 		}
 	}
@@ -1812,7 +1813,7 @@ bool TESObjectCELL::SetWaterType(TESWaterForm* type)
 				xWater = ExtraCellWaterType::Create(type);
 				extraData.Add(xWater);
 			}
-
+			
 			// if type is NULL, do nothing
 			return true;
 		}
@@ -1903,7 +1904,7 @@ void TESLeveledList::AddItem(TESForm* form, UInt16 level, UInt16 count)
 		list.data = newData;
 		return;
 	}
-
+	
 	ListEntry*	newEntry = CreateEntry(newData);
 
 	while (oldEntry->data->level < level)
@@ -1934,7 +1935,7 @@ UInt32 TESLeveledList::RemoveItem(TESForm* form)
 
 	if (!(list.data))		//empty list
 		return 0;
-
+	
 	while (list.data && list.data->form == form)	//removal from head requires shifting next element
 	{
 		numRemoved++;
@@ -1989,7 +1990,7 @@ public:
 															data->form->refID,
 															data->level,
 															data->count);
-
+		
 			return true;
 	}
 };
@@ -2044,7 +2045,7 @@ TESForm* TESLeveledList::CalcElement(UInt32 cLevel, bool useChanceNone, UInt32 l
 	}
 
 	//Recurse if a nested leveled item was chosen, unless otherwise specified
-	if (!noRecurse)
+	if (!noRecurse)	
 	{
 		TESLeveledList* nestedList = (TESLeveledList*)Oblivion_DynamicCast(item, 0, RTTI_TESForm, RTTI_TESLeveledList, 0);
 		if (nestedList)
@@ -2122,7 +2123,7 @@ bool TESLeveledList::RemoveNthItem(UInt32 itemIndex)
 
 	return false;
 }
-
+	
 void TESLeveledList::ListEntry::Delete() {
 	FormHeap_Free(data);
 	FormHeap_Free(this);
@@ -2226,6 +2227,11 @@ void TESFaction::SetNthRankName(const char* newName, UInt32 whichRank, bool bFem
 	}
 }
 
+const TESModelList::Entry* TESModelList::FindNifPath(char* path)
+{
+	return ModelListVisitor(&modelList).FindString(path);
+}
+
 bool TESCreature::HasSounds()
 {
 	return actorBaseData.IsFlagSet(TESActorBaseData::kFlag_CreatureHasSounds);
@@ -2275,11 +2281,6 @@ UInt32 TESCreature::GetSoundChance(UInt32 whichSound)
 	return chance;
 }
 
-const TESModelList::Entry* TESModelList::FindNifPath(char* path)
-{
-	return ModelListVisitor(&modelList).FindString(path);
-}
-
 bool TESModelList::RemoveEntry(char* nifToRemove)
 {
 	Entry* toRemove = const_cast<Entry*>(ModelListVisitor(&modelList).FindString(nifToRemove));
@@ -2323,9 +2324,9 @@ bool TESModelList::AddEntry(char* nifToAdd)
 	if (ModelListVisitor(&modelList).FindString(nifToAdd))	//already present
 		return false;
 
-	UInt32 newLen = strlen(nifToAdd) + 1;
+	UInt32 newLen = strlen(nifToAdd);
 	char* newStr = (char*)FormHeap_Allocate(newLen);
-	strcpy_s(newStr, newLen, nifToAdd);
+	strcpy_s(newStr, newLen + 1, nifToAdd);
 	if (!modelList.nifPath)
 		modelList.nifPath = newStr;
 	else
@@ -2521,7 +2522,7 @@ static const char* TESPackage_LocationStrings[] = {
 
 static const char* TESPackage_TypeStrings[] = {
 	"Find", "Follow", "Escort", "Eat", "Sleep", "Wander", "Travel", "Accompany", "UseItemAt", "Ambush",
-	"FleeNotCombat", "Cast", "Combat", "Unk0D"
+	"FleeNotCombat", "Cast", "Combat", "Unk0D" 
 };
 
 const char* TESPackage::StringForPackageType(UInt32 pkgType)
@@ -2614,7 +2615,7 @@ UInt8 TESPackage::Time::CodeForMonth(const char* monthStr)
 
 	return kMonth_Any;
 }
-
+	
 const char* TESPackage::LocationData::StringForLocationCode(UInt8 locCode)
 {
 	if (locCode < kPackLocation_Max)
@@ -2650,7 +2651,7 @@ void TESAnimation::AnimationNode::DeleteHead(TESAnimation::AnimationNode* replac
 }
 
 class FindReactionInfo
-{
+{	
 	TESForm* m_pTarget;
 public:
 	FindReactionInfo(TESForm* pTarget) : m_pTarget(pTarget) {}
@@ -2663,7 +2664,7 @@ public:
 	}
 };
 
-SInt32 TESReactionForm::ReactionFor(TESForm* pTarget) const
+SInt32 TESReactionForm::ReactionFor(TESForm* pTarget) const 
 {
 	ReactionInfo* pInfo = targetList.Find(FindReactionInfo(pTarget));
 	if (pInfo) {
@@ -2719,7 +2720,7 @@ bool TESPathGrid::SetPointDisabled(UInt16 index, bool bDisabled)
 {
 	if (index >= nodeCount)
 		return false;
-
+	
 	TESPathGridPoint* pt = nodes->data[index];
 	pt->SetDisabled(bDisabled);
 	// ###TODO: game may or may not want disabled nodes removed from the quick lookup table
@@ -2811,7 +2812,7 @@ UInt16 TESPathGrid::AddNode(float x, float y, float z, bool bPreferred)
 
 		nodes->AddAtIndex(index, &pt);
 		return index;
-	}
+	}	
 
 	return -1;
 }
@@ -2912,7 +2913,7 @@ bool TESPathGrid::SetEdge(UInt16 localID, UInt16 targetID, bool bEnableEdge, TES
 			return a->SetEdgeEnabled(b, bEnableEdge) && b->SetEdgeEnabled(a, bEnableEdge);
 		}
 	}
-
+	
 	return false;
 }
 
@@ -2938,19 +2939,4 @@ TESPathGridPoint* TESPathGridPoint::Create(float _x, float _y, float _z)
 	pt->y = _y;
 	pt->z = _z;
 	return pt;
-}
-
-TESQuest::StageEntry* TESQuest::GetStageEntry(UInt32 index)
-{
-	class StageEntryFinder {
-	public:
-		StageEntryFinder(UInt32 index) : m_index(index) { }
-		bool Accept(const StageEntry* entry) {
-			return entry->index == m_index;
-		}
-	private:
-		UInt32 m_index;
-	};
-
-	return stageList.Find(StageEntryFinder(index));
 }

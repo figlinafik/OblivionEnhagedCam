@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9,00"
 	Name="common"
 	ProjectGUID="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}"
 	RootNamespace="common"
-	SccProjectName="Perforce Project"
-	SccLocalPath="."
-	SccProvider="MSSCCI:Perforce SCM"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -53,7 +51,7 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 				ForcedIncludeFiles="common/IPrefix.h"
 			/>
@@ -117,7 +115,7 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				ForcedIncludeFiles="common/IPrefix.h"
 			/>
@@ -193,11 +191,67 @@
 			Name="debug"
 			>
 			<File
+				RelativePath="IDebugEvent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugEvent.h"
+				>
+			</File>
+			<File
 				RelativePath=".\IDebugLog.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\IDebugLog.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugManager.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugOutput.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugOutput.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugSource.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugSource.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugStream.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugStringBuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugStringBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="IDebugTextOutput.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IDebugTextOutput.h"
 				>
 			</File>
 			<File
@@ -370,6 +424,14 @@
 			</File>
 			<File
 				RelativePath=".\IMemPool.h"
+				>
+			</File>
+			<File
+				RelativePath="IObjectPool.cpp"
+				>
+			</File>
+			<File
+				RelativePath="IObjectPool.h"
 				>
 			</File>
 		</Filter>

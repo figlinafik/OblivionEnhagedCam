@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "Commands_FileIO.h"
 #include "Script.h"
 
@@ -8,7 +10,7 @@
 /* Return a float value from the given file.
  * syntax: FloatFromFile filename line_number
  * shortname: ffromf
- *
+ * 
  * Gets a float from the given line from the file [filename], starting with line 0.
  * -If line_number <= 0, get the first line of the file.
  * -If line_number >= (lines_in_file - 1), get the last line of the file.
@@ -27,7 +29,7 @@ bool Cmd_FloatFromFile_Execute(COMMAND_ARGS)
 	int currLine = 0;
 	char filename[129];
 	int linePos;
-
+	
 	//just return with error message if file can't be opened
 	if (!(ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &filename, &linePos)) ||
 		fopen_s(&fileptr, filename, "r"))
@@ -35,13 +37,13 @@ bool Cmd_FloatFromFile_Execute(COMMAND_ARGS)
 		Console_Print ("File %s could not be opened.", filename);
 		return true;
 	}
-
+	
 	//fgets() will move the file pointer to next line for us, allowing for variable line lengths
 	while (fgets (lineBuffer, BUFSIZ, fileptr) && currLine < linePos)
 	{
 		currLine++;
 	}
-
+	
 	*result = (float) atof(lineBuffer);
 	//Console_Print ("Line %d: %f", linePos, *result);
 	fclose (fileptr);
@@ -51,7 +53,7 @@ bool Cmd_FloatFromFile_Execute(COMMAND_ARGS)
 /* Write float to specified line in file
  * syntax:  FloatToFile filename line_number float_to_write
  * shortname: ftof
- *
+ * 
  * Writes the specified floating-point value to the file at the given line number (starting at 0).  This will replace
  * whatever used to be at that line.  This function copies the given file to "temp.txt" and replaces the given line while
  * doing so.  The contents of the temp file are then copied back to the original, updating it.
@@ -82,10 +84,10 @@ bool Cmd_FloatToFile_Execute(COMMAND_ARGS)
 	}
 	fopen_s (&tempptr, "temp.txt", "w");
 	//Console_Print ("input: %f", input);
-
+	
 	//read from original to temp
 	while (fgets (lineBuffer, BUFSIZ, fileptr))
-	{
+	{		
 		if (currLine == linePos)  //replace line with given input
 		{
 			sprintf_s (lineBuffer, sizeof(lineBuffer), "%f\n", input);
@@ -94,7 +96,7 @@ bool Cmd_FloatToFile_Execute(COMMAND_ARGS)
 		currLine++;
 		fputs (lineBuffer, tempptr);
 	}
-
+	
 	//is there a better way to change stream modes?
 	fclose (tempptr);
 	fclose (fileptr);

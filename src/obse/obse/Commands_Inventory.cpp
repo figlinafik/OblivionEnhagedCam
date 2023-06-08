@@ -10,6 +10,10 @@
 #include "GameAPI.h"
 #include "GameForms.h"
 #include "Hooks_Gameplay.h"
+#include <string>
+#include <set>
+#include <map>
+#include <algorithm>
 
 #include "GameData.h"
 #include "InternalSerialization.h"
@@ -120,7 +124,7 @@ class ContainerCountIf
 	ExtraContainerInfo& m_info;
 public:
 	ContainerCountIf(ExtraContainerInfo& info) : m_info(info) {}
-
+	
 	bool Accept(TESContainer::Data* containerData) const
 	{
 		SInt32 numObjects = 0; // not needed in this count
@@ -141,7 +145,7 @@ static bool Cmd_GetNumItems_Execute(COMMAND_ARGS)
 
 	// get pointers
 	ExtraContainerChanges	* containerChanges = static_cast <ExtraContainerChanges *>(thisObj->baseExtraList.GetByType(kExtraData_ContainerChanges));
-
+	
 	// initialize a map of the ExtraData information
 	// this will walk through the containerChanges once
 	ExtraContainerInfo info(containerChanges ? containerChanges->data->objList : NULL);
@@ -161,7 +165,7 @@ static bool Cmd_GetNumItems_Execute(COMMAND_ARGS)
 		count = visitContainer.CountIf(counter);
 	}
 
-	// now walk the remaining items
+	// now walk the remaining items 
 	ExtraDataVec::iterator itEnd = info.m_vec.end();
 	ExtraDataVec::iterator it = info.m_vec.begin();
 	while (it != itEnd) {
@@ -248,7 +252,7 @@ struct ContainerFormInfo
 
 void GetContainerFormInfo(TESObjectREFR* thisObj, TESForm* formToFind, ContainerFormInfo& formInfo)
 {
-	if (!thisObj || !formToFind) return;
+	if (!thisObj || !formToFind) return;	
 	TESContainer* container = (TESContainer *)Oblivion_DynamicCast(thisObj, 0, RTTI_TESObjectREFR, RTTI_TESContainer, 0);
 	if (container) {
 		TESContainer::Data* data = container->DataByType(formToFind);
@@ -263,7 +267,7 @@ void GetContainerFormInfo(TESObjectREFR* thisObj, TESForm* formToFind, Container
 	}
 }
 
-UInt32 GetContainerFormConfigCount(TESObjectREFR* thisObj, TESForm* formToFind)
+UInt32 GetContainerFormConfigCount(TESObjectREFR* thisObj, TESForm* formToFind) 
 {
 	UInt32 nConfigs = 0;
 	ContainerFormInfo formInfo;
@@ -282,7 +286,7 @@ ExtraDataList* GetNthContainerFormConfig(TESObjectREFR* thisObj, TESForm* formTo
 {
 	// the 0 slot is always for the base configuration and is expected to have no overrides
 	if (index == 0) return NULL;
-
+	
 	ContainerFormInfo formInfo;
 	GetContainerFormInfo(thisObj, formToFind, formInfo);
 	if (formInfo.m_entryData) {
@@ -370,6 +374,7 @@ bool ItemSlotMatches(TESForm* pForm, UInt32 slot)
 	return bMatches;
 }
 
+
 static UInt32 GetItemSlot(TESForm* type)
 {
 	if (type) {
@@ -449,23 +454,23 @@ static bool FindEquipped(TESObjectREFR* thisObj, UInt32 slotIdx, FoundEquipped* 
 						if (extend->data) {
 							// handle rings
 							bool bFound = false;
-							if (IsRingSlot(slotIdx))
+							if (IsRingSlot(slotIdx)) 
 							{
-								if (slotIdx == kSlot_LeftRing && extend->data->HasType(kExtraData_WornLeft))
+								if (slotIdx == kSlot_LeftRing && extend->data->HasType(kExtraData_WornLeft)) 
+								{
+									bFound = true;
+								} 
+								else if (slotIdx == kSlot_RightRing && extend->data->HasType(kExtraData_Worn)) 
 								{
 									bFound = true;
 								}
-								else if (slotIdx == kSlot_RightRing && extend->data->HasType(kExtraData_Worn))
-								{
-									bFound = true;
-								}
-							}
-							else if (extend->data->HasType(kExtraData_Worn))
+							} 
+							else if (extend->data->HasType(kExtraData_Worn)) 
 							{
 								bFound = true;
 							}
-
-							if (bFound)
+			
+							if (bFound) 
 							{
 								return foundEquippedFunctor->Found(entry->data, result, extend);
 							}
@@ -536,9 +541,10 @@ public:
 	}
 };
 
+
 static bool Cmd_GetEquipmentSlotType_Execute(COMMAND_ARGS)
 {
-	UInt32	* refResult = (UInt32 *)result;
+ 	UInt32	* refResult = (UInt32 *)result;
 
 	*refResult = 0;
 
@@ -548,7 +554,7 @@ static bool Cmd_GetEquipmentSlotType_Execute(COMMAND_ARGS)
 	UInt32	slotIdx = 0;
 	if(!ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, &slotIdx)) return true;
 	feGetObject getObject;
-
+	
 	bool bFound = FindEquipped(thisObj, slotIdx, &getObject, result);
 	if (IsConsoleMode())
 	{
@@ -631,6 +637,7 @@ enum {
 	kVal_TimeLeft
 };
 
+
 static bool GetWeaponBaseValue(TESForm * type, UInt32 valueType, double * result)
 {
 	TESObjectWEAP* weapon = (TESObjectWEAP*)Oblivion_DynamicCast(type, 0, RTTI_TESForm, RTTI_TESObjectWEAP, 0);
@@ -704,7 +711,7 @@ static bool GetBookValue(TESObjectBOOK* book, UInt32 whichValue, double* result)
 			}
 		case kVal_BookTeaches:
 			{
-				*result = book->Teaches();
+				*result = book->Teaches();	
 				break;
 			}
 		default:
@@ -713,13 +720,14 @@ static bool GetBookValue(TESObjectBOOK* book, UInt32 whichValue, double* result)
 	return true;
 }
 
+
 enum EMode {
 	kGet = 0,
 	kSet,
 	kMod,
 	kCompare,
 	kCopy,
-} ;
+} ; 
 
 static bool GetBaseValue(TESForm * type, UInt32 valueType, double * result)
 {
@@ -728,7 +736,7 @@ static bool GetBaseValue(TESForm * type, UInt32 valueType, double * result)
 	*result = 0;
 
 	switch(valueType) {
-		case kVal_Weight:
+		case kVal_Weight: 
 		{
 			TESObjectAPPA * appa = (TESObjectAPPA*)Oblivion_DynamicCast(type, 0, RTTI_TESForm, RTTI_TESObjectAPPA, 0);
 			TESWeightForm* weightForm = (TESWeightForm*)Oblivion_DynamicCast(type, 0, RTTI_TESForm, RTTI_TESWeightForm, 0);
@@ -765,7 +773,7 @@ static bool GetBaseValue(TESForm * type, UInt32 valueType, double * result)
 				if (valueForm) {
 					*result = valueForm->value;
 					return true;
-				}
+				} 
 			}
 			break;
 		}
@@ -804,7 +812,7 @@ static bool GetBaseValue(TESForm * type, UInt32 valueType, double * result)
 			*result = type->IsQuestItem() ? 1 : 0;
 			return true;
 		}
-
+	
 		case kVal_Enchantment:
 		{
 			TESEnchantableForm* enchantForm = (TESEnchantableForm*)Oblivion_DynamicCast(type, 0, RTTI_TESForm, RTTI_TESEnchantableForm, 0);
@@ -834,6 +842,7 @@ static bool GetBaseValue(TESForm * type, UInt32 valueType, double * result)
 		{
 			return GetWeaponBaseValue(type, valueType, result);
 		}
+
 
 		case kVal_ArmorRating:
 		{
@@ -1008,15 +1017,16 @@ static bool Cmd_GetType_Execute(COMMAND_ARGS)
 
 	bool bDump = false;
 	if (bDump) {
-		DumpClass(form);
+		DumpClass(form);		
 	}
 
-	*result = form->typeID;
+
+	*result = form->typeID;	
 
 	return true;
 }
 
-static bool GetCurrentValue(BaseExtraList& extraList, UInt32 whichValue, double* result)
+static bool GetCurrentValue(BaseExtraList& extraList, UInt32 whichValue, double* result) 
 {
 	UInt8 extraType = 0;	// set the extra type based on the value requested
 	switch (whichValue) {
@@ -1043,8 +1053,8 @@ static bool GetCurrentValue(BaseExtraList& extraList, UInt32 whichValue, double*
 		BSExtraData* extraData = extraList.GetByType(extraType);
 		if (extraData) {
 			switch(whichValue) {
-				case kVal_Health:
-				case kVal_CurHealth:
+				case kVal_Health: 
+				case kVal_CurHealth: 
 				{
 					ExtraHealth* xHealth = (ExtraHealth*)Oblivion_DynamicCast(extraData, 0, RTTI_BSExtraData, RTTI_ExtraHealth, 0);
 					if (xHealth) {
@@ -1104,6 +1114,7 @@ static bool GetCurrentValue(BaseExtraList& extraList, UInt32 whichValue, double*
 	}
 	return false;
 }
+
 
 static bool GetCurrentValue_Execute(COMMAND_ARGS, UInt32 whichValue)
 {
@@ -1175,7 +1186,7 @@ static bool GetEquippedCurrentValue_Execute(COMMAND_ARGS, UInt32 valueType)
 
 	feGetCurrentValue getCurrentValue(valueType);
 	bool bFound = FindEquipped(thisObj, slotIdx, &getCurrentValue, result);
-	return true;
+	return true; 
 }
 
 static bool Cmd_GetEquippedCurrentValue_Execute(COMMAND_ARGS)
@@ -1191,7 +1202,7 @@ static bool Cmd_GetEquippedCurrentValue_Execute(COMMAND_ARGS)
 
 	feGetCurrentValue getCurrentValue(valueType);
 	bool bFound = FindEquipped(thisObj, slotIdx, &getCurrentValue, result);
-	return true;
+	return true; 
 }
 
 class feGetBaseValue : public FoundEquipped
@@ -1224,6 +1235,7 @@ static bool Cmd_GetEquippedObjectValue_Execute(COMMAND_ARGS)
 	bool bFound = FindEquipped(thisObj, slotIdx, &getBaseValue, result);
 	return true;
 }
+
 
 #if 0
 
@@ -1269,10 +1281,13 @@ public:
 					//Console_Print("Health found: %d %08x %f", bAddedType, nuHealth, nuHealth->health);
 				}
 			}
+
 		}
 		return true;
 	}
 };
+
+
 
 static bool Cmd_SetEquippedCurrentValue_Execute(COMMAND_ARGS)
 {
@@ -1299,13 +1314,15 @@ static const bool bModT = true;
 static const bool bModF = false;
 class MagicItem;
 
-void ChangePathString(BSStringT& base, const char* change, bool bForMod)
+void ChangePathString(String& base, const char* change, bool bForMod)
 {
 	if (!bForMod) {
 		base.Set(change);
 	} else {
 	}
 }
+
+
 
 class ChangeValueState
 {
@@ -1318,16 +1335,16 @@ public:
 		eString,
 		eEffectSetting,
 	};
-
+	
 	ChangeValueState(UInt32 whichVal, bool bForMod) :
-		m_whichVal(whichVal), m_valType(ValTypeForVal(m_whichVal)), m_bForMod(bForMod),
+		m_whichVal(whichVal), m_valType(ValTypeForVal(m_whichVal)), m_bForMod(bForMod), 
 		m_intVal(0), m_floatVal(0), m_magicItem(NULL), m_effectSetting(NULL) {
 			memset(m_stringVal, 0, 256);
 		}
 
 	~ChangeValueState() {
 	}
-
+	
 	static EValType ValTypeForVal(UInt32 whichVal) {
 		switch(whichVal) {
 			case kVal_Weight:
@@ -1362,7 +1379,7 @@ public:
 				return eMagicItem;
 
 				return eEffectSetting;
-
+			
 			case kVal_Name:
 				return eString;
 
@@ -1427,7 +1444,7 @@ bool ChangeWeaponBaseValue(TESForm* form, ChangeValueState& state, double* resul
 			return false;
 		}
 	}
-
+	
 	bool bMod = state.ForMod();
 	UInt32 intVal = 0;
 	float floatVal = 0.0;
@@ -1454,6 +1471,7 @@ bool ChangeWeaponBaseValue(TESForm* form, ChangeValueState& state, double* resul
 		default:
 			return false;
 	}
+
 
 	switch (state.WhichValue()) {
 		case kVal_Reach:
@@ -1541,7 +1559,7 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 					weightForm->weight = SafeChangeFloat(weightForm->weight, floatVal, bMod, false);
 					return true;
 				}
-				break;
+				break;	
 			}
 		case kVal_GoldValue:
 			{
@@ -1618,7 +1636,7 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 			}
 
 			TESEnchantableForm* enchantForm = (TESEnchantableForm*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESEnchantableForm, 0);
-
+			
 			if (enchantForm) {
 				EnchantmentItem* oldItem = enchantForm->enchantItem;
 
@@ -1677,11 +1695,13 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 			}
 			break;
 		}
+
+/****************** not currently supported ************************
 		case kVal_Soul:
 		{
 			TESSoulGem* soulGem = (TESSoulGem*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESSoulGem, 0);
-			if (soulGem && intVal >= TESSoulGem::kSoul_None && intVal <= TESSoulGem::kSoul_Grand ) {
-				soulGem->soul = intVal;
+			if (soulGem) {
+				*result = soulGem->soul;
 				return true;
 			}
 			break;
@@ -1690,12 +1710,15 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 		case kVal_SoulCapacity:
 		{
 			TESSoulGem* soulGem = (TESSoulGem*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESSoulGem, 0);
-			if (soulGem && intVal >= TESSoulGem::kSoul_None && intVal <= TESSoulGem::kSoul_Grand ) {
-				soulGem->capacity = intVal;
+			if (soulGem) {
+				*result = soulGem->capacity;
 				return true;
 			}
 			break;
 		}
+********************************************************************/
+
+
 		case kVal_Food :
 		{
 			IngredientItem* ingredient = (IngredientItem*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_IngredientItem, 0);
@@ -1721,8 +1744,8 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 			}
 			break;
 		}
-
-		case kVal_Name:
+		
+		case kVal_Name: 
 		{
 			TESFullName* name = (TESFullName*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESFullName, 0);
 			if (name) {
@@ -1781,12 +1804,16 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 				}
 				break;
 			}
+
+		case kVal_Soul:
+		case kVal_SoulCapacity:
 		case kVal_Poison:
 		default:
 			return false;
 	}
 	return false;
 }
+
 
 //class feSetObjectValue : public FoundEquipped
 //{
@@ -1799,7 +1826,7 @@ bool ChangeObjectBaseValue(TESForm* form, ChangeValueState& state, double* resul
 //	bool Found(ExtraContainerChanges::EntryData* entryData, double *result) {
 //		bool bChanged = ChangeObjectBaseValue(m_bMod, bClonedOnlyF, entryData->type, m_valueType, m_value, NULL, result);
 //		return true;
-//	}
+//	}		
 //
 //};
 //
@@ -1858,7 +1885,7 @@ static bool ChangeCurrentHealth(TESForm* baseForm, BaseExtraList* baseExtraList,
 		} else {
 			nuHealthVal = state.UInt32Val();
 		}
-
+	
 		if (nuHealthVal == baseHealth) {
 			// putting back to base health
 			if (xHealth) {
@@ -1890,6 +1917,7 @@ static bool ChangeCurrentCharge(TESForm* baseForm, BaseExtraList* baseExtraList,
 
 	TESEnchantableForm* enchantable = (TESEnchantableForm*)Oblivion_DynamicCast(baseForm, 0, RTTI_TESForm, RTTI_TESEnchantableForm, 0);
 	if (enchantable) {
+
 		// see if there is a current override
 		BSExtraData* extraData = baseExtraList->GetByType(kExtraData_Charge);
 		ExtraCharge* xCharge = (ExtraCharge*)Oblivion_DynamicCast(extraData, 0, RTTI_BSExtraData, RTTI_ExtraCharge, 0);
@@ -1939,7 +1967,7 @@ static bool ChangeCurrentPoison(TESForm* baseForm, BaseExtraList* baseExtraList,
 		ExtraPoison* xPoison = (ExtraPoison*)Oblivion_DynamicCast(extraData, 0, RTTI_BSExtraData, RTTI_ExtraPoison, 0);
 		AlchemyItem* oldPoison = (xPoison) ? xPoison->poison : NULL;
 		AlchemyItem* nuPoison = (AlchemyItem*)Oblivion_DynamicCast(state.MagicItemVal(), 0, RTTI_MagicItem, RTTI_AlchemyItem, 0);
-
+		
 		if (state.ForMod()) {
 			// we need to remove the poison
 			if (xPoison) {
@@ -1967,6 +1995,7 @@ static bool ChangeCurrentPoison(TESForm* baseForm, BaseExtraList* baseExtraList,
 	return true;
 }
 
+
 static bool Cmd_SetCurrentHealth_Execute(COMMAND_ARGS)
 {
 	*result = 0;
@@ -1980,8 +2009,8 @@ static bool Cmd_SetCurrentHealth_Execute(COMMAND_ARGS)
 	ChangeValueState state(kVal_CurHealth, bModF);
 	*state.FloatPtr() = value;
 	return ChangeCurrentHealth(thisObj->baseForm, &thisObj->baseExtraList, state, result);
-}
-
+}	
+	
 static bool Cmd_SetCurrentSoulLevel_Execute(COMMAND_ARGS)
 {
 	*result = 0;
@@ -1997,7 +2026,7 @@ static bool Cmd_SetCurrentSoulLevel_Execute(COMMAND_ARGS)
 
 	BSExtraData* xData = thisObj->baseExtraList.GetByType(kExtraData_Soul);
 	ExtraSoul* xSoul = (ExtraSoul*)Oblivion_DynamicCast(xData, 0, RTTI_BSExtraData, RTTI_ExtraSoul, 0);
-
+	
 	if (xSoul) {
 		xSoul->soul = soulLevel; // see if this works with soulLevel = 0.
 	} else if (soulLevel != 0) {
@@ -2028,7 +2057,7 @@ static bool ChangeObjectValue_Execute(COMMAND_ARGS, ChangeValueState& state)
 			break;
 		case ChangeValueState::eString:
 			ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, state.StringPtr(), &form);
-			break;
+			break;		
 		default:
 			return true;
 	}
@@ -2038,7 +2067,7 @@ static bool ChangeObjectValue_Execute(COMMAND_ARGS, ChangeValueState& state)
 		if (!thisObj) return true;
 		form = thisObj->baseForm;
 	}
-
+	
 	bool bChanged = ChangeObjectBaseValue(form, state, result);
 	return true;
 }
@@ -2084,11 +2113,11 @@ static bool ChangeEquippedCurrentValue_Execute(COMMAND_ARGS, ChangeValueState& s
 			break;
 		case ChangeValueState::eString:
 			bArgsExtracted = ExtractArgs(paramInfo, arg1, opcodeOffsetPtr, thisObj, arg3, scriptObj, eventList, state.StringPtr(), &slotIdx);
-			break;
+			break;		
 		default:
 			return true;
 	}
-
+	
 	if (!thisObj || !bArgsExtracted) return true;
 
 	feChangeCurrentValue changeCurrentVal(state);
@@ -2206,7 +2235,7 @@ static bool Cmd_RemoveEnchantment_Execute(COMMAND_ARGS)
 		if (!thisObj) return true;
 		form = thisObj->baseForm;
 	}
-
+	
 	ChangeValueState state(kVal_Enchantment, bModT);
 	bool bChanged = ChangeObjectBaseValue(form, state, result);
 	return true;
@@ -2214,6 +2243,7 @@ static bool Cmd_RemoveEnchantment_Execute(COMMAND_ARGS)
 
 static bool Cmd_SetEnchantment_Execute(COMMAND_ARGS)
 {
+
 	ChangeValueState state(kVal_Enchantment, bModF);
 	return ChangeObjectValue_Execute(PASS_COMMAND_ARGS, state);
 }
@@ -2326,6 +2356,7 @@ static bool Cmd_SetArmorType_Execute(COMMAND_ARGS)
 	return ChangeObjectValue_Execute(PASS_COMMAND_ARGS, state);
 }
 
+
 // SoulLevel
 static bool Cmd_GetSoulLevel_Execute(COMMAND_ARGS)
 {
@@ -2355,6 +2386,7 @@ static bool Cmd_IsFood_Execute(COMMAND_ARGS)
 {
 	return GetObjectValue(PASS_COMMAND_ARGS, kVal_Food);
 }
+
 
 // SetIsFood
 static bool Cmd_SetIsFood_Execute(COMMAND_ARGS)
@@ -2390,7 +2422,7 @@ static bool Cmd_IsPlayable2_Execute(COMMAND_ARGS)
 
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
-		form = form->TryGetREFRParent();
+		form = form->TryGetREFRParent(); 
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
@@ -2411,18 +2443,19 @@ static bool Cmd_SetIsPlayable_Execute(COMMAND_ARGS)
 	return ChangeObjectValue_Execute(PASS_COMMAND_ARGS, state);
 }
 
+
 // SetName
 static bool Cmd_SetName_Execute(COMMAND_ARGS)
 {
 	if (!result) return true;
-
+	
 	TESForm* form = NULL;
 	char	string[256];
 
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &string, &form);
-	if (!form)
+	if (!form) 
 	{
-		if (!thisObj)
+		if (!thisObj) 
 			return true;
 
 		// don't use baseform, it may be a mapmarker. GetFullName() will use base if appropriate
@@ -2448,7 +2481,7 @@ static bool Cmd_SetName_Execute(COMMAND_ARGS)
 static bool Cmd_CompareName_Execute(COMMAND_ARGS)
 {
 	if (!result) return true;
-
+	
 	TESForm* form = NULL;
 	char	textArg[256];
 
@@ -2494,7 +2527,7 @@ static bool Cmd_CopyName_Execute(COMMAND_ARGS)
 static bool Cmd_ModName_Execute(COMMAND_ARGS)
 {
 	if (!result) return true;
-
+	
 	TESForm* form = NULL;
 	char	string[256];
 
@@ -2525,7 +2558,7 @@ static bool Cmd_ModName_Execute(COMMAND_ARGS)
 static bool Cmd_AppendToName_Execute(COMMAND_ARGS)
 {
 	if (!result) return true;
-
+	
 	TESForm* form = NULL;
 	char	string[256];
 
@@ -2543,7 +2576,8 @@ static bool Cmd_AppendToName_Execute(COMMAND_ARGS)
 	return true;
 }
 
-static BSStringT* PathStringFromForm(TESForm* form, UInt32 whichValue, EMode mode)
+
+static String* PathStringFromForm(TESForm* form, UInt32 whichValue, EMode mode)
 {
 	switch(whichValue) {
 		case kVal_Model:
@@ -2573,7 +2607,7 @@ static BSStringT* PathStringFromForm(TESForm* form, UInt32 whichValue, EMode mod
 			}
 			break;
 		}
-
+		
 		case kVal_GroundMale:
 		case kVal_GroundFemale:
 		{
@@ -2584,6 +2618,7 @@ static BSStringT* PathStringFromForm(TESForm* form, UInt32 whichValue, EMode mod
 			}
 			break;
 		}
+
 
 		case kVal_IconMale:
 		case kVal_IconFemale:
@@ -2602,7 +2637,7 @@ static BSStringT* PathStringFromForm(TESForm* form, UInt32 whichValue, EMode mod
 static bool PathFunc_Execute(COMMAND_ARGS, UInt32 whichValue, EMode mode)
 {
 	*result = 0;
-
+	
 	TESForm* targetForm = NULL;
 	TESForm* srcForm = NULL;
 	char textArg[256] = { 0 };
@@ -2620,13 +2655,13 @@ static bool PathFunc_Execute(COMMAND_ARGS, UInt32 whichValue, EMode mode)
 		if (textArg[0] == '\0') return true;
 	}
 
-	targetForm = targetForm->TryGetREFRParent();
+	targetForm = targetForm->TryGetREFRParent(); 
 	if (!targetForm) {
 		if (!thisObj) return true;
 		targetForm = thisObj->baseForm;
 	}
 
-	BSStringT* theString = PathStringFromForm(targetForm, whichValue, mode);
+	String* theString = PathStringFromForm(targetForm, whichValue, mode);
 	if (theString != NULL) {
 		switch(mode) {
 			case kSet:
@@ -2657,7 +2692,7 @@ static bool PathFunc_Execute(COMMAND_ARGS, UInt32 whichValue, EMode mode)
 				}
 			case kCopy:
 				{
-					BSStringT* srcString = PathStringFromForm(srcForm, whichValue, mode);
+					String* srcString = PathStringFromForm(srcForm, whichValue, mode);
 					if (srcString) {
 						theString->Set(srcString->m_data);
 					}
@@ -2682,6 +2717,10 @@ static bool PathFunc_Execute(COMMAND_ARGS, UInt32 whichValue, EMode mode)
 	}
 	return true;
 }
+
+
+
+
 
 // SetModelPath
 static bool Cmd_SetModelPath_Execute(COMMAND_ARGS)
@@ -2914,7 +2953,7 @@ static bool Cmd_GetEquippedWeaponPoison_Execute(COMMAND_ARGS)
 {
 	feGetCurrentValue getCurrentValue(kVal_WeaponPoison);
 	bool bFound = FindEquipped(thisObj, kSlot_Weapon, &getCurrentValue, result);
-	return true;
+	return true; 
 }
 
 static bool Cmd_SetEquippedWeaponPoison_Execute(COMMAND_ARGS)
@@ -3093,6 +3132,7 @@ static bool Cmd_IsSigilStone_Execute(COMMAND_ARGS)
 	return IsType_Execute(PASS_COMMAND_ARGS, kFormType_SigilStone);
 }
 
+
 static bool Cmd_IsDoor_Execute(COMMAND_ARGS)
 {
 	return IsType_Execute(PASS_COMMAND_ARGS, kFormType_Door);
@@ -3124,7 +3164,7 @@ static bool Cmd_IsClonedForm_Execute(COMMAND_ARGS)
 	TESForm* form = NULL;
 
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form);
-	form = form->TryGetREFRParent();
+	form = form->TryGetREFRParent(); 
 	if (!form) {
 		if (!thisObj) return true;
 		form = thisObj->baseForm;
@@ -3173,11 +3213,12 @@ static bool Cmd_CompareNames_Execute(COMMAND_ARGS)
 
 	TESFullName* first = (TESFullName*)Oblivion_DynamicCast(base, 0, RTTI_TESForm, RTTI_TESFullName, 0);
 	TESFullName* second = (TESFullName*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESFullName, 0);
-	if (first && second)
-		*result = first->name.Compare(second->name);
+	if (first && second) 
+		*result = first->name.Compare(second->name); 
 
 	return true;
 }
+
 
 static bool Cmd_GetContainerRespawns_Execute(COMMAND_ARGS)
 {
@@ -3216,7 +3257,7 @@ static bool Cmd_IsLightCarriable_Execute(COMMAND_ARGS)
 
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
-		form = form->TryGetREFRParent();
+		form = form->TryGetREFRParent(); 
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
@@ -3238,7 +3279,7 @@ static bool Cmd_GetLightRadius_Execute(COMMAND_ARGS)
 
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
-		form = form->TryGetREFRParent();
+		form = form->TryGetREFRParent(); 
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
@@ -3261,7 +3302,7 @@ static bool Cmd_SetLightRadius_Execute(COMMAND_ARGS)
 
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &newRadius, &form))
 	{
-		form = form->TryGetREFRParent();
+		form = form->TryGetREFRParent(); 
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
@@ -3285,7 +3326,7 @@ static bool Cmd_HasName_Execute(COMMAND_ARGS)
 	*result = 0;
 
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form);
-	form = form->TryGetREFRParent();
+	form = form->TryGetREFRParent(); 
 	if (!form)
 		form = thisObj;
 
@@ -3358,6 +3399,7 @@ public:
 	}
 };
 
+
 static bool Cmd_GetFullGoldValue_Execute(COMMAND_ARGS)
 //includes enchantment value in calculation
 {
@@ -3366,7 +3408,7 @@ static bool Cmd_GetFullGoldValue_Execute(COMMAND_ARGS)
 	UInt32 baseVal = 0;
 
 	ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form);
-	form = form->TryGetREFRParent();
+	form = form->TryGetREFRParent(); 
 	if (!form)
 		if (thisObj)
 			form = thisObj->baseForm;
@@ -3379,7 +3421,7 @@ static bool Cmd_GetFullGoldValue_Execute(COMMAND_ARGS)
 	case kFormType_Ingredient:
 	{
 		IngredientItem* ingredient = (IngredientItem*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_IngredientItem, 0);
-		if (ingredient)
+		if (ingredient) 
 			baseVal = ingredient->value;
 		break;
 	}
@@ -3392,7 +3434,7 @@ static bool Cmd_GetFullGoldValue_Execute(COMMAND_ARGS)
 	}
 	default:
 		TESValueForm* valueForm = (TESValueForm*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESValueForm, 0);
-		if (valueForm)
+		if (valueForm) 
 			baseVal = valueForm->value;
 	}
 
@@ -3497,7 +3539,7 @@ public:
 		ExtraQuickKey* qKey = (ExtraQuickKey*)entryData->extendData->data->GetByType(kExtraData_QuickKey);
 		if (!qKey)
 			return false;
-
+	
 		//check if hotkey # matches
 		if (m_whichKey != UInt32(-1) && qKey->keyID != m_whichKey)
 			return false;
@@ -3613,6 +3655,7 @@ static bool Cmd_SetHotKeyItem_Execute(COMMAND_ARGS)
 		}
 	}
 
+
 	NiTPointerList <TESForm> * quickKey = &g_quickKeyList[whichKey];
 	NiTPointerList <TESForm>::Node * qkNode = quickKey->start;
 	if (!quickKey->numItems || !qkNode)	// quick key not yet assigned
@@ -3641,7 +3684,7 @@ static bool Cmd_SetHotKeyItem_Execute(COMMAND_ARGS)
 			{
 				if (!xEntry->data->extendData)
 				{
-					xEntry->data->extendData =
+					xEntry->data->extendData = 
 						(ExtraContainerChanges::EntryExtendData*)(FormHeap_Allocate(sizeof(ExtraContainerChanges::EntryExtendData)));
 					xEntry->data->extendData->next = NULL;
 					xEntry->data->extendData->data = NULL;
@@ -3652,7 +3695,7 @@ static bool Cmd_SetHotKeyItem_Execute(COMMAND_ARGS)
 					xQKey = ExtraQuickKey::Create();
 					xQKey->keyID = whichKey;
 				}
-
+				
 				xEntry->data->extendData->data->Add(xQKey);
 			}
 			else
@@ -3661,7 +3704,7 @@ static bool Cmd_SetHotKeyItem_Execute(COMMAND_ARGS)
 	}
 
 	return true;
-}
+}		
 
 static bool Cmd_IsModelPathValid_Execute(COMMAND_ARGS)
 {
@@ -3685,7 +3728,7 @@ static bool IsBipedPathValid_Execute(COMMAND_ARGS, bool checkIcon)
 	*result = 0;
 	UInt32 whichPath = 0;
 	TESForm* form = NULL;
-	BSStringT* filePath = NULL;
+	String* filePath = NULL;
 	*result = 0;
 
 	if (!ExtractArgs(EXTRACT_ARGS, &whichPath, &form))
@@ -3767,7 +3810,7 @@ static bool Cmd_FileExists_Execute(COMMAND_ARGS)
 static bool Cmd_SetNameEx_Execute(COMMAND_ARGS)
 {
 	if (!result) return true;
-
+	
 	TESForm* form = NULL;
 	char	newName[kMaxMessageLength];
 
@@ -3791,7 +3834,7 @@ static bool Cmd_SetNameEx_Execute(COMMAND_ARGS)
 		return true;
 
 	TESFullName* name = form->GetFullName();
-	if (name)
+	if (name) 
 		name->name.Set(newName);
 
 	return true;
@@ -3950,7 +3993,7 @@ static bool Cmd_GetItems_Execute(COMMAND_ARGS)
 		{
 			TESContainer::Data	* containerData = containerEntry->data;
 			SInt32 numObjects = 0;
-			if (info.IsValidContainerData(containerData, numObjects) && FormMatchesTypes(t, numTypes, containerData->type))
+			if (info.IsValidContainerData(containerData, numObjects) && FormMatchesTypes(t, numTypes, containerData->type)) 
 			{
 				g_ArrayMap.SetElementFormID(arrID, count, containerData->type ? containerData->type->refID : 0);
 				count++;
@@ -3963,7 +4006,7 @@ static bool Cmd_GetItems_Execute(COMMAND_ARGS)
 	ExtraDataVec::iterator it = info.m_vec.begin();
 	while (it != itEnd) {
 		ExtraContainerChanges::EntryData* extraData = (*it);
-		if (extraData && (extraData->countDelta > 0) && FormMatchesTypes(t, numTypes, extraData->type))
+		if (extraData && (extraData->countDelta > 0) && FormMatchesTypes(t, numTypes, extraData->type)) 
 		{
 			g_ArrayMap.SetElementFormID(arrID, count, extraData->type ? extraData->type->refID : 0);
 			count++;
@@ -4284,6 +4327,7 @@ CommandInfo kCommandInfo_GetInventoryObject =
 	0
 };
 
+
 CommandInfo kCommandInfo_GetEquipmentSlotType =
 {
 	"GetEquipmentSlotType",
@@ -4335,9 +4379,9 @@ CommandInfo kCommandInfo_GetEquipmentSlotMask =
 	0
 };
 
-static ParamInfo kParams_GetObjectValue[2] =
+static ParamInfo kParams_GetObjectValue[2] = 
 {
-	{	"int", kParamType_Integer, 0 },
+	{	"int", kParamType_Integer, 0 }, 
 	{	"int", kParamType_InventoryObject, 1 },
 };
 
@@ -4400,6 +4444,7 @@ CommandInfo kCommandInfo_GetType =
 	NULL,
 	0
 };
+
 
 CommandInfo kCommandInfo_IsWeapon =
 {
@@ -4641,9 +4686,9 @@ CommandInfo kCommandInfo_IsFurniture =
 	0
 };
 
-static ParamInfo kParams_GetECV[2] =
+static ParamInfo kParams_GetECV[2] = 
 {
-	{	"value", kParamType_Integer, 0 },
+	{	"value", kParamType_Integer, 0 }, 
 	{	"slot", kParamType_Integer, 0 },
 };
 
@@ -4678,9 +4723,9 @@ CommandInfo kCommandInfo_GetEquippedObjectValue =
 };
 
 #if 0
-static ParamInfo kParams_SetECV[3] =
+static ParamInfo kParams_SetECV[3] = 
 {
-	{	"which value", kParamType_Integer, 0 },
+	{	"which value", kParamType_Integer, 0 }, 
 	{	"float", kParamType_Float, 0 },
 	{	"slot", kParamType_Integer, 0 },
 };
@@ -4715,9 +4760,9 @@ CommandInfo kCommandInfo_SetEquippedObjectValue =
 	0
 };
 
-static ParamInfo kParams_SetModOV[4] =
+static ParamInfo kParams_SetModOV[4] = 
 {
-	{	"which value", kParamType_Integer, 0 },
+	{	"which value", kParamType_Integer, 0 }, 
 	{	"value", kParamType_Float, 0 },
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"type", kParamType_InventoryObject, 1}
@@ -4799,47 +4844,48 @@ CommandInfo kCommandInfo_SetCurrentHealth =
 	0
 };
 
-static ParamInfo kParams_SetModObjectFloat[2] =
+static ParamInfo kParams_SetModObjectFloat[2] = 
 {
 	{	"value", kParamType_Float, 0 },
 	{	"type", kParamType_InventoryObject, 1}
 };
 
-static ParamInfo kParams_SetObjectInteger[2] =
+static ParamInfo kParams_SetObjectInteger[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"type", kParamType_InventoryObject, 1}
 };
 
-static ParamInfo kParams_SetObjectMagicItem[2] =
+static ParamInfo kParams_SetObjectMagicItem[2] = 
 {
 	{	"value", kParamType_MagicItem, 0 },
 	{	"type", kParamType_InventoryObject, 1}
 };
 
-static ParamInfo kParams_SetObjectString[2] =
+static ParamInfo kParams_SetObjectString[2] = 
 {
 	{	"value", kParamType_String, 0 },
 	{	"type", kParamType_InventoryObject, 1}
 };
 
-static ParamInfo kParams_CopyObjectPath[2] =
+static ParamInfo kParams_CopyObjectPath[2] = 
 {
 	{	"src", kParamType_InventoryObject, 0},
 	{	"dest", kParamType_InventoryObject, 1}
 };
 
-static ParamInfo kParams_SetEquippedInt[2] =
+static ParamInfo kParams_SetEquippedInt[2] = 
 {
 	{	"value", kParamType_Integer, 0 },
 	{	"slot", kParamType_Integer, 0}
 };
 
-static ParamInfo kParams_ModEquippedFloat[2] =
+static ParamInfo kParams_ModEquippedFloat[2] = 
 {
 	{	"value", kParamType_Float, 0 },
 	{	"slot", kParamType_Integer, 0}
 };
+
 
 // Weight
 CommandInfo kCommandInfo_GetWeight =
@@ -5140,6 +5186,7 @@ CommandInfo kCommandInfo_RemoveEnchantment =
 	NULL,
 	0
 };
+
 
 // Attack Damage
 CommandInfo kCommandInfo_GetAttackDamage =
@@ -5560,6 +5607,7 @@ CommandInfo kCommandInfo_SetPlayable =
 	0
 };
 
+
 CommandInfo kCommandInfo_IsPoison =
 {
 	"IsPoison",
@@ -5606,6 +5654,7 @@ CommandInfo kCommandInfo_CompareName =
 	NULL,
 	0
 };
+
 
 // CopyName
 CommandInfo kCommandInfo_CopyName =
@@ -6294,7 +6343,8 @@ CommandInfo kCommandInfo_RemoveEquippedWeaponPoison =
 	0
 };
 
-ParamInfo kParamInfo_OneMagicItem[1] =
+
+ParamInfo kParamInfo_OneMagicItem[1] = 
 {
 	{	"poison", kParamType_MagicItem, 0 },
 };
@@ -6314,6 +6364,7 @@ CommandInfo kCommandInfo_SetEquippedWeaponPoison =
 	NULL,
 	0
 };
+
 
 // IsClonedForm
 CommandInfo kCommandInfo_IsClonedForm =
@@ -6867,6 +6918,7 @@ DEFINE_COMMAND(FileExists,
 			   0,
 			   1,
 			   kParams_OneString);
+
 
 static ParamInfo kParams_SetNameEx[22] =
 {

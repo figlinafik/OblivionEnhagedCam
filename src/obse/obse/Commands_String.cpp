@@ -1,6 +1,7 @@
 #include "ParamInfos.h"
 #include "obse/Commands_String.h"
 #include "CommandTable.h"
+#include <string>
 #include "Script.h"
 #include "ScriptUtils.h"
 
@@ -9,7 +10,6 @@
 #include "StringVar.h"
 #include "GameData.h"
 #include "GameObjects.h"
-#include "Utilities.h"
 
 //////////////////////////
 // Utility commands
@@ -24,7 +24,7 @@ static bool Cmd_sv_Construct_Execute(COMMAND_ARGS)
 
 	//not checking the return value here 'cuz we need to assign to the string regardless
 	ExtractFormatStringArgs(0, buffer, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_sv_Construct.numParams);
-
+	
 	AssignToStringVar(PASS_COMMAND_ARGS, buffer);
 
 	return true;
@@ -345,7 +345,7 @@ static bool Cmd_ToLower_Execute(COMMAND_ARGS)
 
 	return true;
 }
-
+	
 static bool Cmd_CharToAscii_Execute(COMMAND_ARGS)
 {
 	//converts a single char to ASCII
@@ -452,7 +452,7 @@ static bool Cmd_GetModelPath_Execute(COMMAND_ARGS)
 			if (thisObj)
 				form = thisObj->baseForm;
 
-		TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);
+		TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);	
 		if (model)
 			pathStr = model->nifPath.m_data;
 	}
@@ -465,14 +465,14 @@ static bool Cmd_SetModelPathEX_Execute(COMMAND_ARGS)
 {
 	TESForm* form = NULL;
 	char newPath[kMaxMessageLength] = { 0 };
-
+	
 	if (ExtractFormatStringArgs(0, newPath, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_SetModelPathEX.numParams, &form))
 	{
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
 
-		TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);
+		TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);	
 		if (model)
 			model->SetPath(newPath);
 	}
@@ -498,7 +498,7 @@ static bool GetPath_Execute(COMMAND_ARGS, UInt32 whichPath)
 		switch (whichPath) {
 			case kPath_Icon:
 				{
-					TESIcon* icon = (TESIcon*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESIcon, 0);
+					TESIcon* icon = (TESIcon*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESIcon, 0);	
 					if (icon)
 						pathStr = icon->ddsPath.m_data;
 				}
@@ -545,14 +545,14 @@ static bool Cmd_SetIconPathEX_Execute(COMMAND_ARGS)
 {
 	TESForm* form = NULL;
 	char newPath[kMaxMessageLength] = { 0 };
-
+	
 	if (ExtractFormatStringArgs(0, newPath, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_SetIconPathEX.numParams, &form))
 	{
 		if (!form)
 			if (thisObj)
 				form = thisObj->baseForm;
 
-		TESIcon* icon = (TESIcon*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESIcon, 0);
+		TESIcon* icon = (TESIcon*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESIcon, 0);	
 		if (icon)
 			icon->SetPath(newPath);
 	}
@@ -610,7 +610,7 @@ static bool BipedPathFunc_Execute(COMMAND_ARGS, UInt32 mode, bool bIcon)
 			if (thisObj)
 				form = thisObj->baseForm;
 
-		TESBipedModelForm* bipedModel = (TESBipedModelForm*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESBipedModelForm, 0);
+		TESBipedModelForm* bipedModel = (TESBipedModelForm*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESBipedModelForm, 0);	
 		if (bipedModel)
 		{
 			bool bFemale = (whichPath % 2) ? true : false;
@@ -662,13 +662,14 @@ static bool Cmd_GetNthFactionRankName_Execute(COMMAND_ARGS)
 	AssignToStringVar(PASS_COMMAND_ARGS, rankName);
 	return true;
 }
-
+		
 static bool Cmd_SetNthFactionRankNameEX_Execute(COMMAND_ARGS)
 {
 	TESForm* form = NULL;
 	UInt32 rank = 0;
 	UInt32 gender = 0;
 	char newName[kMaxMessageLength] = { 0 };
+
 
 	if (ExtractFormatStringArgs(0, newName, paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, kCommandInfo_SetNthFactionRankNameEX.numParams, &form, &rank, &gender))
 	{
@@ -679,7 +680,7 @@ static bool Cmd_SetNthFactionRankNameEX_Execute(COMMAND_ARGS)
 
 	return true;
 }
-
+	
 static bool Cmd_GetNthEffectItemScriptName_Execute(COMMAND_ARGS)
 {
 	TESForm* form = NULL;
@@ -787,7 +788,7 @@ static bool Cmd_NumToHex_Execute(COMMAND_ARGS)
 	UInt32 num = 0;
 	UInt32 width = 8;
 	ExtractArgs(PASS_EXTRACT_ARGS, &num, &width);
-
+	
 	char fmtStr[0x20];
 	width = width <= 8 ? width : 8;
 	sprintf_s(fmtStr, sizeof(fmtStr), "%%0%dX", width);
@@ -865,37 +866,6 @@ static bool Cmd_sv_Percentify_Execute(COMMAND_ARGS)
 
 	AssignToStringVar(PASS_COMMAND_ARGS, converted.c_str());
 	return true;
-}
-
-static bool ChangeCase_Execute (COMMAND_ARGS, bool bUpper)
-{
-	std::string converted = "";
-	ExpressionEvaluator eval (PASS_COMMAND_ARGS);
-	if (eval.ExtractArgs() && eval.NumArgs() == 1)
-	{
-		const char* src = eval.Arg (0)->GetString();
-		if (src)
-		{
-			converted = src;
-			if (bUpper)
-				MakeUpper (converted);
-			else
-				MakeLower (converted);
-		}
-	}
-
-	AssignToStringVar (PASS_COMMAND_ARGS, converted.c_str ());
-	return true;
-}
-
-static bool Cmd_sv_ToUpper_Execute (COMMAND_ARGS)
-{
-	return ChangeCase_Execute (PASS_COMMAND_ARGS, true);
-}
-
-static bool Cmd_sv_ToLower_Execute (COMMAND_ARGS)
-{
-	return ChangeCase_Execute (PASS_COMMAND_ARGS, false);
 }
 
 #endif
@@ -986,7 +956,7 @@ DEFINE_COMMAND(sv_SubString,
 				3,
 				kParams_SubString);
 
-static ParamInfo kParams_sv_ToNumeric[2] =
+static ParamInfo kParams_sv_ToNumeric[2] = 
 {
 	{	"stringVar",	kParamType_Integer,	0	},
 	{	"startPos",		kParamType_Integer,	1	},
@@ -1119,7 +1089,7 @@ DEFINE_COMMAND(GetIconPath,
 			   1,
 			   kParams_OneOptionalInventoryObject);
 
-static ParamInfo kParams_GetNthEffectItemScriptName[2] =
+static ParamInfo kParams_GetNthEffectItemScriptName[2] = 
 {
 	{	"magic item", kParamType_MagicItem, 0 },
 	{	"which effect", kParamType_Integer, 0 },
@@ -1162,6 +1132,7 @@ DEFINE_COMMAND(GetNthFactionRankName,
 			   3,
 			   kParams_GetNthRankName);
 
+
 static ParamInfo kParams_SetPathEX[SIZEOF_FMT_STRING_PARAMS + 1] =
 {
 	FORMAT_STRING_PARAMS,
@@ -1180,7 +1151,7 @@ DEFINE_COMMAND(SetIconPathEX,
 			   NUM_PARAMS(kParams_SetPathEX),
 			   kParams_SetPathEX);
 
-static ParamInfo kParams_SetNthEffectItemScriptNameEX[SIZEOF_FMT_STRING_PARAMS + 2] =
+static ParamInfo kParams_SetNthEffectItemScriptNameEX[SIZEOF_FMT_STRING_PARAMS + 2] = 
 {
 	FORMAT_STRING_PARAMS,
 	{	"magic item", kParamType_MagicItem, 0 },
@@ -1381,26 +1352,4 @@ CommandInfo kCommandInfo_GetRawFormIDString =
 	0, 1, kOBSEParams_OneForm,
 	HANDLER(Cmd_GetRawFormIDString_Execute),
 	Cmd_Expression_Parse, NULL, 0
-};
-
-CommandInfo kCommandInfo_sv_ToLower =
-{
-	"sv_ToLower", "",
-	0,
-	"converts all characters in the string to lowercase",
-	0, 1, kParams_OneOBSEString,
-	HANDLER(Cmd_sv_ToLower_Execute),
-	Cmd_Expression_Parse,
-	NULL, 0
-};
-
-CommandInfo kCommandInfo_sv_ToUpper =
-{
-	"sv_ToUpper", "",
-	0,
-	"converts all characters in the string to uppercase",
-	0, 1, kParams_OneOBSEString,
-	HANDLER(Cmd_sv_ToUpper_Execute),
-	Cmd_Expression_Parse,
-	NULL, 0
 };

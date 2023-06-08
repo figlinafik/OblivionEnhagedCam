@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="obse">
+</Property><Property Name="Solution File" Value="C:\Users\dfkll_000\Downloads\obse_0020\obse_0020\src\obse\obse.sln">
+</Property><Property Name="Date" Value="1 мая 2023 г.">
+</Property><Property Name="Time" Value="1:20:20">
+</Property><Property Name="Log Number" Value="3">
+</Property></Properties><Event ErrorLevel="1" Project="loader_common" Source="loader_common\loader_common.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="loader_common" Source="loader_common\loader_common.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="loader_common" Source="loader_common\loader_common.vcproj" Description="Converted">
+</Event></UpgradeLog>

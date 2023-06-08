@@ -5,7 +5,6 @@ class TESForm;
 class TESObjectREFR;
 class AlchemyItem;
 class TESDescription;
-struct QuestStageItem;
 
 void Hook_Gameplay_Init(void);
 void ToggleUIMessages(bool enableSpam);
@@ -13,9 +12,8 @@ void ToggleConsoleOutput(bool enable);
 bool ToggleMenuShortcutKeys(bool bEnable, Menu* menu = NULL);
 void SetRaceAlias(TESRace* race, TESRace* alias, bool bEnableAlias);
 
-void ModPlayerSpellEffectiveness(double modBy, bool recordChange = false);
+void ModPlayerSpellEffectiveness(double modBy);
 double GetPlayerSpellEffectivenessModifier();
-double GetPersistentPlayerSpellEffectivenessModifier ();
 
 extern TESForm* g_LastEnchantedItem;
 extern TESForm* g_LastCreatedSpell;
@@ -29,9 +27,8 @@ void QueueRefForDeletion(TESObjectREFR* refr);
 // returns a potion that matches the effects of toMatch if one exists
 AlchemyItem* MatchPotion(AlchemyItem* toMatch);
 
-void ModPlayerMovementSpeed(double modBy, bool recordChange = false);
+void ModPlayerMovementSpeed(double modBy);
 double GetPlayerMovementSpeedModifier();
-double GetPersistentPlayerMovementSpeedModifier();
 
 // this returns a refID rather than a TESObjectREFR* as dropped items are non-persistent references
 UInt32 GetPCLastDroppedItemRef();
@@ -65,13 +62,3 @@ bool GetCellChanged();
 void SetRetainExtraOwnership(bool bRetain);
 
 bool ToggleSkillPerk(UInt32 actorVal, UInt32 mastery, bool bEnable);
-
-// change the text associated with a QuestStageItem
-void SetQuestStageItemText(QuestStageItem* item, const char* text);
-
-// undo any changes made to text associated with a QuestStageItem (restore original text)
-void UnsetQuestStageItemText(QuestStageItem* item);
-
-extern long double g_PlayerFlyCamSpeed;
-
-void Init_PlayerFlyCamPatch(void);

@@ -160,6 +160,9 @@ void IFileStream::ReadBuf(void * buf, UInt32 inLength)
 
 	ReadFile(theFile, buf, inLength, &bytesRead, NULL);
 
+	if(bytesRead != inLength)
+		THROW_EXCEPTION(EOFException, "IFileStream::ReadBuf: hit eof");
+
 	streamOffset += bytesRead;
 }
 
@@ -172,6 +175,9 @@ void IFileStream::WriteBuf(const void * buf, UInt32 inLength)
 		SetEndOfFile(theFile);
 
 	WriteFile(theFile, buf, inLength, &bytesWritten, NULL);
+
+	if(bytesWritten != inLength)
+		THROW_EXCEPTION(EOFException, "IFileStream::WriteBuf: write error");
 
 	streamOffset += bytesWritten;
 

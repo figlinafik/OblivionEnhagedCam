@@ -1,0 +1,288 @@
+TECHNICAL FILE INFORMATION : 
+File Type Description :	Portable Executable (PE)
+Entry Point RVA: 	00057DF2h
+Entry Point RAW: 	Invalid or not in CODE section (possible Encrypted or Compress Executable)
+
+FILE CHARACTERISTICS : 
+		File is executable  (i.e. no unresolved external references)
+		Machine based on 32-bit-word architecture
+		File is a DLL
+FILE HEADER :
+
+	Machine:                      	014Ch (i386 or later, and compatible)
+	Number of Sections:           	0007h
+	Time Date Stamp:              	6452A21Dh  -> 03/05/2023  21:04:13  
+	Symbols Pointer:              	00000000h
+	Number Of Symbols:            	00000000h
+	Size Of Optional Header:      	00E0h
+	Flags:                        	2102h
+
+OPTIONAL HEADER :
+	Magic                         	010Bh ( PE32 : normal 32-bit ) 
+	Linker version                	9.00
+	Size of code                  	000B5600h
+	Size of initialized data      	00034200h
+	Size of uninitialized data    	00000000h
+	Address of Entry Point (RVA)  	00057DF2h
+	Base of code                  	00001000h
+	Base of data                  	00001000h
+	Image base                    	10000000h
+	Section Alignment             	00001000h
+	File Alignment                	00000200h
+	Required OS version           	5.00
+	Image version                 	0.00
+	Subsystem version             	5.00
+	Reserved1                     	0
+	Size of image                 	00142000h ( 1318912 bytes)
+	Size of headers               	00000400h
+	Checksum                      	00000000h
+	Subsystem                     	0002h (Image runs in the Windows GUI subsystem)
+	DLL Characteristics           	0000h
+	Size of Stack Reserve         	00100000h
+	Size of Stack Commit          	00001000h
+	Size of Heap Reserve          	00100000h
+	Size of Heap Commit           	00001000h
+	loader flags                  	00000000h (obsolete)
+	Number of Data Directory      	00000010h
+
+DATA DIRECTORY (Virtual Address and Size)
+	Export Directory  	rva: 0012E7B0h  	size: 00000186h
+	Import Directory  	rva: 00139000h  	size: 00000028h
+	Resource Directory  	rva: 0013A000h  	size: 00000C09h
+	Exception table  	rva: 00000000h  	size: 00000000h
+	Security table  	rva: 00000000h  	size: 00000000h
+	Base Relocation table  	rva: 0013B000h  	size: 00005E90h
+	Debug Directory  	rva: 0010DDB0h  	size: 0000001Ch
+	Architecture Specific Data  	rva: 00000000h  	size: 00000000h
+	Global Pointer  	rva: 00000000h  	size: 00000000h
+	TLS Directory  	rva: 00000000h  	size: 00000000h
+	Load config table  	rva: 00000000h  	size: 00000000h
+	Bound Import table  	rva: 00000000h  	size: 00000000h
+	Import Address Table  	rva: 00139238h  	size: 00000210h
+	Delay import descriptor  	rva: 00000000h  	size: 00000000h
+	COM descriptor  	rva: 00000000h  	size: 00000000h
+	unused        	rva: 00000000h  	size: 00000000h
+
+SECTION TABLE
+01 .textbss  
+	VirtSize: 	00055FB2h  VirtAddr:      	00001000h
+	raw data offs:   	00000000h  raw data size: 	00000000h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	E00000A0h
+	CODE  UNINITIALIZED_DATA  EXECUTE  READ  WRITE  ALIGN_DEFAULT(16)  
+02 .text     
+	VirtSize: 	000B55FFh  VirtAddr:      	00057000h
+	raw data offs:   	00000400h  raw data size: 	000B5600h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	60000020h
+	CODE  EXECUTE  READ  ALIGN_DEFAULT(16)  
+03 .rdata    
+	VirtSize: 	00021936h  VirtAddr:      	0010D000h
+	raw data offs:   	000B5A00h  raw data size: 	00021A00h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	40000040h
+	INITIALIZED_DATA  READ  ALIGN_DEFAULT(16)  
+04 .data     
+	VirtSize: 	00009B30h  VirtAddr:      	0012F000h
+	raw data offs:   	000D7400h  raw data size: 	00003E00h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	C0000040h
+	INITIALIZED_DATA  READ  WRITE  ALIGN_DEFAULT(16)  
+05 .idata    
+	VirtSize: 	00000D67h  VirtAddr:      	00139000h
+	raw data offs:   	000DB200h  raw data size: 	00000E00h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	C0000040h
+	INITIALIZED_DATA  READ  WRITE  ALIGN_DEFAULT(16)  
+06 .rsrc     
+	VirtSize: 	00000C09h  VirtAddr:      	0013A000h
+	raw data offs:   	000DC000h  raw data size: 	00000E00h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	40000040h
+	INITIALIZED_DATA  READ  ALIGN_DEFAULT(16)  
+07 .reloc    
+	VirtSize: 	00006E64h  VirtAddr:      	0013B000h
+	raw data offs:   	000DCE00h  raw data size: 	00007000h
+	relocation offs: 	00000000h  relocations:   	00000000h
+	line # offs:     	00000000h  line #'s:      	00000000h
+	characteristics: 	42000040h
+	INITIALIZED_DATA  DISCARDABLE  READ  ALIGN_DEFAULT(16)  
+
+RESOURCES  ( RVA: 13A000 )
+     ResDir (0)    Entries:01h  (Named:00h, ID:01h)    TimeDate:00000000h
+  --------------------------------------------------------------
+          ResDir (18)    Entries:01h  (Named:00h, ID:01h)    TimeDate:00000000h
+               ResDir (2)    Entries:01h  (Named:00h, ID:01h)    TimeDate:00000000h
+                ID: 00000409    DataEntryOffs: 00000048h
+                DataRVA: 13A170h    DataSize: 00196h    CodePage: 0
+
+IMPORTS TABLE:
+   KERNEL32.dll
+	Import Lookup Table RVA:  	00139028h	 (Unbound IAT)
+	TimeDateStamp: 	00000000h   
+	ForwarderChain: 	00000000h
+	DLL Name RVA: 	001394C8h
+	Import Address Table RVA: 	00139238h
+	First thunk RVA: 	00139238h
+	Ordn  	Name
+	-----	-----
+	 486 	GetLastError
+	 500 	GetModuleFileNameA
+	 502 	GetModuleHandleA
+	1114 	VirtualProtect
+	 540 	GetPrivateProfileStringA
+	 534 	GetPrivateProfileIntA
+	 704 	InterlockedIncrement
+	 700 	InterlockedDecrement
+	1057 	Sleep
+	 701 	InterlockedExchange
+	 692 	InitializeCriticalSection
+	 190 	DeleteCriticalSection
+	 217 	EnterCriticalSection
+	 751 	LeaveCriticalSection
+	 914 	RtlUnwind
+	1069 	TerminateProcess
+	 425 	GetCurrentProcess
+	1086 	UnhandledExceptionFilter
+	1045 	SetUnhandledExceptionFilter
+	 721 	IsDebuggerPresent
+	 501 	GetModuleFileNameW
+	 858 	RaiseException
+	 180 	DebugBreak
+	1146 	WideCharToMultiByte
+	 794 	MultiByteToWideChar
+	1205 	lstrlenA
+	 544 	GetProcAddress
+	 753 	LoadLibraryA
+	 429 	GetCurrentThreadId
+	 367 	GetCommandLineA
+	 505 	GetModuleHandleW
+	 260 	ExitProcess
+	 681 	HeapValidate
+	 712 	IsBadReadPtr
+	 338 	GetACP
+	 531 	GetOEMCP
+	 347 	GetCPInfo
+	 731 	IsValidCodePage
+	1076 	TlsGetValue
+	1074 	TlsAlloc
+	1077 	TlsSetValue
+	1075 	TlsFree
+	1004 	SetLastError
+	 428 	GetCurrentThread
+	 267 	FatalAppExitA
+	1165 	WriteFile
+	 571 	GetStdHandle
+	 826 	OutputDebugStringA
+	1164 	WriteConsoleW
+	 471 	GetFileType
+	 827 	OutputDebugStringW
+	 935 	SetConsoleCtrlHandler
+	 756 	LoadLibraryW
+	 737 	LCMapStringA
+	 739 	LCMapStringW
+	 673 	HeapFree
+	 669 	HeapAlloc
+	 547 	GetProcessHeap
+	1116 	VirtualQuery
+	 332 	FreeLibrary
+	1000 	SetHandleCount
+	 569 	GetStartupInfoA
+	 330 	FreeEnvironmentStringsA
+	 447 	GetEnvironmentStrings
+	 331 	FreeEnvironmentStringsW
+	 449 	GetEnvironmentStringsW
+	 672 	HeapDestroy
+	 671 	HeapCreate
+	1111 	VirtualFree
+	 852 	QueryPerformanceCounter
+	 614 	GetTickCount
+	 426 	GetCurrentProcessId
+	 591 	GetSystemTimeAsFileTime
+	  67 	CloseHandle
+	 321 	FlushFileBuffers
+	 387 	GetConsoleCP
+	 405 	GetConsoleMode
+	 693 	InitializeCriticalSectionAndSpinCount
+	 678 	HeapSize
+	 676 	HeapReAlloc
+	1108 	VirtualAlloc
+	 573 	GetStringTypeA
+	 576 	GetStringTypeW
+	 616 	GetTimeFormatA
+	 430 	GetDateFormatA
+	 488 	GetLocaleInfoA
+	 733 	IsValidLocale
+	 248 	EnumSystemLocalesA
+	 621 	GetUserDefaultLCID
+	 991 	SetFilePointer
+	 490 	GetLocaleInfoW
+	1020 	SetStdHandle
+	 120 	CreateFileA
+	1154 	WriteConsoleA
+	 409 	GetConsoleOutputCP
+	 619 	GetTimeZoneInformation
+	 973 	SetEndOfFile
+	 872 	ReadFile
+	  82 	CompareStringA
+	  85 	CompareStringW
+	 976 	SetEnvironmentVariableA
+
+
+EXPORTS TABLE:
+	Name: 	EnhancedCamera.dll
+	Characteristics: 	00000000h
+	TimeDateStamp: 	6452A21Ch    -> 03/05/2023  21:04:12  
+	Version:	0.00
+	Ordinal base: 	00000001h
+	# of functions: 	00000002h (2)
+	# of Names: 	00000002h  (2)
+
+	Entry Pt  	Ordn     Name
+	0005879Dh     	   1     OBSEPlugin_Load
+	0005A16Ah     	   2     OBSEPlugin_Query
+
+
+DOS HEADER
+Header Information :
+
+	Signature :	5A4Dh 
+	Bytes on last page of file :	0090h 
+	Total Pages in File :	0003h 
+	Relocation Items :	0000h 
+	Size of header in paragraphs :	0004h 
+	Minimum Extra Paragraphs :	0000h 
+	Maximum Extra Paragraphs :	FFFFh 
+	Initial Stack Segment :	0000h 
+	Initial Stack Pointer :	00B8h 
+	Complemented Checksum :	0000h 
+	Initial Instruction Pointer :	0000h 
+	Initial Code Segment :	0000h 
+	Relocation Table Offset :	0040h 
+	Overlay Number :	0000h 
+
+Extra Header Information :
+	Reserved WORD 0:	0000h 
+	Reserved WORD 1:	0000h 
+	Reserved WORD 2:	0000h 
+	Reserved WORD 3:	0000h 
+	OEM identifier :	0000h 
+	OEM information :	0000h 
+	Reserved WORD 0:	0000h 
+	Reserved WORD 1:	0000h 
+	Reserved WORD 2:	0000h 
+	Reserved WORD 3:	0000h 
+	Reserved WORD 4:	0000h 
+	Reserved WORD 5:	0000h 
+	Reserved WORD 6:	0000h 
+	Reserved WORD 7:	0000h 
+	Reserved WORD 8:	0000h 
+	Reserved WORD 9:	0000h 
+	New Header Address :	000000E0h 
+	Memory Needed :	1680 B ( 1 KB )

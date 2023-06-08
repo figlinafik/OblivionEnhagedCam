@@ -2,28 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="streams">
-      <UniqueIdentifier>{3116e955-2cbf-4759-a5ae-1fd8a64cf82f}</UniqueIdentifier>
+      <UniqueIdentifier>{b77e7f83-5524-4b6a-9134-87d483d367e1}</UniqueIdentifier>
     </Filter>
     <Filter Include="debug">
-      <UniqueIdentifier>{2763d79e-c908-489f-98d7-e9033c13ee81}</UniqueIdentifier>
+      <UniqueIdentifier>{88c04361-6fb2-4073-8490-6d0ba0bce7d5}</UniqueIdentifier>
     </Filter>
     <Filter Include="threads">
-      <UniqueIdentifier>{0189b4d3-578c-4b8e-9e73-ef2a5658a139}</UniqueIdentifier>
+      <UniqueIdentifier>{33221fb3-0d8e-4ba5-b75d-901d712adfce}</UniqueIdentifier>
     </Filter>
     <Filter Include="datatypes">
-      <UniqueIdentifier>{d245593e-d1c3-4f87-b989-1841f48a2837}</UniqueIdentifier>
+      <UniqueIdentifier>{bc0f3f12-8bdd-44ad-89c1-4401ec17dd0b}</UniqueIdentifier>
     </Filter>
     <Filter Include="utilities">
-      <UniqueIdentifier>{454cfcb6-5332-4789-8092-3e68723f9eb2}</UniqueIdentifier>
+      <UniqueIdentifier>{5fef9c26-d1ef-43e7-aede-995ad82b01f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="memory">
-      <UniqueIdentifier>{324323c6-8765-4754-bc66-3d8cf12d3ad0}</UniqueIdentifier>
+      <UniqueIdentifier>{d87cfb1b-a142-4ce2-a788-ede268431f7a}</UniqueIdentifier>
     </Filter>
     <Filter Include="pipe">
-      <UniqueIdentifier>{1c594a4b-a331-4eeb-826c-87f764586bbd}</UniqueIdentifier>
+      <UniqueIdentifier>{01a05bd7-cb9e-48e2-a062-9372fdb05df9}</UniqueIdentifier>
     </Filter>
     <Filter Include="files">
-      <UniqueIdentifier>{22a19b00-a69e-48b2-a637-78e10e06217b}</UniqueIdentifier>
+      <UniqueIdentifier>{cb719c98-bc54-4acd-8c62-5958df2e9d85}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +39,28 @@
     <ClCompile Include="ISegmentStream.cpp">
       <Filter>streams</Filter>
     </ClCompile>
+    <ClCompile Include="IDebugEvent.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
     <ClCompile Include="IDebugLog.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugManager.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugOutput.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugSource.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugStream.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugStringBuffer.cpp">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="IDebugTextOutput.cpp">
       <Filter>debug</Filter>
     </ClCompile>
     <ClCompile Include="IErrors.cpp">
@@ -93,6 +114,9 @@
     <ClCompile Include="IMemPool.cpp">
       <Filter>memory</Filter>
     </ClCompile>
+    <ClCompile Include="IObjectPool.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
     <ClCompile Include="IPipeClient.cpp">
       <Filter>pipe</Filter>
     </ClCompile>
@@ -117,7 +141,28 @@
     <ClInclude Include="ISegmentStream.h">
       <Filter>streams</Filter>
     </ClInclude>
+    <ClInclude Include="IDebugEvent.h">
+      <Filter>debug</Filter>
+    </ClInclude>
     <ClInclude Include="IDebugLog.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugManager.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugOutput.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugSource.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugStream.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugStringBuffer.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="IDebugTextOutput.h">
       <Filter>debug</Filter>
     </ClInclude>
     <ClInclude Include="IErrors.h">
@@ -175,6 +220,9 @@
       <Filter>utilities</Filter>
     </ClInclude>
     <ClInclude Include="IMemPool.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="IObjectPool.h">
       <Filter>memory</Filter>
     </ClInclude>
     <ClInclude Include="IPipeClient.h">

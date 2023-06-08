@@ -64,8 +64,7 @@ public:
 		kMaterial_HeavyWoodStairs,
 		kMaterial_ChainStairs,
 		kMaterial_SnowStairs,
-		kMaterial_Elevator,
-		kMaterial_Default,
+		kMaterial_Elevator
 	};
 
 	bhkShape();

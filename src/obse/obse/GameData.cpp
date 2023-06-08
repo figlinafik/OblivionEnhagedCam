@@ -1,4 +1,5 @@
 #include "GameData.h"
+#include <string>
 
 #if OBLIVION
 #include "GameAPI.h"
@@ -78,12 +79,10 @@ TESGlobal* DataHandler::GetGlobalVarByName(const char* varName, UInt32 nameLen)
 	if (nameLen == -1)
 		nameLen = strlen(varName);
 
-	for (tList<TESGlobal>::Iterator Itr = globals.Begin(); !Itr.End() && Itr.Get(); ++Itr)
+	for (Node<TESGlobal>* cur = &globals; cur; cur = cur->next)
 	{
-		TESGlobal* item = Itr.Get();
-
-		if (item->name.m_dataLen == nameLen && !_stricmp(item->name.m_data, varName))
-			return item;
+		if (cur->data && cur->data->name.m_dataLen == nameLen && !_stricmp(cur->data->name.m_data, varName))
+			return cur->data;
 	}
 
 	return NULL;
@@ -94,12 +93,10 @@ TESQuest* DataHandler::GetQuestByEditorName(const char* questName, UInt32 nameLe
 	if (nameLen == -1)
 		nameLen = strlen(questName);
 
-	for (tList<TESQuest>::Iterator Itr = quests.Begin(); !Itr.End() && Itr.Get(); ++Itr)
-	{
-		TESQuest* quest = Itr.Get();
-		if (quest->editorName.m_dataLen == nameLen && !_stricmp(quest->editorName.m_data, questName))
-			return quest;
-	}
+	for (Node<TESQuest>* cur = &quests; cur; cur = cur->next)
+		if (cur->data && cur->data->editorName.m_dataLen == nameLen && !_stricmp(cur->data->editorName.m_data, questName))
+			return cur->data;
+
 	return NULL;
 }
 
@@ -128,8 +125,6 @@ FileFinder** g_FileFinder = (FileFinder**)0xB33A04;
 FileFinder** g_FileFinder = (FileFinder**)0xB33A04;
 TimeGlobals* g_TimeGlobals = (TimeGlobals*)0x00B332E0;
 UInt32* s_iHoursToRespawnCell = (UInt32*)0x00B35C1C;
-UInt16* s_firstDayOfMonths = (UInt16*)0x00B06728;
-UInt16* s_numDaysPerMonths = (UInt16*)0x00B06710;
 #else
 
 #error unsupported Oblivion version
@@ -146,32 +141,32 @@ UInt32 TimeGlobals::GameHoursPassed()
 	return GameDaysPassed() * 24 + GameHour();
 }
 
-UInt32 TimeGlobals::GameDay()
+UInt32 TimeGlobals::GameDay() 
 {
 	return Singleton()->gameDay->data;
 }
 
-UInt32 TimeGlobals::GameYear()
+UInt32 TimeGlobals::GameYear() 
 {
 	return Singleton()->gameYear->data;
 }
 
-UInt32 TimeGlobals::GameMonth()
+UInt32 TimeGlobals::GameMonth() 
 {
 	return Singleton()->gameMonth->data;
 }
 
-float TimeGlobals::GameHour()
+float TimeGlobals::GameHour() 
 {
 	return Singleton()->gameHour->data;
 }
 
-UInt32 TimeGlobals::GameDaysPassed()
+UInt32 TimeGlobals::GameDaysPassed() 
 {
 	return Singleton()->gameDaysPassed->data;
 }
 
-float TimeGlobals::TimeScale()
+float TimeGlobals::TimeScale() 
 {
 	return Singleton()->timeScale->data;
 }
@@ -179,16 +174,6 @@ float TimeGlobals::TimeScale()
 UInt32 TimeGlobals::HoursToRespawnCell()
 {
 	return *s_iHoursToRespawnCell;
-}
-
-UInt16 TimeGlobals::GetFirstDayOfMonth(UInt32 monthID)
-{
-	return (monthID - 1 < 12) ? s_firstDayOfMonths[monthID - 1] : -1;
-}
-
-UInt16 TimeGlobals::GetNumDaysInMonth(UInt32 monthID)
-{
-	return (monthID - 1 < 12) ? s_numDaysPerMonths[monthID - 1] : -1;
 }
 
 // Water Shader stuff

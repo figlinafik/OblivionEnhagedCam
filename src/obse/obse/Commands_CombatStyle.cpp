@@ -76,11 +76,7 @@ enum {
 	kCombatStyle_pad89,
 	kCombatStyle_rushAttackDistMult,
 	kCombatStyle_unk90,
-
-	// Extra Settings (dynamically allocated)
-	kCombatStyle_DynamicMin,
-
-	kCombatStyle_dodgeFatigueModMult = kCombatStyle_DynamicMin,
+	kCombatStyle_dodgeFatigueModMult,
 	kCombatStyle_dodgeFatigueModBase,
 	kCombatStyle_encumSpeedModBase,
 	kCombatStyle_encumSpeedModMult,
@@ -169,49 +165,10 @@ bool InitCombatSettingList() {
 	return true;
 }
 
-// tedium
-#define SET_CS_EXTRA(field) style->extraSettings-> ## field ## = CombatSettingList[kCombatStyle_ ## field ## ]->f
-
-static void InitExtraSettings(TESCombatStyle* style)
-{
-	if (style && !style->extraSettings) {
-		style->extraSettings = (TESCombatStyle::ExtraSettings*)FormHeap_Allocate(sizeof(TESCombatStyle::ExtraSettings));
-
-		SET_CS_EXTRA(dodgeFatigueModMult);
-		SET_CS_EXTRA(dodgeFatigueModBase);
-		SET_CS_EXTRA(encumSpeedModBase);
-		SET_CS_EXTRA(encumSpeedModMult);
-		SET_CS_EXTRA(dodgeUnderAttackMult);
-		SET_CS_EXTRA(dodgeNotUnderAttackMult);
-		SET_CS_EXTRA(dodgeBackUnderAttackMult);
-		SET_CS_EXTRA(dodgeBackNotUnderAttackMult);
-		SET_CS_EXTRA(dodgeFWAttackingMult);
-		SET_CS_EXTRA(dodgeFWNotAttackingMult);
-		SET_CS_EXTRA(blockSkillModMult);
-		SET_CS_EXTRA(blockSkillModBase);
-		SET_CS_EXTRA(blockUnderAttackMult);
-		SET_CS_EXTRA(blockNotUnderAttackMult);
-		SET_CS_EXTRA(attackSkillModMult);
-		SET_CS_EXTRA(attackSkillModBase);
-		SET_CS_EXTRA(attackUnderAttackMult);
-		SET_CS_EXTRA(attackNotUnderAttackMult);
-		SET_CS_EXTRA(attackDuringBlockMult);
-		SET_CS_EXTRA(powerAttackFatigueModBase);
-		SET_CS_EXTRA(powerAttackFatigueModMult);
-	}
-}
-
-#undef SET_CS_EXTRA
-
 static bool GetCombatStyleValue(TESCombatStyle* style, UInt32 whichValue, double* result)
 {
-	if ( !result || !style)
+	if ( !result )
 		return true;
-	else if (whichValue >= kCombatStyle_DynamicMin && !style->extraSettings) {
-		// extraSettings not defined, use default (they are all float)
-		*result = CombatSettingList[whichValue]->f;
-		return true;
-	}
 
 	*result = 0;
 
@@ -728,11 +685,6 @@ static bool SetCombatStyleIntValue(TESCombatStyle* style, UInt32 whichValue, int
 	*result = 0;
 
 	if (style) {
-		// we may need to allocate extraSettings if none already defined for this style
-		if (whichValue >= kCombatStyle_DynamicMin && !style->extraSettings) {
-			InitExtraSettings(style);
-		}
-
 		switch(whichValue) {
 			case kCombatStyle_dodgeChance:
 				style->dodgeChance = newValue;
@@ -792,11 +744,6 @@ static bool SetCombatStyleFloatValue(TESCombatStyle* style, UInt32 whichValue, f
 	*result = 0;
 
 	if (style) {
-		// we may need to allocate extraSettings if none already defined for this style
-		if (whichValue >= kCombatStyle_DynamicMin && !style->extraSettings) {
-			InitExtraSettings(style);
-		}
-
 		switch(whichValue) {
 			case kCombatStyle_dodgeLRTimerMin:
 				style->dodgeLRTimerMin = newValue;

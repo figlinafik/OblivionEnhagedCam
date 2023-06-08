@@ -1,9 +1,10 @@
 #include "Utilities.h"
+#include <cstdarg>
+#include <algorithm>
 
 #ifdef OBLIVION
 #include "GameAPI.h"
 #include "Script.h"
-#include "GameOSDepend.h"
 
 void PrintItemType(TESForm * form)
 {
@@ -223,15 +224,16 @@ void Console_Print_Long(const std::string& str)
 
 namespace MersenneTwister
 {
-/*
+
+/* 
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
 
-   Before using, initialize the state by using init_genrand(seed)
+   Before using, initialize the state by using init_genrand(seed)  
    or init_by_array(init_key, key_length).
 
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
-   All rights reserved.
+   All rights reserved.                          
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -244,8 +246,8 @@ namespace MersenneTwister
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote
-        products derived from this software without specific prior written
+     3. The names of its contributors may not be used to endorse or promote 
+        products derived from this software without specific prior written 
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -260,12 +262,13 @@ namespace MersenneTwister
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
    Any feedback is very welcome.
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-/* Period parameters */
+/* Period parameters */  
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0dfUL   /* constant vector a */
@@ -280,8 +283,8 @@ void init_genrand(unsigned long s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
-        mt[mti] =
-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+        mt[mti] = 
+	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -317,7 +320,7 @@ void init_by_array(unsigned long init_key[], int key_length)
         if (i>=N) { mt[0] = mt[N-1]; i=1; }
     }
 
-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
+    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
@@ -346,7 +349,7 @@ unsigned long genrand_int32(void)
 
         mti = 0;
     }
-
+  
     y = mt[mti++];
 
     /* Tempering */
@@ -367,30 +370,30 @@ long genrand_int31(void)
 /* generates a random number on [0,1]-real-interval */
 double genrand_real1(void)
 {
-    return genrand_int32()*(1.0/4294967295.0);
-    /* divided by 2^32-1 */
+    return genrand_int32()*(1.0/4294967295.0); 
+    /* divided by 2^32-1 */ 
 }
 
 /* generates a random number on [0,1)-real-interval */
 double genrand_real2(void)
 {
-    return genrand_int32()*(1.0/4294967296.0);
+    return genrand_int32()*(1.0/4294967296.0); 
     /* divided by 2^32 */
 }
 
 /* generates a random number on (0,1)-real-interval */
 double genrand_real3(void)
 {
-    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0);
+    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
     /* divided by 2^32 */
 }
 
 /* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(void)
-{
-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6;
-    return(a*67108864.0+b)*(1.0/9007199254740992.0);
-}
+double genrand_res53(void) 
+{ 
+    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
+    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
+} 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
 #undef N
@@ -398,6 +401,7 @@ double genrand_res53(void)
 #undef MATRIX_A
 #undef UPPER_MASK
 #undef LOWER_MASK
+
 };
 
 Tokenizer::Tokenizer(const char* src, const char* delims)
@@ -573,14 +577,6 @@ void MakeUpper(char* str)
 	}
 }
 
-void MakeLower(char* str)
-{
-	if (str) {
-		UInt32 len = strlen(str);
-		std::transform(str, str + len, str, tolower);
-	}
-}
-
 #pragma warning(pop)
 
 // ErrOutput
@@ -593,12 +589,12 @@ ErrOutput::ErrOutput(_ShowError errorFunc, _ShowWarning warningFunc)
 void ErrOutput::vShow(ErrOutput::Message& msg, va_list args)
 {
 	char msgText[0x400];
-	vsprintf_s(msgText, sizeof(msgText), msg.fmt.c_str(), args);
-	if (msg.CanDisable())
+	vsprintf_s(msgText, sizeof(msgText), msg.fmt, args);
+	if (msg.bCanDisable)
 	{
-		if (msg.IsDisabled() == false)
+		if (!msg.bDisabled)
 			if (ShowWarning(msgText))
-				msg.SetDisabled();
+				msg.bDisabled = true;
 	}
 	else
 		ShowError(msgText);
@@ -622,113 +618,10 @@ void ErrOutput::Show(const char* msg, ...)
 
 void ErrOutput::vShow(const char* msg, va_list args)
 {
-	Message tempMsg (msg);
+	Message tempMsg;
+	tempMsg.fmt = msg;
+	tempMsg.bCanDisable = false;
+	tempMsg.bDisabled = false;
+
 	vShow(tempMsg, args);
-}
-
-const std::string & GetConfigPath(void)
-{
-	static std::string s_configPath;
-
-	if(s_configPath.empty())
-	{
-		std::string	runtimePath = GetOblivionDirectory();
-		if(!runtimePath.empty())
-		{
-			s_configPath = runtimePath;
-			s_configPath += "Data\\OBSE\\obse.ini";
-
-			_MESSAGE("config path = %s", s_configPath.c_str());
-		}
-	}
-
-	return s_configPath;
-}
-
-std::string GetConfigOption(const char * section, const char * key)
-{
-	std::string	result;
-
-	const std::string & configPath = GetConfigPath();
-	if(!configPath.empty())
-	{
-		char	resultBuf[256];
-		resultBuf[0] = 0;
-
-		UInt32	resultLen = GetPrivateProfileString(section, key, NULL, resultBuf, sizeof(resultBuf), configPath.c_str());
-
-		result = resultBuf;
-	}
-
-	return result;
-}
-
-bool GetConfigOption_UInt32(const char * section, const char * key, UInt32 * dataOut)
-{
-	std::string	data = GetConfigOption(section, key);
-	if(data.empty())
-		return false;
-
-	return (sscanf_s(data.c_str(), "%u", dataOut) == 1);
-}
-
-LPTOP_LEVEL_EXCEPTION_FILTER g_OriginalTopLevelExceptionFilter = NULL;
-
-bool CreateExceptionMiniDump( _EXCEPTION_POINTERS *ExceptionInfo )
-{
-	HANDLE DumpFile = CreateFile("OBSECrashDump.dmp",
-								GENERIC_READ|GENERIC_WRITE,
-								0,
-								NULL,
-								CREATE_ALWAYS,
-								FILE_ATTRIBUTE_NORMAL,
-								NULL);
-
-	if (DumpFile == INVALID_HANDLE_VALUE)
-		return false;
-
-	MINIDUMP_EXCEPTION_INFORMATION mdei;
-
-	mdei.ThreadId           = GetCurrentThreadId();
-	mdei.ExceptionPointers  = ExceptionInfo;
-	mdei.ClientPointers     = FALSE;
-
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)(MiniDumpNormal|
-							MiniDumpWithIndirectlyReferencedMemory|
-							MiniDumpScanMemory|
-							MiniDumpWithThreadInfo|
-							MiniDumpWithProcessThreadData|
-							MiniDumpWithUnloadedModules|
-					//		MiniDumpWithDataSegs|
-							MiniDumpWithFullMemoryInfo|
-							MiniDumpWithHandleData);
-
-	BOOL rv = MiniDumpWriteDump(GetCurrentProcess(),
-								GetCurrentProcessId(),
-								DumpFile,
-								mdt, (ExceptionInfo != 0) ? &mdei : 0, 0, 0 );
-
-	if( !rv )
-		return false;
-
-	CloseHandle(DumpFile);
-	return true;
-}
-
-LONG WINAPI OBSEUnhandledExceptionFilter( __in struct _EXCEPTION_POINTERS *ExceptionInfo )
-{
-	CreateExceptionMiniDump(ExceptionInfo);
-
-#ifdef OBLIVION
-	ShowWindow((*g_osGlobals)->window, SW_MINIMIZE);
-
-	MessageBox(NULL, "Oblivion has crashed! A minidump has been created in the game directory.", "OBSE", MB_TASKMODAL|MB_SETFOREGROUND|MB_ICONERROR|MB_OK);
-#else
-	MessageBox(NULL, "The Construction Set has crashed! A minidump has been created in the game directory.", "OBSE", MB_TASKMODAL|MB_SETFOREGROUND|MB_ICONERROR|MB_OK);
-#endif
-
-	if (g_OriginalTopLevelExceptionFilter)
-		return g_OriginalTopLevelExceptionFilter(ExceptionInfo);
-	else
-		return EXCEPTION_EXECUTE_HANDLER;
 }

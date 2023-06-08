@@ -37,5 +37,3 @@ extern CommandInfo kCommandInfo_GetCellWaterType;
 extern CommandInfo kCommandInfo_SetCellWaterType;
 
 extern CommandInfo kCommandInfo_GetCellNorthRotation;
-
-extern CommandInfo kCommandInfo_SetCellMusicType;

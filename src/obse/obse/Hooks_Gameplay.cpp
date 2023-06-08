@@ -20,7 +20,6 @@
 #include "EventManager.h"
 #include "Hooks_SaveLoad.h"
 #include "GameActorValues.h"
-#include "ThreadLocal.h"
 
 static void HandleMainLoopHook(void);
 
@@ -194,8 +193,6 @@ static const UInt32 kExtraOwnershipDefaultSetting2 = 0x0041FE0D;
 static const UInt32 kConsoleManager_PrintAddr = 0x00585C90;
 
 static const UInt32 kContainerMenuDanglingPointerPatchAddr = 0x00597D26;
-static const UInt32 kContainerMenuSecondDanglingPointerPatchAddr = 0x00599B41;
-static const UInt32 kContainerMenuSecondDanglingPointerRetnAddr = 0x00599B47;
 
 #else
 #error unsupported oblivion version
@@ -271,7 +268,7 @@ static __declspec(naked) void CreatePotionHook(void)
 			xor ecx, ecx
 			test eax, eax		// is AlchemyItem* if potion has been previously created
 			jnz EndHook
-
+			
 			// new base potion object
 			mov ecx, 1
 			mov eax, [edi+0x94]			// AlchemyMenu::potion
@@ -308,7 +305,7 @@ static void DoDeferredDelete()
 	if (!ioMan)
 		return;
 
-	for (std::set<UInt32>::iterator iter = deletedREFRs.begin(); iter != deletedREFRs.end(); )
+	for (std::set<UInt32>::iterator iter = deletedREFRs.begin(); iter != deletedREFRs.end(); ) 
 	{
 		TESForm* refForm = LookupFormByID(*iter);
 		if (refForm)
@@ -368,7 +365,7 @@ static void HandleMainLoopHook(void)
 		InventoryReference::Clean();
 
 	// currently unused
-	//if (TaskManager::HasTasks())
+	//if (TaskManager::HasTasks()) 
 	//	TaskManager::Run();
 
 	// Tick event manager
@@ -518,7 +515,7 @@ static void Hook_DebugPrint(void)
 #else
 #error unsupported oblivion version
 #endif
-
+	
 	SafeWrite32(kMessageHandlerVtblBase + (0 * 4), (UInt32)DebugPrint0);
 	SafeWrite32(kMessageHandlerVtblBase + (1 * 4), (UInt32)DebugPrint1);
 	SafeWrite32(kMessageHandlerVtblBase + (2 * 4), (UInt32)DebugPrint2);
@@ -528,30 +525,22 @@ static void Hook_DebugPrint(void)
 
 //toggle messages on or off in upper left  corner of screen
 //meant to be toggled off immediately before calling a spam-generating function and toggled back on again
-static ICriticalSection s_UICritSection;
-static SInt32 s_UIToggleCount = 0;	// how many times have msgs been toggled off
 void ToggleUIMessages(bool enableSpam)
 {
-	ScopedLock lock(s_UICritSection);
-	if (!enableSpam) {
-		s_UIToggleCount++;
-		ASSERT_STR(s_UIToggleCount > 0, "Overflow in ToggleUIMessages");
-	}
-	else {
-		ASSERT_STR(s_UIToggleCount > 0, "Underflow in ToggleUIMessages");
-		s_UIToggleCount--;
-	}
-
-	if (s_UIToggleCount == 0)
+	static bool msgsOn = true;
+	if (msgsOn != enableSpam)
 	{
-		// restore overwritten code to enable UI msgs again
-		SafeWrite8(QUIMsgPatchAddr, QUIMsgData);
-		SafeWrite8(QUIMsg_2PatchAddr, QUIMsg_2Data);
-	}
-	else if (s_UIToggleCount == 1) {
-		// if count > 1 we've already patched
-		SafeWrite8(QUIMsgPatchAddr, 0xC3);		//write immediate retn at function entry
-		SafeWrite8(QUIMsg_2PatchAddr, 0xC3);
+		msgsOn = enableSpam;
+		if (!msgsOn)
+		{
+			SafeWrite8(QUIMsgPatchAddr, 0xC3);		//write immediate retn at function entry
+			SafeWrite8(QUIMsg_2PatchAddr, 0xC3);
+		}
+		else
+		{
+			SafeWrite8(QUIMsgPatchAddr, QUIMsgData);	//restore code overwritten above
+			SafeWrite8(QUIMsg_2PatchAddr, QUIMsg_2Data);
+		}
 	}
 }
 
@@ -660,7 +649,7 @@ bool Cmd_GetIsRace_2_Execute(Character* character, TESRace* aliasRace, UInt32 un
 
 	if (s_raceAliases.empty() || s_raceAliases.find(aliasRace->refID) == s_raceAliases.end())
 		*result = (charRace == aliasRace) ? 1 : 0;	// no alias defined for this race
-	else
+	else 
 	{
 		RefIDSet* aliasSet = &s_raceAliases[aliasRace->refID];
 
@@ -677,7 +666,7 @@ bool Cmd_GetIsRace_2_Execute(Character* character, TESRace* aliasRace, UInt32 un
 void SetRaceAlias(TESRace* race, TESRace* alias, bool bEnableAlias)
 {
 	static bool bPatchApplied = false;
-
+	
 	// On first call to this function, overwrite original GetIsRace with our version
 	if (!bPatchApplied)
 	{
@@ -707,8 +696,6 @@ void SetRaceAlias(TESRace* race, TESRace* alias, bool bEnableAlias)
 // Calculation remains the same (performed by game code); the modifier is just added to the result
 static bool bSpellEffectivenessPatchApplied = false;
 static double s_playerSpellEffectivenessModifier = 0;		// modifier to add to base value
-static double s_recordedPlayerSpellEffectivenessModifier = 0;
-
 static UInt32 s_GetPlayerSpellEffectivenessAddr = 0;		// address of original GetSpellEffectiveness func
 
 bool DoGetSpellEffectivenessHook();
@@ -729,10 +716,10 @@ float __stdcall GetPlayerSpellEffectiveness(UInt32 arg0, UInt32 arg1)
 			fstp	[baseEffectiveness]
 		}
 
-		DEBUG_PRINT("baseEffectiveness = %.2f, modded = %.2f", baseEffectiveness,
+		DEBUG_PRINT("baseEffectiveness = %.2f, modded = %.2f", baseEffectiveness, 
 					(baseEffectiveness + s_playerSpellEffectivenessModifier));
 	}
-
+	
 	// add script modifier and return
 	return baseEffectiveness + s_playerSpellEffectivenessModifier;
 }
@@ -761,24 +748,17 @@ bool DoGetSpellEffectivenessHook()
 	return bSpellEffectivenessPatchApplied;
 }
 
-void ModPlayerSpellEffectiveness(double modBy, bool recordChange)
+void ModPlayerSpellEffectiveness(double modBy)
 {
 	if (!bSpellEffectivenessPatchApplied)
 		DoGetSpellEffectivenessHook();
 
 	s_playerSpellEffectivenessModifier += modBy;
-	if (recordChange)
-		s_recordedPlayerSpellEffectivenessModifier += modBy;
 }
 
 double GetPlayerSpellEffectivenessModifier()
 {
 	return s_playerSpellEffectivenessModifier;
-}
-
-double GetPersistentPlayerSpellEffectivenessModifier ()
-{
-	return s_recordedPlayerSpellEffectivenessModifier;
 }
 
 AlchemyItem* MatchPotion(AlchemyItem* toMatch)
@@ -803,7 +783,6 @@ AlchemyItem* MatchPotion(AlchemyItem* toMatch)
 #endif
 
 static double s_pcSpeedModifier = 0;
-static double s_recordedPCSpeedModifier = 0;
 
 UInt32 __stdcall Player_GetActorValue(UInt32 actorVal)
 {
@@ -837,7 +816,7 @@ UInt32 __stdcall Player_GetActorValue(UInt32 actorVal)
 	return result;
 }
 
-void ModPlayerMovementSpeed(double modBy, bool recordChange)
+void ModPlayerMovementSpeed(double modBy)
 {
 	static bool bHooked = false;
 	if (!bHooked)
@@ -847,18 +826,11 @@ void ModPlayerMovementSpeed(double modBy, bool recordChange)
 	}
 
 	s_pcSpeedModifier += modBy;
-	if (recordChange)
-		s_recordedPCSpeedModifier += modBy;
 }
 
 double GetPlayerMovementSpeedModifier()
 {
 	return s_pcSpeedModifier;
-}
-
-double GetPersistentPlayerMovementSpeedModifier()
-{
-	return s_recordedPCSpeedModifier;
 }
 
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
@@ -914,7 +886,7 @@ TESForm* GetPCLastDroppedItem()
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 	static const UInt32 kExitGameFromIngameMenuPatchAddr = 0x005BDE60;
 	static const UInt32 kExitGameFromIngameMenuRetnAddr  =  0x005BDE66;
-
+	
 	static const UInt32 kMainMenuFromIngameMenuPatchAddr = 0x005BDE23;
 	static const UInt32 kMainMenuFromIngameMenuRetnAddr  = 0x005BDE29;
 
@@ -922,7 +894,7 @@ TESForm* GetPCLastDroppedItem()
 	static const UInt32 kExitGameFromMainMenuRetnAddr    = 0x005B5A12;
 
 	static const UInt32 kExitGameViaQQQPatchAddr		 = 0x005077F2;
-	static const UInt32 kExitGameViaQQQRetnAddr			 = 0x005077F7;
+	static const UInt32 kExitGameViaQQQRetnAddr			 = 0x005077F7;		
 #else
 #error unsupported oblivion version
 #endif
@@ -1012,7 +984,7 @@ static UInt32 s_lastTransactionQuantity = 0;
 // set of scripts that have been informed about the most recent transaction
 static std::set<UInt32>	s_transactionInformedScripts[2];
 
-TransactionInfo s_transactionHistories[2] =
+TransactionInfo s_transactionHistories[2] = 
 {
 	{ NULL, NULL, NULL, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
@@ -1043,15 +1015,15 @@ static __declspec(naked) void PlayerBuyHook(void)
 {;
 	__asm {
 		pushad
-
+		
 		push	edi				// cost
 		push	ebp				// merchant
 		mov		esi, [esi+8]	// ExtraContainerChanges::EntryData::type for item being purchased
-		push	esi
+		push	esi				
 		push	ebx				// ContainerMenu
 		push	kPC_Buy
 		call	DoBuySellHook
-
+	
 		popad
 
 		call	MarkBaseExtraListScriptEvent
@@ -1177,192 +1149,6 @@ static __declspec(naked) void ChangeCellHook(void)
 	}
 }
 
-static __declspec(naked) void Hook_ContainerMenuDanglingPointer(void)
-{
-	// edi = TileRect* which is about to be destroyed and its memory freed.
-	// ContainerMenu::selectedItemTile points to this memory and is not reset at this time.
-	// so yeah, that's a problem.
-
-	// on entry:
-	//	edi: TileRect*
-	//	edx: TileRect::Destroy
-	//	ebx: ContainerMenu*
-	//	ecx, eax volatile
-
-	__asm {
-		// reset dangling pointer
-		mov ecx, ebx	// ContainerMenu* contMenu
-		add ecx, 0x3C	// contMenu->selectedItemTile
-		xor eax, eax
-		mov [ecx], eax	// = NULL
-
-		// overwritten code
-		push 1
-		mov ecx, edi
-		call edx
-		jmp [kContainerMenuSecondDanglingPointerRetnAddr]
-	}
-}
-
-// RemoveAllItems cmd and SendPlayerToJail function remove all items from player, but if a removed quest item was equipped and enchanted, the enchantment remains on the player
-// fix by unequipping everything before removing all items
-// In both cases overwrite a call to BaseExtraList::RemoveAllItems (TESObjectREFR* from, TESObjectREFR* to, UInt32 unk2, bool bRetainOwnership, UInt32 unk4)
-// Could reasonably just patch that function instead, but don't want to mess with other code that may call it
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kRemoveAllItems_CallAddr	= 0x00492E70;
-static const UInt32 kRemoveAllItems_PatchAddr	= 0x00507578;
-static const UInt32 kGotoJail_PatchAddr			= 0x00670328;
-#else
-#error unsupported Oblivion version
-#endif
-
-static void __stdcall DoUnequipAllItems(TESObjectREFR* refr)
-{
-	Actor* actor = OBLIVION_CAST (refr, TESObjectREFR, Actor);
-	if (actor)
-		actor->UnequipAllItems();
-}
-
-static __declspec(naked) void RemoveAllItemsHook(void)
-{
-	__asm {
-		pushad
-		push esi
-		call DoUnequipAllItems
-		popad
-		jmp	[kRemoveAllItems_CallAddr]
-	}
-}
-
-// AddSpell cmd will trigger a CTD if an effectitem-less spellitem is added to the player
-// caused by the handler dereferencing a NULL effectitem ptr to get its icon path for the notification message
-static const UInt32 kAddSpellPlayer_PatchAddr = 0x00514A98;
-static const UInt32 kAddSpellPlayer_CallAddr = 0x004152C0;
-static const UInt32 kAddSpellPlayer_RetnAddr = 0x00514A9D;
-static const UInt32 kAddSpellPlayer_JumpAddr = 0x00514AA7;
-
-static __declspec(naked) void AddSpellPlayerHook(void)
-{
-	__asm
-	{
-		call [kAddSpellPlayer_CallAddr]
-		test eax, eax		// returns a EffectItem*
-		jz SKIP
-
-		jmp	[kAddSpellPlayer_RetnAddr]
-	SKIP:
-		jmp	[kAddSpellPlayer_JumpAddr]
-	}
-}
-
-// scripted objects (containers in particular) fail to correctly activate when accessed by NPCs
-// in the case of containers, there's a loss of parametric data when the Activate command is called inside a script
-// so we save the parameters before activation and restore them inside the Activate command's handler
-struct ReferenceActivationContext
-{
-	// thisObj
-	TESObjectREFR*		activatedRef;
-	// args
-	TESObjectREFR*		activatingRef;
-	UInt32				arg2;				// seen as either 0 or 1
-	TESForm*			arg3;
-	UInt32				arg4;				// seen as either 0 or 1, mostly the latter
-};
-
-static std::stack<ReferenceActivationContext> s_RefActivationContexts;
-//###TODO is this thread-safe enough?
-static ICriticalSection s_RefActivationCS;
-
-//###HACK - call the militia!
-#define DEFINE_REFHOOKFN(hookaddr, handler)									\
-	void __declspec(naked) RefActivation##hookaddr##Hook(void)				\
-	{																		\
-		static UInt32 RetnAddr = hookaddr## + 5;							\
-		{																	\
-		__asm	push	ecx													\
-		__asm	call	handler												\
-		__asm	jmp		RetnAddr											\
-		}																	\
-	}
-#define PATCH_REFHOOKFN(hookaddr)			WriteRelJump(hookaddr, (UInt32)RefActivation##hookaddr##Hook)
-
-bool __stdcall DoRefActivationCallSiteHook(TESObjectREFR* thisObj, TESObjectREFR* arg1, UInt32 arg2, TESForm* arg3, UInt32 arg4)
-{
-	ReferenceActivationContext context = {0};
-	context.activatedRef = thisObj;
-	context.activatingRef = arg1;
-	context.arg2 = arg2;
-	context.arg3 = arg3;
-	context.arg4 = arg4;
-
-	s_RefActivationContexts.push(context);
-	bool result = ThisStdCall(0x004DD260, thisObj, arg1, arg2, arg3, arg4);
-	s_RefActivationContexts.pop();
-
-	return result;
-}
-
-bool __stdcall DoRefActivationCmdHandlerHook(TESObjectREFR* thisObj, TESObjectREFR* arg1, UInt32 arg2, TESForm* arg3, UInt32 arg4)
-{
-	ScopedLock lock(s_RefActivationCS);
-
-	bool result = false;
-
-	if (s_RefActivationContexts.size())
-	{
-		const ReferenceActivationContext& current = s_RefActivationContexts.top();
-
-		if (current.activatedRef == thisObj && current.activatingRef == arg1)
-		{
-			arg2 = current.arg2;
-			arg3 = current.arg3;
-			arg4 = current.arg4;
-		}
-	}
-
-	result = ThisStdCall(0x004DD260, thisObj, arg1, arg2, arg3, arg4);
-
-	return result;
-}
-
-DEFINE_REFHOOKFN(0x00507705, DoRefActivationCmdHandlerHook)						// Activate command handler
-
-DEFINE_REFHOOKFN(0x00637C31, DoRefActivationCallSiteHook)						// called when activating a container while searching for food
-
-#if 0
-DEFINE_REFHOOKFN(0x0062EED9, DoRefActivationCallSiteHook)						// something to do with trespassing
-DEFINE_REFHOOKFN(0x006319E2, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x00631AE7, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x00637D51, DoRefActivationCallSiteHook)						// called when handling Find packages
-DEFINE_REFHOOKFN(0x0063802A, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x00638286, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x00645F71, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x0064FD39, DoRefActivationCallSiteHook)
-DEFINE_REFHOOKFN(0x006529A2, DoRefActivationCallSiteHook)
-#endif
-
-void Init_RefActivationPatch(void)
-{
-	PATCH_REFHOOKFN(0x00507705);
-
-	PATCH_REFHOOKFN(0x00637C31);
-#if 0
-	PATCH_REFHOOKFN(0x0062EED9);
-	PATCH_REFHOOKFN(0x006319E2);
-	PATCH_REFHOOKFN(0x00631AE7);
-	PATCH_REFHOOKFN(0x00637D51);
-	PATCH_REFHOOKFN(0x0063802A);
-	PATCH_REFHOOKFN(0x00638286);
-	PATCH_REFHOOKFN(0x00645F71);
-	PATCH_REFHOOKFN(0x0064FD39);
-	PATCH_REFHOOKFN(0x006529A2);
-#endif
-
-	// calling Activate on an unscripted object prevents subsequent default activation of that object
-	// we fix it be patching the handler to stop it from removing the normal activation flag from the ref's ExtraAction extradata
-	WriteRelJump(0x00507713, 0x0050771C);
-}
-
 void Hook_Gameplay_Init(void)
 {
 	// game main loop
@@ -1396,7 +1182,7 @@ void Hook_Gameplay_Init(void)
 	// the 'created objects' code calls the post-load callback immediately after loading the form
 	// so bugs occur when the callback expects to be able to find a cloned object that hasn't been
 	// created yet
-	//
+	// 
 	// to fix this, we hook the function loading the created objects and disable the call to the
 	// post-fixup function. once the function is completed, we walk the created objects linked list
 	// and call the callback ourselves
@@ -1407,7 +1193,7 @@ void Hook_Gameplay_Init(void)
 	SafeWrite8(0x0045B27F + 1, 0x90);
 	SafeWrite8(0x0045B27F + 2, 0x90);
 #elif OBLIVION_VERSION == OBLIVION_VERSION_1_2
-	SafeWrite8(0x004614F9 + 0, 0x90);
+	SafeWrite8(0x004614F9 + 0, 0x90);	
 	SafeWrite8(0x004614F9 + 1, 0x90);
 #elif OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 	SafeWrite8(0x004614B9 + 0, 0x90);
@@ -1450,23 +1236,6 @@ void Hook_Gameplay_Init(void)
 	// Fix dangling pointer in ContainerMenu
 	SafeWrite32(kContainerMenuDanglingPointerPatchAddr, 0x90909090);
 	SafeWrite16(kContainerMenuDanglingPointerPatchAddr+4, 0x9090);
-	// and fix another reference to the same dangling pointer elsewhere
-	WriteRelJump(kContainerMenuSecondDanglingPointerPatchAddr, (UInt32)&Hook_ContainerMenuDanglingPointer);
-
-	// patch enchantments from equipped quest items not being removed when RemoveAllItems cmd used or player sent to jail
-	WriteRelCall (kRemoveAllItems_PatchAddr, (UInt32)&RemoveAllItemsHook);
-	WriteRelCall (kGotoJail_PatchAddr, (UInt32)&RemoveAllItemsHook);
-
-	// fix AddSpell command CTD
-	// the CustomSpellIcons plugin fixes this bug, so we'll shut the fudge up when it's loaded
-	if (g_pluginManager.LookupHandleFromName("CustomSpellIcons") == kPluginHandle_Invalid)
-		WriteRelJump(kAddSpellPlayer_PatchAddr, (UInt32)&AddSpellPlayerHook);
-
-	// fix the various Activate related stuff
-	Init_RefActivationPatch();
-
-	// patch the fly camera update function
-	Init_PlayerFlyCamPatch();
 
 	// this seems stable and helps in debugging, but it makes large files during gameplay
 #if defined(_DEBUG) && 0
@@ -1476,7 +1245,7 @@ void Hook_Gameplay_Init(void)
 
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 static TESDescription** s_LastRetrievedDescription = (TESDescription**)0x00B33C04;
-static BSStringT*			s_LastRetrievedDescriptionText = (BSStringT*)0x00B33C08;
+static String*			s_LastRetrievedDescriptionText = (String*)0x00B33C08;
 static const UInt32		kTESDescription_GetText_Addr = 0x0046A710;
 static const UInt32		kTESDescriptionHook_RetnAddr = 0x0046A715;
 static const UInt32		kTlsIndex = 0x00BA9DE4;
@@ -1597,31 +1366,6 @@ bool ToggleBlockPerk(UInt32 mastery, bool bEnable)
 	return false;
 }
 
-bool ToggleMercantilePerk (UInt32 mastery, bool bEnable)
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	// for both, we replace a short 'jl' instruction with a 'jmp' to turn off the perk
-	static const UInt32 kJMPatchAddr = 0x00485627;
-	static const UInt32 kMSPatchAddr = 0x00488F81;
-	// master perk: extra 500 barter gold, replace jnz with jmp to toggle off
-	static const UInt32 kMSPatchAddr2 = 0x005FAAC5;
-#else
-#error unsupported Oblivion version
-#endif
-
-	switch (mastery) {
-		case kMasteryLevel_Journeyman:
-			SafeWrite8 (kJMPatchAddr, bEnable ? 0x7C : 0xEB);
-			return true;
-		case kMasteryLevel_Master:
-			SafeWrite8 (kMSPatchAddr, bEnable ? 0x7C : 0xEB);
-			SafeWrite8 (kMSPatchAddr2, bEnable ? 0x75 : 0xEB);
-			return true;
-	}
-
-	return false;
-}
-
 bool ToggleSkillPerk(UInt32 actorVal, UInt32 mastery, bool bEnable)
 {
 	// currently this supports only the Journeyman Block perk
@@ -1630,97 +1374,8 @@ bool ToggleSkillPerk(UInt32 actorVal, UInt32 mastery, bool bEnable)
 		switch (actorVal) {
 			case kActorVal_Block:
 				return ToggleBlockPerk(mastery, bEnable);
-			case kActorVal_Mercantile:
-				return ToggleMercantilePerk (mastery, bEnable);
 		}
 	}
 
 	return false;
 }
-
-// quest log text is read from disk as needed
-// SetQuestStageText cmd allows changing the text, so we have to
-// hook QuestStageItem::GetLogText() to support that
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-static const UInt32 kQuestStageItem_GetLogText_RetnAddr = 0x0052AF46;
-static const UInt32 kQuestStageItem_GetLogText_PatchAddr = 0x0052AF40;
-#else
-#error unsupported Oblivion version
-#endif
-
-static std::map<QuestStageItem*, std::string> s_questStageTextMap;
-
-const char* __stdcall GetQuestStageItemText(QuestStageItem* item)
-{
-	const char* text = NULL;
-	std::map<QuestStageItem*, std::string>::iterator iter = s_questStageTextMap.find(item);
-	if (iter != s_questStageTextMap.end()) {
-		text = iter->second.c_str();
-	}
-
-	return text;
-}
-
-static __declspec(naked) void Hook_QuestStageItem_GetLogText(void)
-{
-	static UInt32 s_stageText = NULL;
-
-	__asm {
-		pushad
-
-		push ecx
-		call GetQuestStageItemText
-		test eax, eax
-		jz NotFound
-		mov [s_stageText], eax
-		popad
-		mov eax, [s_stageText]
-		retn 4
-
-	NotFound:
-		popad
-		// overwritten code
-		push ebp
-		mov ebp, esp
-		sub esp, 0xC
-		jmp [kQuestStageItem_GetLogText_RetnAddr]
-	}
-}
-
-void SetQuestStageItemText(QuestStageItem* item, const char* text)
-{
-	static bool s_hookInstalled = false;
-	if (!s_hookInstalled) {
-		WriteRelJump(kQuestStageItem_GetLogText_PatchAddr, (UInt32)&Hook_QuestStageItem_GetLogText);
-		s_hookInstalled = true;
-	}
-
-	if (item && text) {
-		s_questStageTextMap[item] = text;
-	}
-}
-
-void UnsetQuestStageItemText(QuestStageItem* item)
-{
-	std::map<QuestStageItem*, std::string>::iterator iter = s_questStageTextMap.find(item);
-	if (iter != s_questStageTextMap.end())
-		s_questStageTextMap.erase(iter);
-}
-
-long double g_PlayerFlyCamSpeed = 10.f;
-
-void Init_PlayerFlyCamPatch( void )
-{
-	static const UInt32	kPatchLocation[] =
-	{
-		0x00664470,
-		0x0066448D,
-		0x006644AA,
-		0x006644C7
-	};
-
-	for (int i = 0; i < 4; i++)
-		SafeWrite32(kPatchLocation[i] + 2, (UInt32)&g_PlayerFlyCamSpeed);
-}
-
-

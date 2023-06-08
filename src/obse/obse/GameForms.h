@@ -1,5 +1,5 @@
 #pragma once
-
+ 
 #if OBLIVION
 #include "obse\GameAPI.h"
 
@@ -40,10 +40,10 @@ struct ConditionEntry
 
 /****
  *	id	name	size	class
- *	00	NONE
- *	01	TES4
- *	02	GRUP
- *	03	GMST
+ *	00	NONE	
+ *	01	TES4	
+ *	02	GRUP	
+ *	03	GMST	
  *	04	GLOB	28		TESGlobal
  *	05	CLAS	6C		TESClass
  *	06	FACT	44		TESFaction
@@ -85,7 +85,7 @@ struct ConditionEntry
  *	29	SBSP	30		TESSubSpace
  *	2A	SGST	88		TESSigilStone
  *	2B	LVLI	34		TESLevItem
- *	2C	SNDG
+ *	2C	SNDG	
  *	2D	WTHR	148		TESWeather
  *	2E	CLMT	58		TESClimate
  *	2F	REGN	2C		TESRegion
@@ -96,10 +96,10 @@ struct ConditionEntry
  *	34	PGRD	54		TESPathGrid
  *	35	WRLD	E0		TESWorldSpace
  *	36	LAND	28		TESObjectLAND
- *	37	TLOD
+ *	37	TLOD	
  *	38	ROAD	30		TESRoad
- *	39	DIAL
- *	3A	INFO
+ *	39	DIAL	
+ *	3A	INFO	
  *	3B	QUST	68		TESQuest
  *	3C	IDLE	48		TESIdleForm
  *	3D	PACK	3C		TESPackage
@@ -109,7 +109,7 @@ struct ConditionEntry
  *	41	ANIO	34		TESObjectANIO
  *	42	WATR	AC		TESWaterForm
  *	43	EFSH	110		TESEffectShader
- *	44	TOFT
+ *	44	TOFT	
  ***/
 
 /**** change flags
@@ -122,23 +122,23 @@ struct ConditionEntry
  *	10000000	CHANGE_ACTOR_BASE_MODIFIERS
  *	00000100	CHANGE_ACTOR_BASE_AIDATA
  *	00000080	CHANGE_ACTOR_BASE_FULLNAME
- *
+ *	
  *	npc
  *	00000200	CHANGE_NPC_SKILLS
  *	00000400	CHANGE_NPC_COMBATSTYLE
  *	00000800	CHANGE_NPC_FAME
- *
+ *	
  *	creature
  *	00000200	CHANGE_CREATURE_SKILLS
  *	00000400	CHANGE_CREATURE_COMBATSTYLE
- *
+ *	
  *	dialog
  *	10000000	CHANGE_TOPIC_SAIDONCE
- *
+ *	
  *	package
  *	10000000	CHANGE_PACKAGE_NEVER_RUN
  *	08000000	CHANGE_PACKAGE_WAITING
- *
+ *	
  *	cell
  *	00000008	CHANGE_CELL_FLAGS
  *	00000006	CHANGE_CELL_CREATED	### note: two flags?!
@@ -147,14 +147,14 @@ struct ConditionEntry
  *	00000020	CHANGE_CELL_OWNERSHIP
  *	00000010	CHANGE_CELL_FULLNAME
  *	01000000	CHANGE_CELL_PATHGRID_MODIFIED
- *
+ *	
  *	faction
  *	00000004	CHANGE_FACTION_FLAGS
  *	00000008	CHANGE_FACTION_REACTIONS
- *
+ *	
  *	book
  *	00000004	CHANGE_BOOK_TEACHES_SKILL
- *
+ *	
  *	refr (object, character or creature)
  *	00000002	CHANGE_CREATED_NEW_REFERENCE
  *	80000000	CHANGEFLAG_REFR_CELL_CHANGED
@@ -170,18 +170,18 @@ struct ConditionEntry
  *	08000000	CHANGE_REFR_INVENTORY
  *	04000000	CHANGE_REFR_EXTRA_SCRIPT
  *	01000000	CHANGE_REFR_EXTRA_SAVEDMOVEMENTDATA
- *
+ *	
  *	object refr
  *	00000400	CHANGE_MAPMARKER_EXTRA_FLAGS
  *	00400000	CHANGE_OBJECT_EXTRA_FURNITURE_MARKER
  *	00200000	CHANGE_OBJECT_EXTRA_MAGIC
  *	00000040	CHANGE_OBJECT_EXTRA_LOCK
- *	00000080	CHANGE_OBJECT_EXTRA_OWNER
+ *	00000080	CHANGE_OBJECT_EXTRA_OWNER	
  *	00000100	CHANGE_OBJECT_EXTRA_GLOBAL
  *	00000200	CHANGE_OBJECT_EXTRA_RANK
  *	00020000	CHANGEFLAG_OBJECT_DROPPED_NON_QUEST_ITEM
  *	00010000	CHANGE_OBJECT_EMPTY
- *
+ *	
  *	object refr to DOOR
  *	00100000	CHANGE_DOOR_EXTRA_TELEPORT
  *	00080000	CHANGE_DOOR_OPEN_STATE
@@ -317,13 +317,6 @@ public:
 	//	void		** _vtbl;	// 000
 };
 
-struct TrackingData
-{
-	UInt16  date;               // 00 low byte is day of month, high byte is number of months with 1 = Jan. 2003 (Decembers are a little weird)
-	UInt8   lastUser;           // 02 userID that last had this form checked out
-	UInt8   currentUser;        // 03 userID that has this form checked out
-};
-
 //Game / Editor
 // 018 / 024
 class TESForm : public BaseFormComponent
@@ -374,7 +367,7 @@ public:
 	virtual void	Unk_1A(void);
 	virtual void	DoPostFixup(void);	// initialize form after other forms loaded
 	virtual void	Unk_1C(void);
-	virtual void	GetDescription(BSStringT * dst);
+	virtual void	GetDescription(String * dst);
 	virtual void	Unk_1E(void);
 	virtual void	Unk_1F(void);
 	virtual void	Unk_20(void);	// 20
@@ -401,10 +394,9 @@ public:
 	virtual const char *	GetEditorName(void);	// returns nothing at run-time
 	virtual void	SetName(const char * name);
 
-	struct EditorData
-	{
-		BSStringT		editorID;
-		TrackingData		unk08;
+	struct EditorData {
+		String		editorID;
+		UInt32		unk08;
 	};
 
 	enum
@@ -415,10 +407,10 @@ public:
 
 	struct ModReferenceList
 	{
-		void				* data;		// ###TODO fix cyclic header dependency to use ModEntry::Data* directly
+		ModEntry			* data;
 		ModReferenceList	* next;
 
-		void				* Info() const	{ return data; }
+		ModEntry			* Info() const	{ return data; }
 		ModReferenceList	* Next() const	{ return next; }
 	};
 
@@ -526,8 +518,8 @@ public:
 	TESSoundFile();
 	~TESSoundFile();
 
-	BSStringT	fileName;	// 004
-	BSStringT	editorID;	// 00C
+	String	fileName;	// 004
+	String	editorID;	// 00C
 };
 
 /**** components ****/
@@ -553,7 +545,7 @@ public:
 	TESFullName();
 	~TESFullName();
 
-	BSStringT	name;		// 004
+	String	name;		// 004
 };
 
 // 18
@@ -568,7 +560,7 @@ public:
 	virtual const char *	GetModelPath(void);
 	virtual void			SetModelPath(const char* path);
 
-	BSStringT	nifPath;	// 004
+	String	nifPath;	// 004
 	float	editorSize;	// 00C 'size' field in editor, from MODB subrecord. Only present for objects defined in Oblivion.esm?
 	UInt8	unk10;		// 010
 	UInt8	pad11[3];
@@ -647,7 +639,7 @@ public:
 	TESDescription();
 	~TESDescription();
 
-	EDITOR_SPECIFIC(BSStringT description);
+	EDITOR_SPECIFIC(String description);
 	UInt32	formDiskOffset;	// 04 / 0C
 
 	const char* GetDescription() { return GetText(0, 0x43534544); }	// this will not work for skill levelup quotes
@@ -666,7 +658,7 @@ public:
 		UInt32	unk08;		// init'd to 0x422
 	};
 
-	BSStringT ddsPath;		// 04
+	String ddsPath;		// 04
 	EDITOR_SPECIFIC(EditorData editorData);
 };
 
@@ -702,6 +694,7 @@ public:
 		SInt32	reaction;
 	};
 
+
 	TESReactionForm();
 	~TESReactionForm();
 
@@ -713,6 +706,7 @@ public:
 
 	SInt32 ReactionFor(TESForm* pTarget) const;
 };
+
 
 class FindTargetByAddress
 {
@@ -857,7 +851,7 @@ public:
 		kFlag_CreatureSwims =			0x00000010, // for creatures
 		kFlag_CreatureFlies =			0x00000020, // for creatures
 		kFlag_CreatureWalks =			0x00000040,	// for creatures
-		kFlag_PCLevelOffset =			0x00000080,
+		kFlag_PCLevelOffset =			0x00000080,	
 		kFlag_CreatureHasSounds =		0x00000100,	// for creatures, if not set has a TESCreature* soundBase
 		kFlag_NoLowProc =				0x00000200,
 		kFlag_NoRumors =				0x00002000,
@@ -922,7 +916,7 @@ public:
 	bool IsPCLevelOffset() const
 		{	return IsFlagSet(kFlag_PCLevelOffset);	}
 	void SetPCLevelOffset(bool bPCLevelOffset, UInt32 min = -1, UInt32 max = -1)
-	{
+	{	
 		SetFlag(kFlag_PCLevelOffset, bPCLevelOffset);
 		if (bPCLevelOffset)
 		{
@@ -953,7 +947,7 @@ public:
 
 	SInt8 GetFactionRank(TESFaction* faction);
 
-	bool CreatureWalks() const
+	bool CreatureWalks() const 
 		{	return IsFlagSet(kFlag_CreatureWalks);	}
 	void SetCreatureWalks(bool bWalks)
 		{ SetFlag(kFlag_CreatureWalks, bWalks); }
@@ -965,7 +959,7 @@ public:
 		{ return IsFlagSet(kFlag_CreatureSwims); }
 	bool IsCreatureBiped() const
 		{ return IsFlagSet(kFlag_IsCreatureBiped); }
-	bool CreatureHasNoMovement() const
+	bool CreatureHasNoMovement() const 
 		{ return IsCreatureBiped() && !CreatureWalks() && !CreatureFlies() && !CreatureSwims(); }
 	bool CreatureHasWeaponAndShield() const
 		{ return IsFlagSet(kFlag_CreatureWeaponAndShield); }
@@ -1024,7 +1018,7 @@ public:
 		kAISetting_Confidence,
 		kAISetting_Energy,
 		kAISetting_Responsibility,
-
+	
 		kAISetting_Max,
 	};
 
@@ -1066,6 +1060,7 @@ public:
 		else
 			serviceFlags &= ~serviceMask;
 	}
+
 };
 
 typedef Visitor<TESAIForm::PackageEntry, TESPackage> PackageListVisitor;
@@ -1080,7 +1075,7 @@ public:
 	struct AnimationNode {
 		char* animationName;	// 04
 		AnimationNode* next;	// 08
-
+		
 		char* Info() const { return animationName; }
 		AnimationNode* Next() const { return next; }
 
@@ -1106,7 +1101,7 @@ public:
 	{
 		char	* nifPath;
 		Entry	* next;
-
+		
 		char  * Info() const	{	return nifPath;	}
 		Entry * Next() const	{	return next;	}
 	};
@@ -1153,9 +1148,9 @@ public:
 	~TESEnchantableForm();
 
 	EnchantmentItem* enchantItem;	// 04
-	UInt16	enchantment;			// 08 - the maximum charge, valid only for weapons
-	UInt16	pad0A;					// 0A
-	UInt32	castingType;			// 0C - init by derived class
+	UInt16	enchantment;			// 08
+	UInt16	unk1;					// 0A
+	UInt32	unk2;					// 0C
 };
 
 // C
@@ -1213,7 +1208,7 @@ public:
 		ListEntry*	next;
 
 		ListData* Info() const { return data; }
-		ListEntry* Next() const { return next; }
+        ListEntry* Next() const { return next; }
 		void Delete();
 		void DeleteHead(ListEntry* replaceWith);
 		void SetNext(ListEntry* nextEntry) { next = nextEntry; }
@@ -1253,6 +1248,7 @@ class TESBipedModelForm : public BaseFormComponent
 public:
 	TESBipedModelForm();
 	~TESBipedModelForm();
+	
 
 	static UInt32 SlotForMask(UInt32 mask);
 	static UInt32 MaskForSlot(UInt32 slot);
@@ -1279,7 +1275,7 @@ public:
 
 		kPart_Max
 	};
-	enum
+	enum 
 	{
 		kFlags_HidesRings = 0,
 		kFlags_HidesAmulets,
@@ -1410,7 +1406,7 @@ public:
 	UInt32				school;			// 064
 	UInt32				resistValue;	// 068 an actor value i.e. kActorVal_ResistFire
 	UInt16				numCounters;	// 06C count of counter effects, is size of counterArray
-	UInt16				pad06E;
+	UInt16				pad06E;			
 	TESObjectLIGH*		light;			// 070
 	float				projSpeed;		// 074
 	TESEffectShader*	effectShader;	// 078
@@ -1535,7 +1531,7 @@ public:
 	{
 		UInt32 scriptRefID;
 		UInt32 school;
-		BSStringT effectName;
+		String effectName;
 		UInt32 visualEffectCode;
 		UInt8 isHostile;
 		UInt8 padIsHostile[3];
@@ -1579,7 +1575,7 @@ public:
 	void CopyFrom(const EffectItem* from);
 	static EffectItem* Create(UInt32 mgefCode = 0);
 	static EffectItem* ProxyEffectItemFor(UInt32 effectCode);
-
+	
 	bool operator<(EffectItem*rhs) const;
 	// return the magicka cost of this effect item
 	// adjust for skill level if actorCasting is used
@@ -1614,7 +1610,7 @@ public:
 	virtual UInt32	Unk_01(void);					// returns NULL in base class impl
 	virtual UInt32	GetMasteryLevel(void);
 
-	// void			** _vtbl;				// 000
+	// void			** _vtbl;				// 000 
 	Entry			effectList;				// 004 BSSimpleList<EffectItem>, from which this class is derived
 	UInt32			hostileEffectCount;		// 00C missing from original OBSE class definition
 
@@ -1697,7 +1693,7 @@ public:
 		kType_Float =	'f'
 	};
 
-	BSStringT	name;		// 018
+	String	name;		// 018
 	UInt8	type;		// 020
 	UInt8	pad21[3];	// 021
 	float	data;		// 024
@@ -1730,7 +1726,7 @@ public:
 		kBuySell_Spells =		1 << 11,
 		kBuySell_MagicItems =	1 << 12,
 		kBuySell_Potions =		1 << 13,
-
+		
 		kService_Training =		1 << 14,
 		kService_Unk15 =		1 << 15,
 		kService_Recharge =		1 << 16,
@@ -1790,8 +1786,8 @@ public:
 
 	struct RankData
 	{
-		BSStringT		maleRank;
-		BSStringT		femaleRank;
+		String		maleRank;
+		String		femaleRank;
 		TESTexture	insignia;
 	};
 
@@ -1925,19 +1921,19 @@ public:
 	// members
 	BonusSkillInfo	bonusSkills[7];			// 050
 	UInt16			pad0;
-	float			maleScale;				// 060
+	float			maleScale;				// 060	
 	float			femaleScale;			// 064
 	float			maleWeight;				// 068
 	float			femaleWeight;			// 06C
 	UInt8			isPlayable;				// 070
-	UInt8			unk1[3];
+	UInt8			unk1[3];	
 	TESAttributes	maleAttr;				// 074
 	TESAttributes	femaleAttr;				// 080
 	tList<TESHair>	hairs;					// 08C
 	TESHair			* defaultHair[2];		// 094 0-male, 1-female
 	UInt32			unk09C[3];				// 09C
 	tList<TESEyes>	eyes;					// 0A8
-	TESModel		tails[2];				// 0B0 0-male 1-female
+	TESModel		unk8[2];				// 0B0
 	TESModel		unk9[9];				// 0E0
 	TESTexture		unk10[9];				// 1B8
 	TESTexture		unk11[10];				// 224
@@ -2047,7 +2043,7 @@ class TESLandTexture : public TESForm
 {
 public:
 	// no changed flags (TESForm flags)
-
+ 
 	TESLandTexture();
 	~TESLandTexture();
 
@@ -2343,6 +2339,7 @@ public:
 			flags078 &= ~eFlags_Respawning;
 		}
 	}
+
 };
 
 // 70
@@ -2395,7 +2392,7 @@ public:
 	TESIcon				icon;		// 058
 	TESScriptableForm	scriptable;	// 064
 	TESWeightForm		weight;		// 070
-
+	
 	// members
 	UInt32	value;	// 078 - init'd to FFFFFFFF
 	enum {
@@ -2463,6 +2460,7 @@ public:
 		{	radius = newRadius;	}
 	bool IsCarriable()
 		{	return (lightFlags & kLightFlags_CanCarry) ? true : false;	}
+
 };
 
 // 70
@@ -2738,8 +2736,6 @@ public:
 		eCreatureType_Humanoid,
 		eCreatureType_Horse,
 		eCreatureType_Giant,
-
-		eCreatureType_MAX
 	};
 
 	struct CreatureSound {
@@ -2872,9 +2868,9 @@ public:
 		kAlchemy_IsFood = 0x2,	// in moreFlags
 	};
 
-	TESModel			model;
-	TESIcon				icon;
-	TESScriptableForm	scriptable;
+	TESModel			model;		
+	TESIcon				icon;		
+	TESScriptableForm	scriptable;	
 	TESWeightForm		weight;
 	UInt32				goldValue;
 
@@ -2966,7 +2962,7 @@ public:
 		eHDR_TreeDimmer,
 		eHDR_Last = eHDR_TreeDimmer,
 	};
-
+	
 	enum {
 		eColor_SkyUpper = 0,
 		eColor_Fog,
@@ -3075,6 +3071,7 @@ public:
 	UInt8			pad[2];
 	// 058
 
+
 	enum {
 		kClimate_Masser = 0x80,
 		kClimate_Secunda = 0x40,
@@ -3173,7 +3170,7 @@ public:
 
 	enum
 	{
-		kFlags0_Interior =				1 << 0,
+		kFlags0_Interior =				1 << 0, 
 		kFlags0_HasWater =				1 << 1,
 		kFlags0_Unk2 =					1 << 2,
 		kFlags0_ForceHideLand =			1 << 3,	// shared bit - for exterior
@@ -3274,7 +3271,7 @@ public:
 	NiNode					* niNode;		// 28
 
 	bool IsDisabled() { return flags & kFlag_Disabled ? true : false; }
-	void SetDisabled(bool bDisabled) {
+	void SetDisabled(bool bDisabled) { 
 		if (bDisabled)	flags |= kFlag_Disabled;
 		else			flags &= ~kFlag_Disabled;
 	}
@@ -3294,7 +3291,7 @@ public:
 	~TESPathGrid();
 
 	typedef tList<TESPathGridPoint> PointList;
-
+	
 	struct ExternalEdge {
 		// used for edges which cross exterior cell boundaries - maps local node to coordinates of external node
 		UInt16		localNodeID;		// 00
@@ -3376,7 +3373,7 @@ public:
 	void			* ptr078;			// 078
 	TESWorldSpace	* parentWorldspace;	// 07C
 	UInt32			unk080[(0xC0 - 0x80) >> 2];	// 080
-	BSStringT			editorID;			// 0C0
+	String			editorID;			// 0C0
 	NiTPointerMap <void> map0C8;		// 0C8 - ?$NiTPointerMap@I_N@@
 	UInt32			unk0D8[(0xE0 - 0xD8) >> 2];	// 0D8
 
@@ -3394,7 +3391,7 @@ public:
 	~TESObjectLAND();
 
 	// A0
-	struct Data
+	struct Data 
 	{
 		// 10
 		struct Heightmap {
@@ -3496,40 +3493,52 @@ public:
 	TESIcon				icon;		// 024
 	TESFullName			fullName;	// 030
 
-	typedef tList<QuestStageItem> StageItemList;
-
-	struct StageEntry
+	struct StageItemList
 	{
-		enum
-		{
-			kFlag_CompleteQuest	= 1 << 0,
-		};
-
-		UInt8			index;	// as defined in CS, not necessarily sequential
-		UInt8			flags;
-		UInt8			pad[2];
-		StageItemList	itemList;
+		// ### these appear to be listed in reverse of order defined in editor
+		QuestStageItem	* item;
+		StageItemList	* next;
 	};
 
-	typedef tList<StageEntry> StageEntryList;
+	struct StageEntry	
+	{
+		struct Data
+		{
+			enum 
+			{
+				kFlag_CompleteQuest	= 1 << 0,
+			};		
+		
+			UInt8			index;	// as defined in CS, not necessarily sequential
+			UInt8			flags;
+			UInt8			pad[2];
+			StageItemList	itemList;
+		};
+
+		Data		* data;
+		StageEntry	* next;
+	};
 
 	struct TargetEntry
 	{
-		UInt32			unk00;			// 00 flags?
-		ConditionEntry	conditionList;	// 04
-		TESObjectREFR	* target;		// 0C
-		TESObjectREFR	* doorRef;		// 10 door leading to this target if in another cell
-		// possibly 1 more 32-bit member
-	};
+		struct Data
+		{
+			UInt32			unk00;			// 00 flags?
+			ConditionEntry	conditionList;	// 04
+			TESObjectREFR	* target;		// 0C
+			// possibly 2 more 32-bit members
+		};
 
-	typedef tList<TargetEntry> TargetEntryList;
+		Data		* data;
+		TargetEntry	* next;
+	};
 
 	struct Unk50
 	{
 		UInt32	unk0;	// 000
 		UInt32	unk1;	// 004
 	};
-
+	
 	enum {
 		kQuestFlag_Active			= 1 << 0,
 		kQuestFlag_Completed		= 1 << 1,
@@ -3541,17 +3550,16 @@ public:
 	UInt8		questFlags;	// 03C
 	UInt8		priority;	// 03D
 	UInt8		pad0[2];	// 03E
-	StageEntryList	stageList;	// 040
-	TargetEntryList	targetList;	// 048
+	StageEntry	stageList;	// 040
+	TargetEntry	targetList;	// 048
 	Unk50		unk4;		// 050
 	ScriptEventList	* scriptEventList;	// 058
 	UInt8		stageIndex;	// 05C
 	UInt8		pad1[3];	// 05D
-	BSStringT		editorName;	// 060
+	String		editorName;	// 060
 
 	void SetCompleted(bool bComplete) { questFlags = bComplete ? questFlags | kQuestFlag_Completed : questFlags & ~kQuestFlag_Completed; }
 	bool IsCompleted() const { return (questFlags & kQuestFlag_Completed) ? true : false; }
-	StageEntry* GetStageEntry(UInt32 index);
 };
 
 // TESIdleForm
@@ -3692,7 +3700,7 @@ public:
 
 	// order only somewhat related to kFormType_XXX (values off by 17, 20, or 21)
 	enum
-	{
+	{	
 		kObjectType_Activator		= 0x01,
 		kObjectType_Apparatus,
 		kObjectType_Armor,
@@ -3727,7 +3735,7 @@ public:
 		kObjectType_SpellsDestruction,	// 20
 		kObjectType_SpellsIllusion,
 		kObjectType_SpellsMysticism,
-		kObjectType_SpellsRestoration,
+		kObjectType_SpellsRestoration,		
 
 		kObjectType_Max				= 0x24,
 	};
@@ -3745,7 +3753,7 @@ public:
 			kPackLocation_Max,
 		};
 
-		UInt8		locationType;
+		UInt8		locationType;	
 		UInt8		pad[3];
 		UInt32		radius;
 		ObjectType  object;
@@ -3763,7 +3771,7 @@ public:
 		kTargetType_TypeCode	= 2,
 	};
 
-	struct TargetData
+	struct TargetData 
 	{
 		UInt8		targetType;
 		UInt8		pad[3];
@@ -3825,7 +3833,7 @@ public:
 		kProcedure_MAX						// 0x2C
 	};
 
-	UInt32			procedureArrayIndex;	// 018 index into array of array of eProcedure terminated by 0x2C.
+	UInt32			procedureArrayIndex;	// 018 index into array of array of eProcedure terminated by 0x2C. 
 											//	   -1 if no procedure array exists for package type.
 	UInt32			packageFlags;			// 01C
 	UInt8			type;					// 020
@@ -3911,7 +3919,7 @@ public:
 	};
 
 	UInt8		dodgeChance;			// 18
-	UInt8		LRChance;
+	UInt8		LRChance;		
 	UInt8		pad1A[2];
 	float		dodgeLRTimerMin;		// 1C
 	float		dodgeLRTimerMax;		// 20
@@ -3922,8 +3930,8 @@ public:
 	float		idleTimerMin;			// 34
 	float		idleTimerMax;			// 38
 	UInt8		blockChance;			// 3C
-	UInt8		attackChance;
-	UInt8		pad3E[2];
+	UInt8		attackChance;		
+	UInt8		pad3E[2];	
 	float		staggerBonusToAttack;	// 40
 	float		KOBonusToAttack;		// 44
 	float		H2HBonusToAttack;		// 48
@@ -3970,7 +3978,7 @@ public:
 
 	// members
 	UInt32			unk28[3];			// 28
-	BSStringT			unk34;				// 34
+	String			unk34;				// 34
 };
 
 // 34
@@ -4113,6 +4121,7 @@ public:
 STATIC_ASSERT(sizeof(TESEffectShader) == 0x110);
 #endif
 
+
 class TESTopicInfo;
 
 // 24
@@ -4134,7 +4143,7 @@ public:
 
 	struct QuestInfoData
 	{
-		TESQuest*			parentQuest;
+		TESQuest*			parentQuest;	
 		TopicInfoArray		infoList;
 	};
 
@@ -4164,11 +4173,12 @@ public:
 	QuestInfoData*		firstEntry;			// 28
 	QuestInfoEntry*		questInfoList;		// 2C
 	void*				unk30;				// 30 subrecord type XIDX saved here. seen NULL most of the time
-	BSStringT				editorID;			// 34
+	String				editorID;			// 34
 };
 
 bool IsClonedForm(UInt32 formID);
 TESForm* CloneForm(TESForm* formToClone);
+
 
 // issues with run-time size and with header dependencies need to be resolved before this is usable
 #if 0
@@ -4211,9 +4221,9 @@ public:
 	struct ResponseEntry
 	{
 		// 18 / 24
-		struct Data
+		struct Data 
 		{
-			enum
+			enum 
 			{
 				kEmotionType_Neutral = 0,
 				kEmotionType_Anger,
@@ -4224,19 +4234,20 @@ public:
 				kEmotionType_Surprise,
 			};
 
+
 			UInt32			emotionType;				// 00
 			UInt32			emotionValue;				// 04
 			UInt32			unk08;						// 08
 			UInt32			unk0C;						// 0C
 			String			responseText;				// 10
 #ifndef OBLIVION
-			String			actorNotes;					// 18
+			String			actorNotes;					// 18	
 			UInt32			unk20;						// 20
 #endif
 		};
 
 		Data*				data;
-		ResponseEntry*		next;
+		ResponseEntry*		next;		
 	};
 
 #ifdef OBLIVION
@@ -4249,14 +4260,14 @@ public:
 	UInt8					pad26[2];		// 26
 	tList<TESTopic>			addedTopics;	// 28
 	LinkedTopics*			linkedTopics;	// 30
-	UInt32					unk34;			// 34 - init to parent plugin's TESFile::unk25C.
+	UInt32					unk34;			// 34 - init to parent plugin's TESFile::unk25C. 
 											// appears to be a file offset that can be passed to TESFile::SetFilePointer()
 #else
 
 	TESTopic*			unk24;			// 24 - always NULL ?
 	ConditionEntry		conditions;		// 28
-	UInt16				unk30;			// 30 - init to -1. used to determine previous info
-	UInt16				infotype;		// 32
+	UInt16				unk30;			// 30 - init to -1. used to determine previous info	
+	UInt16				infotype;		// 32 
 	UInt8				flags0;			// 34
 	UInt8				pad35[3];		// 35
 	TopicListEntry		addedTopics;	// 38

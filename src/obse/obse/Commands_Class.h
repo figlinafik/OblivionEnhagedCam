@@ -20,6 +20,4 @@ extern CommandInfo kCommandInfo_SetClassAttributeC;
 extern CommandInfo kCommandInfo_SetClassSkills2;
 
 extern CommandInfo kCommandInfo_GetSkillSpecialization;
-extern CommandInfo kCommandInfo_GetSkillSpecializationC;
 extern CommandInfo kCommandInfo_SetSkillSpecialization;
-extern CommandInfo kCommandInfo_SetSkillSpecializationC;

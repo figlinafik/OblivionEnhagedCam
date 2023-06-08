@@ -270,24 +270,6 @@ bool GetNextRecordInfo(UInt32 * type, UInt32 * version, UInt32 * length)
 	return true;
 }
 
-bool PeekNextRecordInfo( UInt32 * type, UInt32 * version, UInt32 * length )
-{
-	if(!s_pluginHeader.numChunks)
-		return false;
-
-	SInt64 currentOffset = s_currentFile.GetOffset();
-	ChunkHeader buffer = {0};
-
-	s_currentFile.ReadBuf(&buffer, sizeof(buffer));
-	s_currentFile.SetOffset(currentOffset);
-
-	*type =		buffer.type;
-	*version =	buffer.version;
-	*length =	buffer.length;
-
-	return true;
-}
-
 UInt32 ReadRecordData(void * buf, UInt32 length)
 {
 	ASSERT(s_chunkOpen);
@@ -530,7 +512,7 @@ void HandleLoadGame(const char * path, OBSESerializationInterface::EventCallback
 					else
 					{
 						// ### wtf?
-						_WARNING("plugin %s has data in save file but no handler", g_pluginManager.GetPluginNameFromHandle(pluginIdx));
+						_WARNING("plugin has data in save file but no handler");
 
 						s_currentFile.Skip(s_pluginHeader.length);
 					}
@@ -546,17 +528,7 @@ void HandleLoadGame(const char * path, OBSESerializationInterface::EventCallback
 				UInt64	expectedOffset = pluginChunkStart + s_pluginHeader.length;
 				if(s_currentFile.GetOffset() != expectedOffset)
 				{
-					const char* pluginName = "UNKNOWN";
-					if (pluginIdx == 0) 
-						pluginName = "OBSE";
-					else
-					{
-						PluginInfo* pluginInfo = g_pluginManager.GetInfoFromHandle (pluginIdx);
-						if (pluginInfo && pluginInfo->name)
-							pluginName = pluginInfo->name;
-					}
-
-					_WARNING("plugin \"%s\" did not read all of its data (at %016I64X expected %016I64X)", pluginName, s_currentFile.GetOffset(), expectedOffset);
+					_WARNING("plugin did not read all of its data (at %016I64X expected %016I64X)", s_currentFile.GetOffset(), expectedOffset);
 					s_currentFile.SetOffset(expectedOffset);
 				}
 			}
@@ -619,6 +591,7 @@ void HandleNewGame(void)
 		}
 	}
 }
+
 }
 
 OBSESerializationInterface	g_OBSESerializationInterface =
@@ -638,7 +611,5 @@ OBSESerializationInterface	g_OBSESerializationInterface =
 
 	Serialization::ResolveRefID,
 
-	Serialization::SetPreloadCallback,
-
-	Serialization::PeekNextRecordInfo,
+	Serialization::SetPreloadCallback
 };

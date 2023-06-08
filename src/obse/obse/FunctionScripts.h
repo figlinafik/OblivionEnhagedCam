@@ -153,7 +153,6 @@ protected:
 namespace PluginAPI {
 	bool CallFunctionScript(Script* fnScript, TESObjectREFR* callingObj, TESObjectREFR* container,
 		OBSEArrayVarInterface::Element* result, UInt8 numArgs, ...);
-	bool IsUserFunction(Script* script);
 }
 
 #endif

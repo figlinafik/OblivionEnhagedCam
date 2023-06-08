@@ -68,7 +68,6 @@ UInt32 Script::GetVariableType(VariableInfo* varInfo)
 #if OBLIVION
 
 #include "GameAPI.h"
-#include "GameData.h"
 
 void Script::RefVariable::Resolve(ScriptEventList * eventList)
 {
@@ -148,68 +147,6 @@ Script::RefVariable* ScriptBuffer::ResolveRef(const char* refName)
 {
 	// ###TODO: Handle player, ref vars, quests, globals
 	return NULL;
-}
-
-const char* QuestStageItem::GetLogText() const
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	// returns pointer to static buffer
-	// text most recently looked up is cached
-	return (const char*)ThisStdCall(0x0052AF40, const_cast<QuestStageItem*>(this), owningQuest);
-#else
-#error unsupported Oblivion version
-#endif
-}
-
-void QuestStageItem::LogDate::Get(UInt16& d, UInt32& m, UInt16 &y)
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	d = ThisStdCall(0x0047D3C0, this);
-	m = ThisStdCall(0x0047D3E0, this);
-	y = ThisStdCall(0x0047D2A0, this);
-#else
-#error unsupported Oblivion version
-#endif
-}
-
-bool QuestStageItem::LogDate::Set(UInt32 d, UInt32 m, UInt32 y)
-{
-	if (d > 0 && d <= 32 && m > 0 && m <= 12 && y <= 0xFFFF) {
-		year = y;
-		dayOfYear = TimeGlobals::GetFirstDayOfMonth(m) + d;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-QuestStageItem::LogDate QuestStageItem::LogDate::Create(UInt32 d, UInt32 m, UInt32 y)
-{
-	ASSERT_STR((d > 0 && d <= 32 && m > 0 && m <= 12 && y <= 0xFFFF), "Invalid values for QuestStageItem::LogDate::Create()");
-
-	LogDate date;
-	date.Set(d, m, y);
-	return date;
-}
-
-bool QuestStageItem::LogDate::Set(const QuestStageItem::LogDate& date)
-{
-	year = date.year;
-	dayOfYear = date.dayOfYear;
-	return true;
-}
-
-bool QuestStageItem::SetLogDate(const QuestStageItem::LogDate& date)
-{
-	if (!logDate) {
-#if 0 // the game reacts poorly to this, player must know the stage item before date can be set
-		logDate = (LogDate*)FormHeap_Allocate(sizeof(LogDate));
-#endif
-		return false;
-	}
-
-	return logDate->Set(date);
 }
 
 #else		// CS-stuff below

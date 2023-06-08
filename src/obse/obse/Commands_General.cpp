@@ -6,6 +6,9 @@
 
 #if OBLIVION
 
+#include <stack>
+#include <vector>
+#include <map>
 #include "GameAPI.h"
 #include "GameExtraData.h"
 #include "GameObjects.h"
@@ -36,7 +39,7 @@ static bool Cmd_eval_Execute(COMMAND_ARGS)
 {
 	*result = 0;
 	ExpressionEvaluator eval(PASS_COMMAND_ARGS);
-
+	
 	if (eval.ExtractArgs() && eval.Arg(0))
 		*result = eval.Arg(0)->GetBool() ? 1 : 0;
 
@@ -57,7 +60,7 @@ static bool Cmd_testexpr_Execute(COMMAND_ARGS)
 			const ArrayKey* key = eval.Arg(0)->GetArrayKey();
 			*result = (g_ArrayMap.HasKey(eval.Arg(0)->GetOwningArrayID(), *key)) ? 1 : 0;
 		}
-		else
+		else 
 			*result = 1;
 	}
 
@@ -126,7 +129,7 @@ static bool Cmd_ForEach_Execute(COMMAND_ARGS)
 		const ForEachContext* context = eval.Arg(0)->GetForEachContext();
 		if (!context)
 			ShowRuntimeError(scriptObj, "Cmd_ForEach: Expression does not evaluate to a ForEach context");
-		else		// construct the loop
+		else		// construct the loop 
 		{
 			if (context->variableType == Script::eVarType_Array)
 			{
@@ -402,6 +405,7 @@ bool ModLocalDataManager::Remove(UInt8 modIndex, const char* key)
 
 bool ModLocalDataManager::Set(UInt8 modIndex, const char* key, const ArrayElement& data)
 {
+	
 	ArrayID dummy = 0;
 	if (key && !data.GetAsArray(&dummy)) {
 		UInt32 len = strlen(key) + 1;
@@ -568,7 +572,7 @@ static bool Cmd_Let_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuff
 static bool Cmd_BeginLoop_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer* lineBuf, ScriptBuffer* scriptBuf)
 {
 	// reserve space for a UInt32 storing offset past end of loop
-	RegisterLoopStart(scriptBuf->scriptData + scriptBuf->dataOffset + lineBuf->dataOffset + 4);
+	RegisterLoopStart(scriptBuf->scriptData + scriptBuf->dataOffset + lineBuf->dataOffset + 4);	
 	lineBuf->dataOffset += sizeof(UInt32);
 
 	// parse the loop condition
@@ -589,7 +593,7 @@ static bool Cmd_Loop_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuf
 		return false;
 	}
 
-	return true;
+	return true;	
 }
 
 static bool Cmd_Null_Parse(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer* lineBuf, ScriptBuffer* scriptBuf)
@@ -755,7 +759,7 @@ static ParamInfo kParams_OneOBSEString[] =
 	{	"string",	kOBSEParamType_String,	0	},
 };
 
-CommandInfo kCommandInfo_ToString =
+CommandInfo kCommandInfo_ToString = 
 {
 	"ToString",
 	"",

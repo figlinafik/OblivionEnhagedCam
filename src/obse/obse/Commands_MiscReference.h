@@ -106,5 +106,3 @@ extern CommandInfo kCommandInfo_IsInOblivion;
 
 extern CommandInfo kCommandInfo_GetTimeLeft;
 extern CommandInfo kCommandInfo_SetTimeLeft;
-
-extern CommandInfo kCommandInfo_LinkToDoor;

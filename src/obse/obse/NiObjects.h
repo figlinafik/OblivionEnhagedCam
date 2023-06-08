@@ -63,12 +63,12 @@ class NiAVObject : public NiObjectNET
 public:
 	NiAVObject();
 	~NiAVObject();
-
+	
 	virtual void			UpdatePropertiesAndControllers(float arg);	// calls Update on properties and controllers
 	virtual void			Unk_14(void);
 	virtual void			Unk_15(void);
+	virtual void			Unk_16(void);
 	virtual NiObjectNET *	GetObject(const char * name);
-	virtual void			Unk_17(void);
 	virtual void			Unk_18(float arg, bool updateProperties);	// if(updateProperties) UpdatePropertiesAndControllers(arg); Unk_1D(); Unk_1E();
 	virtual void			Unk_19(float arg);			// update controllers, if kFlag_SelUpdatePropControllers update properties, if(kFlag_SelUpdateTransforms) { Unk_1D(); Unk_1E(); }
 	virtual void			Unk_1A(float arg);			// update controllers, if kFlag_SelUpdatePropControllers update properties, if(kFlag_SelUpdateTransforms) { Unk_1D(); Unk_1E(); }
@@ -101,7 +101,6 @@ public:
 	NiTListBase <NiProperty>	m_propertyList;			// 098
 	NiObject					* m_spCollisionObject;	// 0A8
 };
-STATIC_ASSERT(sizeof(NiAVObject) == 0xAC);
 
 // DC+
 class NiDynamicEffect : public NiAVObject
@@ -321,7 +320,7 @@ public:
 	UInt8	unk0DD[3];		// 0DD
 	float	fNearDistSqr;	// 0E0
 	float	fFarDistSqr;	// 0E4
-	float	fCurrentAlpha;	// 0E8
+	float	unk0E8;			// 0E8
 	UInt8	cMultType;		// 0EC
 	UInt8	unk0ED[3];		// 0ED
 };

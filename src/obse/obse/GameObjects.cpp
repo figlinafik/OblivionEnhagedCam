@@ -96,17 +96,6 @@ EquippedItemsList Actor::GetEquippedItems()
 	return itemList;
 }
 
-void Actor::UnequipAllItems()
-{
-	ExtraContainerChanges* xChanges = static_cast <ExtraContainerChanges*> (baseExtraList.GetByType (kExtraData_ContainerChanges));
-	if (xChanges && xChanges->data && xChanges->data->objList)
-		for (ExtraContainerChanges::Entry* entry = xChanges->data->objList; entry; entry = entry->next)
-			if (entry->data && entry->data->extendData && entry->data->type && entry->data->type->IsQuestItem())
-				for (ExtraContainerChanges::EntryExtendData* extend = entry->data->extendData; extend; extend = extend->next)
-					if (extend->data && extend->data->IsWorn())
-						UnequipItem (entry->data->type, 1, extend->data, 0, false, 0);
-}
-
 ExtraContainerDataList	Actor::GetEquippedEntryDataList()
 {
 	ExtraContainerDataList itemList;
@@ -136,7 +125,7 @@ void PlayerCharacter::TogglePOV(bool bFirstPerson)
 #elif OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 	ThisStdCall(0x0066C580, this, bFirstPerson);
 #else
-#error unsupported Oblivion version
+#error unsupported Oblivion version 
 #endif
 }
 
@@ -159,24 +148,26 @@ float GetGameSettingFloat(char* settingName)
 	return fVal;
 }
 
+
 float PlayerCharacter::ExperienceNeeded(UInt32 skill, UInt32 atLevel)
 {
 	if (atLevel == 0) atLevel = 1;
-	float fSkillUseMajorMult = GetGameSettingFloat("fSkillUseMajorMult");
-	float fSkillUseMinorMult = GetGameSettingFloat("fSkillUseMinorMult");
-	float fSkillUseSpecMult = GetGameSettingFloat("fSkillUseSpecMult");
-	float fSkillUseFactor = GetGameSettingFloat("fSkillUseFactor");
-	float fSkillUseExp = GetGameSettingFloat("fSkillUseExp");
-
+	static float fSkillUseMajorMult = GetGameSettingFloat("fSkillUseMajorMult");
+	static float fSkillUseMinorMult = GetGameSettingFloat("fSkillUseMinorMult");
+	static float fSkillUseSpecMult = GetGameSettingFloat("fSkillUseSpecMult");
+	static float fSkillUseFactor = GetGameSettingFloat("fSkillUseFactor");
+	static float fSkillUseExp = GetGameSettingFloat("fSkillUseExp");
+	
 	TESClass* pClass = GetPlayerClass();
 
 	TESSkill* pSkill = TESSkill::SkillForActorVal(skill);
 	float fSkillUseMult = (pClass->IsMajorSkill(skill)) ? fSkillUseMajorMult : fSkillUseMinorMult;
 	float fSkillSpecMult = (pClass->specialization == pSkill->specialization) ? fSkillUseSpecMult : 1.0;
-
+	
 	float expNeeded = pow(fSkillUseFactor * atLevel, fSkillUseExp) * fSkillUseMult * fSkillSpecMult;
 	return expNeeded;
 }
+
 
 void PlayerCharacter::ChangeExperience(UInt32 valSkill, UInt32 whichUse, float howManyTimes)
 {
@@ -195,8 +186,8 @@ void PlayerCharacter::ChangeExperience(UInt32 valSkill, UInt32 whichUse, float h
 void PlayerCharacter::ChangeExperience(UInt32 valSkill, float expChange)
 {
 	float &curExperience = skillExp[valSkill - kActorVal_Armorer];
-	float curSkillLevel = GetBaseActorValue(valSkill);
-	float skillLevel = curSkillLevel;
+	float curSkillLevel = GetActorValue(valSkill);
+	float skillLevel = curSkillLevel;		
 
 	if (expChange > 0) {
 		curExperience += expChange;
@@ -212,7 +203,7 @@ void PlayerCharacter::ChangeExperience(UInt32 valSkill, float expChange)
 		while (curExperience < expChange  && skillLevel > 1) {
 			// we have to reduce the skill by at least a level
 			// calculate the experience that was needed by the previous level
-
+			
 			// decrement the skill count
 			--skillLevel;
 
@@ -258,6 +249,7 @@ TESClass* PlayerCharacter::GetPlayerClass() const
 	return pNPC->npcClass;
 }
 
+
 class UsedPowerFinder
 {
 	SpellItem	* m_toFind;
@@ -291,7 +283,7 @@ void Actor::SetCanUseGreaterPower(SpellItem* power, bool bAllowUse, float timer)
 	else if (!bAllowUse && !foundEntry)
 	{
 		PowerListData* nuData = (PowerListData*)FormHeap_Allocate(sizeof(PowerListData));
-
+		
 		if (timer == -1)
 		{
 			TESGlobal* timeScaleGlob = (*g_dataHandler)->GetGlobalVarByName("TimeScale", strlen("TimeScale"));
@@ -431,15 +423,6 @@ bool TESObjectREFR::IsDeleted() const
 	return false;
 }
 
-ExtraTeleport::Data* TESObjectREFR::GetExtraTeleportData()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	return (ExtraTeleport::Data*)ThisStdCall(0x004D7630, this);
-#else
-#error unsupported Oblivion version
-#endif
-}
-
 TESPackage* Actor::GetCurrentPackage()
 {
 	TESPackage* pkg = NULL;
@@ -456,11 +439,11 @@ TESPackage* Actor::GetCurrentPackage()
 				pkg = xPkg->package;
 		}
 	}
-
+	
 	return pkg;
 }
 
-bool TESObjectREFR::GetTeleportCellName(BSStringT* outName)
+bool TESObjectREFR::GetTeleportCellName(String* outName)
 {
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 	ExtraTeleport* xTele = (ExtraTeleport*)baseExtraList.GetByType(kExtraData_Teleport);
@@ -489,7 +472,7 @@ bool PlayerCharacter::SetSkeletonPath(const char* newPath)
 	NiNode* niParent = (NiNode*)(niNode->m_parent);
 
 	// set niNode to NULL via BASE CLASS Set3D() method
-	ThisStdCall(s_TESObjectREFR_Set3D, this, NULL);
+	ThisStdCall(s_TESObjectREFR_Set3D, this, NULL);	
 
 	// modify model path
 	if (newPath) {
@@ -574,18 +557,6 @@ bool TESObjectREFR::IsMapMarker()
 	}
 }
 
-float TESObjectREFR::GetDistance(TESObjectREFR* other, bool bIncludeDisabled)
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	float result;
-	ThisStdCall(0x0065D270, this, other, bIncludeDisabled);
-	__asm { fstp	[result] }
-#else
-#error unsupported Oblivion version
-#endif
-	return result;
-}
-
 bool Actor::IsObjectEquipped(TESForm* object)
 {
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
@@ -602,20 +573,20 @@ float Actor::GetAVModifier(eAVModifier mod, UInt32 avCode)
 	if (mod == kAVModifier_Invalid)
 		return result;
 
-	if (PlayerCharacter* pc = OBLIVION_CAST(this, Actor, PlayerCharacter)) {
+    if (PlayerCharacter* pc = OBLIVION_CAST(this, Actor, PlayerCharacter)) {
 #if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
 		ThisStdCall(0x0065D270, pc, mod, avCode);
 		__asm { fstp	[result] }
 #else
 #error unsupported Oblivion version
 #endif
-	}
+    }
 	else {		// non-player actors
 		switch (mod)
 		{
 		case kAVModifier_Max:
 			if (MiddleLowProcess* midproc = OBLIVION_CAST(process, BaseProcess, MiddleLowProcess)) {
-				result = midproc->maxAVModifiers.GetAV(avCode);
+				result = midproc->maxAVModifiers.GetAV(avCode);           
 			}
 			break;
 		case kAVModifier_Offset:
@@ -623,7 +594,7 @@ float Actor::GetAVModifier(eAVModifier mod, UInt32 avCode)
 			break;
 		case kAVModifier_Damage:
 			if (LowProcess* proc = OBLIVION_CAST(process, BaseProcess, LowProcess))	{
-				result = proc->avDamageModifiers.GetAV(avCode);
+				result = proc->avDamageModifiers.GetAV(avCode);            
 			}
 			break;
 		default:
@@ -642,33 +613,6 @@ float Actor::GetCalculatedBaseAV(UInt32 avCode)
 	ThisStdCall(0x005EAD00, this, avCode);
 	__asm { fstp [result] }
 	return result;
-#else
-#error unsupported Oblivion version
-#endif
-}
-
-bool Actor::IsAlerted()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	return ThisStdCall(0x005E0E30, this) ? true : false;
-#else
-#error unsupported Oblivion version
-#endif
-}
-
-void Actor::SetAlerted(bool bAlerted)
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	ThisStdCall(0x005E0E10, this, bAlerted);
-#else
-#error unsupported Oblivion version
-#endif
-}
-
-void Actor::EvaluatePackage()
-{
-#if OBLIVION_VERSION == OBLIVION_VERSION_1_2_416
-	ThisStdCall(0x00601B80, this);
 #else
 #error unsupported Oblivion version
 #endif
